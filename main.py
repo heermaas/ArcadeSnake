@@ -11,6 +11,7 @@ APPLE_HEIGHT = 15
 SNAKE_SPEED = 5
 GRID = 15
 
+
 class Snake(arcade.Window):
 
     def __init__(self, width, height):
@@ -23,6 +24,15 @@ class Snake(arcade.Window):
         self.change_y = 0
         self.frame_count = 0
         self.score = 0
+        self.generate_apple()  # Generate the first apple
+
+    def generate_apple(self):
+        while True:
+            apple_x = random.randint(0, (SCREEN_WIDTH - GRID) // GRID) * GRID
+            apple_y = random.randint(0, (SCREEN_HEIGHT - GRID - 30) // GRID) * GRID
+            if [apple_x, apple_y] not in self.snake_list:
+                self.apple_list = [[apple_x, apple_y]]  # We only need one apple at a time
+                break
 
     def on_draw(self):
         arcade.start_render()
@@ -31,13 +41,20 @@ class Snake(arcade.Window):
         for apple in self.apple_list:
             arcade.draw_rectangle_filled(apple[0], apple[1], APPLE_WIDTH, APPLE_HEIGHT, arcade.color.RED)
         output = f"Score: {self.score}"
-        arcade.draw_text(output, 10, 20, arcade.color.BLACK, 14)
+        arcade.draw_text(output, SCREEN_WIDTH - 100, SCREEN_HEIGHT - 20, arcade.color.BLACK, 14)
 
     def on_update(self, delta_time):
         self.frame_count += 1
         if self.frame_count % self.snake_speed == 0:
-            self.snake_list.append([self.snake_list[-1][0] + self.change_x, self.snake_list[-1][1] + self.change_y])
-            if len(self.snake_list) > 3:
+            next_x = (self.snake_list[-1][0] + self.change_x) % SCREEN_WIDTH
+            next_y = (self.snake_list[-1][1] + self.change_y) % (SCREEN_HEIGHT - 30)
+            self.snake_list.append([next_x, next_y])
+
+            # Check for collision with apple
+            if self.snake_list[-1] in self.apple_list:
+                self.score += 100
+                self.generate_apple()
+            else:  # Only pop when not eating to avoid growth
                 self.snake_list.pop(0)
 
     def on_key_press(self, key, modifiers):
@@ -54,9 +71,11 @@ class Snake(arcade.Window):
             self.change_x = GRID
             self.change_y = 0
 
+
 def main():
     Snake(SCREEN_WIDTH, SCREEN_HEIGHT)
     arcade.run()
+
 
 if __name__ == "__main__":
     main()
