@@ -20,10 +20,44 @@ class AppleSprite(arcade.Sprite):
         self.texture = arcade.make_soft_square_texture(SPRITE_SIZE, arcade.color.RED, outer_alpha=255)
         self.center_x, self.center_y = pos
 
-class Snake(arcade.Window):
+class StartView(arcade.View):
+    def on_show(self):
+        arcade.set_background_color(arcade.color.WHITE)
+        self.selected_option = 0
 
-    def __init__(self, width, height):
-        super().__init__(width, height)
+    def on_draw(self):
+        arcade.start_render()
+        arcade.draw_text("Snake Game", SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2 + 100, arcade.color.BLACK, font_size=30, anchor_x="center")
+        if self.selected_option == 0:
+            arcade.draw_text("> Start <", SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2, arcade.color.BLACK, font_size=20, anchor_x="center")
+            arcade.draw_text("Exit", SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2 - 30, arcade.color.BLACK, font_size=20, anchor_x="center")
+        else:
+            arcade.draw_text("Start", SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2, arcade.color.BLACK, font_size=20, anchor_x="center")
+            arcade.draw_text("> Exit <", SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2 - 30, arcade.color.BLACK, font_size=20, anchor_x="center")
+
+    def on_key_press(self, key, modifiers):
+        if key == arcade.key.UP or key == arcade.key.W:
+            self.selected_option = 0
+        elif key == arcade.key.DOWN or key == arcade.key.S:
+            self.selected_option = 1
+        elif key == arcade.key.ENTER:
+            if self.selected_option == 0:
+                game_view = GameView()
+                self.window.show_view(game_view)
+            elif self.selected_option == 1:
+                arcade.window_commands.close_window()
+
+    def on_mouse_press(self, x, y, button, modifiers):
+        if SCREEN_WIDTH // 2 - 60 <= x <= SCREEN_WIDTH // 2 + 60:
+            if SCREEN_HEIGHT // 2 - 10 <= y <= SCREEN_HEIGHT // 2 + 10:
+                game_view = GameView()
+                self.window.show_view(game_view)
+            elif SCREEN_HEIGHT // 2 - 40 <= y <= SCREEN_HEIGHT // 2 - 20:
+                arcade.window_commands.close_window()
+
+class GameView(arcade.View):
+    def __init__(self):
+        super().__init__()
         arcade.set_background_color(arcade.color.WHITE)
         self.snake_list = arcade.SpriteList()
         self.snake_list.append(SnakeSprite([SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2]))
@@ -80,7 +114,9 @@ class Snake(arcade.Window):
             self.change_y = 0
 
 def main():
-    Snake(SCREEN_WIDTH, SCREEN_HEIGHT)
+    window = arcade.Window(SCREEN_WIDTH, SCREEN_HEIGHT, "Snake Game")
+    start_view = StartView()
+    window.show_view(start_view)
     arcade.run()
 
 if __name__ == "__main__":
