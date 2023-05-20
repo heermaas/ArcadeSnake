@@ -430,7 +430,6 @@ class GameView(arcade.View):
                 self.snake.body.pop()
     def update_option(self, option):
         pass # This is here because PauseView inherits from GameView
-
 class PauseView(arcade.View):
     def __init__(self, game_view):
         super().__init__()
@@ -495,6 +494,7 @@ class PauseView(arcade.View):
                 self.current_option += 1
         elif key == arcade.key.ENTER:
             if self.current_option == 0:
+                self.game_view.paused = False
                 self.window.show_view(self.game_view)  # Show the stored GameView
             elif self.current_option == 1:
                 start_view = StartView()
@@ -508,6 +508,7 @@ class PauseView(arcade.View):
             SCREEN_WIDTH / 2 - 50 < x < SCREEN_WIDTH / 2 + 50
             and SCREEN_HEIGHT / 2 - 130 < y < SCREEN_HEIGHT / 2 - 70
         ):
+            self.game_view.paused = False
             self.window.show_view(self.game_view)
         elif (
             SCREEN_WIDTH / 2 - 80 < x < SCREEN_WIDTH / 2 + 80
@@ -521,7 +522,6 @@ class PauseView(arcade.View):
         ):
             game_over_view = GameOverView(self.game_view.snake.score)
             self.window.show_view(game_over_view)
-
 
 
 class Snake:

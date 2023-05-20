@@ -7,3 +7,6 @@ Player,0
 Player,0
 Player,0
 Player,100
+Player,500
+Player,1900
+Player,700
