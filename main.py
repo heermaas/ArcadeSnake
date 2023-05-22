@@ -599,7 +599,7 @@ class Snake:
         valid_y_range = range(BLOCK_SIZE, SCREEN_HEIGHT - BLOCK_SIZE, BLOCK_SIZE)
         self.x = random.choice(valid_x_range)
         self.y = random.choice(valid_y_range)
-        self.direction = "right"
+        self.direction = ""
         self.body = []
         self.body.append((self.x, self.y))
         self.score = 0
