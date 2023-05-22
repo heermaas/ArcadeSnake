@@ -1,0 +1,99 @@
+import arcade
+import random
+
+SCREEN_WIDTH = 800
+SCREEN_HEIGHT = 600
+BLOCK_SIZE = 20
+SNAKE_SIZE = 15
+APPLE_SIZE = 40
+SNAKE_SPEED = 5
+
+
+class Snake:
+    def __init__(self, border_wrapping=False):
+        valid_x_range = range(BLOCK_SIZE, SCREEN_WIDTH - BLOCK_SIZE, BLOCK_SIZE)
+        valid_y_range = range(BLOCK_SIZE, SCREEN_HEIGHT - BLOCK_SIZE, BLOCK_SIZE)
+        self.x = random.choice(valid_x_range)
+        self.y = random.choice(valid_y_range)
+        self.direction = ""
+        self.body = []
+        self.body.append((self.x, self.y))
+        self.score = 0
+        self.moving = False
+        self.border_wrapping = border_wrapping
+
+    def start_moving(self):
+        self.moving = True
+
+    def move(self):
+        if self.direction == "right":
+            self.x += SNAKE_SPEED
+            if self.border_wrapping and self.x >= SCREEN_WIDTH:
+                self.x = 0
+        elif self.direction == "left":
+            self.x -= SNAKE_SPEED
+            if self.border_wrapping and self.x < 0:
+                self.x = SCREEN_WIDTH - BLOCK_SIZE
+        elif self.direction == "up":
+            self.y += SNAKE_SPEED
+            if self.border_wrapping and self.y >= SCREEN_HEIGHT:
+                self.y = 0
+        elif self.direction == "down":
+            self.y -= SNAKE_SPEED
+            if self.border_wrapping and self.y < 0:
+                self.y = SCREEN_HEIGHT - BLOCK_SIZE
+
+    def change_direction(self, new_direction):
+        if new_direction == "right" and self.direction != "left":
+            self.direction = new_direction
+        elif new_direction == "left" and self.direction != "right":
+            self.direction = new_direction
+        elif new_direction == "up" and self.direction != "down":
+            self.direction = new_direction
+        elif new_direction == "down" and self.direction != "up":
+            self.direction = new_direction
+
+    def check_collision(self):
+        if (
+            not self.border_wrapping
+            and (self.x < 0 or self.x >= SCREEN_WIDTH or self.y < 0 or self.y >= SCREEN_HEIGHT)
+        ):
+            return True
+        for segment in self.body[1:]:
+            if self.x == segment[0] and self.y == segment[1]:
+                return True
+        return False
+
+    def eat_apple(self, apple):
+        if (
+            self.x < apple.x + APPLE_SIZE
+            and self.x + SNAKE_SIZE > apple.x
+            and self.y < apple.y + APPLE_SIZE
+            and self.y + SNAKE_SIZE > apple.y
+        ):
+            return True
+        return False
+
+    def draw(self):
+        for segment in self.body:
+            arcade.draw_circle_filled(
+                segment[0], segment[1], SNAKE_SIZE, arcade.color.BLUE
+            )
+
+
+class Apple:
+    def __init__(self, snake):
+        valid_x_range = range(BLOCK_SIZE, SCREEN_WIDTH - BLOCK_SIZE, BLOCK_SIZE)
+        valid_y_range = range(BLOCK_SIZE, SCREEN_HEIGHT - BLOCK_SIZE, BLOCK_SIZE)
+        self.x = random.choice(valid_x_range)
+        self.y = random.choice(valid_y_range)
+        while (self.x, self.y) in snake.body:
+            self.x = random.choice(valid_x_range)
+            self.y = random.choice(valid_y_range)
+
+        self.apple= arcade.load_texture("images/apple_snake1.png")
+
+    def draw(self):
+        arcade.draw_texture_rectangle(
+            self.x, self.y, APPLE_SIZE, APPLE_SIZE, self.apple
+        )

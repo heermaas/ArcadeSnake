@@ -1,13 +1,35 @@
+from game import *
 import arcade
-import random
+import arcade.gui
 
 SCREEN_WIDTH = 800
 SCREEN_HEIGHT = 600
 BLOCK_SIZE = 20
-SNAKE_SIZE = BLOCK_SIZE
+SNAKE_SIZE = 15
 APPLE_SIZE = BLOCK_SIZE
 SNAKE_SPEED = 5
 GAME_TITLE = "Snake Game"
+NUM_ROWS = 15
+NUM_COLS = 20
+CELL_HEIGHT = SCREEN_HEIGHT // 15
+CELL_WIDTH = SCREEN_WIDTH // 20
+
+
+def draw_chessboard():
+    for row in range(NUM_ROWS):
+        for column in range(NUM_COLS):
+            # Calculate the coordinates of the current cell
+            x = column * CELL_WIDTH
+            y = row * CELL_HEIGHT
+
+            # Alternate the color of the cells
+            if (row + column) % 2 == 0:
+                color = arcade.color.GREEN_YELLOW
+            else:
+                color = arcade.color.GREEN
+
+            # Draw the cell
+            arcade.draw_rectangle_filled(x + CELL_WIDTH // 2, y + CELL_HEIGHT // 2, CELL_WIDTH, CELL_HEIGHT, color)
 
 
 class StartView(arcade.View):
@@ -16,7 +38,7 @@ class StartView(arcade.View):
         self.current_option = 0
 
     def on_show(self):
-        arcade.set_background_color(arcade.color.BLACK)
+        arcade.set_background_color(arcade.color.GREEN)
 
     def on_draw(self):
         arcade.start_render()
@@ -110,7 +132,7 @@ class GameModeView(arcade.View):
         self.current_option = 0
 
     def on_show(self):
-        arcade.set_background_color(arcade.color.BLACK)
+        arcade.set_background_color(arcade.color.GREEN)
 
     def on_draw(self):
         arcade.start_render()
@@ -173,7 +195,7 @@ class GameOverView(arcade.View):
         self.current_option = 0
 
     def on_show(self):
-        arcade.set_background_color(arcade.color.BLACK)
+        arcade.set_background_color(arcade.color.GREEN)
 
     def on_draw(self):
         arcade.start_render()
@@ -424,10 +446,11 @@ class GameView(arcade.View):
         self.current_option = 0
 
     def on_show(self):
-        arcade.set_background_color(arcade.color.BLACK)
+        arcade.set_background_color(arcade.color.DARK_GREEN)
 
     def on_draw(self):
         arcade.start_render()
+        draw_chessboard()
         self.snake.draw()
         self.apple.draw()
         arcade.draw_text(
@@ -591,94 +614,6 @@ class PauseView(arcade.View):
         ):
             game_over_view = GameOverView(self.game_view.snake.score)
             self.window.show_view(game_over_view)
-
-
-class Snake:
-    def __init__(self, border_wrapping=False):
-        valid_x_range = range(BLOCK_SIZE, SCREEN_WIDTH - BLOCK_SIZE, BLOCK_SIZE)
-        valid_y_range = range(BLOCK_SIZE, SCREEN_HEIGHT - BLOCK_SIZE, BLOCK_SIZE)
-        self.x = random.choice(valid_x_range)
-        self.y = random.choice(valid_y_range)
-        self.direction = ""
-        self.body = []
-        self.body.append((self.x, self.y))
-        self.score = 0
-        self.moving = False
-        self.border_wrapping = border_wrapping
-
-    def start_moving(self):
-        self.moving = True
-
-    def move(self):
-        if self.direction == "right":
-            self.x += SNAKE_SPEED
-            if self.border_wrapping and self.x >= SCREEN_WIDTH:
-                self.x = 0
-        elif self.direction == "left":
-            self.x -= SNAKE_SPEED
-            if self.border_wrapping and self.x < 0:
-                self.x = SCREEN_WIDTH - BLOCK_SIZE
-        elif self.direction == "up":
-            self.y += SNAKE_SPEED
-            if self.border_wrapping and self.y >= SCREEN_HEIGHT:
-                self.y = 0
-        elif self.direction == "down":
-            self.y -= SNAKE_SPEED
-            if self.border_wrapping and self.y < 0:
-                self.y = SCREEN_HEIGHT - BLOCK_SIZE
-
-    def change_direction(self, new_direction):
-        if new_direction == "right" and self.direction != "left":
-            self.direction = new_direction
-        elif new_direction == "left" and self.direction != "right":
-            self.direction = new_direction
-        elif new_direction == "up" and self.direction != "down":
-            self.direction = new_direction
-        elif new_direction == "down" and self.direction != "up":
-            self.direction = new_direction
-
-    def check_collision(self):
-        if (
-            not self.border_wrapping
-            and (self.x < 0 or self.x >= SCREEN_WIDTH or self.y < 0 or self.y >= SCREEN_HEIGHT)
-        ):
-            return True
-        for segment in self.body[1:]:
-            if self.x == segment[0] and self.y == segment[1]:
-                return True
-        return False
-
-    def eat_apple(self, apple):
-        if (
-            self.x < apple.x + APPLE_SIZE
-            and self.x + SNAKE_SIZE > apple.x
-            and self.y < apple.y + APPLE_SIZE
-            and self.y + SNAKE_SIZE > apple.y
-        ):
-            return True
-        return False
-
-    def draw(self):
-        for segment in self.body:
-            arcade.draw_rectangle_filled(
-                segment[0], segment[1], SNAKE_SIZE, SNAKE_SIZE, arcade.color.GREEN
-            )
-
-
-class Apple:
-    def __init__(self, snake):
-        valid_x_range = range(BLOCK_SIZE, SCREEN_WIDTH - BLOCK_SIZE, BLOCK_SIZE)
-        valid_y_range = range(BLOCK_SIZE, SCREEN_HEIGHT - BLOCK_SIZE, BLOCK_SIZE)
-        self.x = random.choice(valid_x_range)
-        self.y = random.choice(valid_y_range)
-        while (self.x, self.y) in snake.body:
-            self.x = random.choice(valid_x_range)
-            self.y = random.choice(valid_y_range)
-
-    def draw(self):
-        arcade.draw_rectangle_filled(
-            self.x, self.y, APPLE_SIZE, APPLE_SIZE, arcade.color.RED
-        )
 
 
 def main():
