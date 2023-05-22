@@ -22,6 +22,24 @@ class Snake:
         self.moving = False
         self.border_wrapping = border_wrapping
 
+        self.head_up = arcade.load_texture("images/head_up.png")
+        self.head_down = arcade.load_texture("images/head_down.png")
+        self.head_right = arcade.load_texture("images/head_right.png")
+        self.head_left = arcade.load_texture("images/head_left.png")
+
+        self.tail_up = arcade.load_texture("images/tail_up.png")
+        self.tail_down = arcade.load_texture("images/tail_down.png")
+        self.tail_right = arcade.load_texture("images/tail_right.png")
+        self.tail_left = arcade.load_texture("images/tail_left.png")
+
+        self.body_vertical = arcade.load_texture("images/body_vertical.png")
+        self.body_horizontal = arcade.load_texture("images/body_horizontal.png")
+
+        self.body_tr = arcade.load_texture("images/body_tr.png")
+        self.body_tl = arcade.load_texture("images/body_tl.png")
+        self.body_br = arcade.load_texture("images/body_br.png")
+        self.body_bl = arcade.load_texture("images/body_bl.png")
+
     def start_moving(self):
         self.moving = True
 
@@ -91,7 +109,7 @@ class Apple:
             self.x = random.choice(valid_x_range)
             self.y = random.choice(valid_y_range)
 
-        self.apple= arcade.load_texture("images/apple_snake1.png")
+        self.apple = arcade.load_texture("images/apple_snake1.png")
 
     def draw(self):
         arcade.draw_texture_rectangle(
