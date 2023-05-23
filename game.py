@@ -1,5 +1,6 @@
 import arcade
 import random
+import vectormath as vmath
 
 SCREEN_WIDTH = 800
 SCREEN_HEIGHT = 600
@@ -7,6 +8,10 @@ BLOCK_SIZE = 20
 SNAKE_SIZE = 15
 APPLE_SIZE = 40
 SNAKE_SPEED = 5
+NUM_ROWS = 15
+NUM_COLS = 20
+CELL_HEIGHT = SCREEN_HEIGHT // 15
+CELL_WIDTH = SCREEN_WIDTH // 20
 
 
 class Snake:
@@ -101,17 +106,25 @@ class Snake:
 
 class Apple:
     def __init__(self, snake):
-        valid_x_range = range(BLOCK_SIZE, SCREEN_WIDTH - BLOCK_SIZE, BLOCK_SIZE)
-        valid_y_range = range(BLOCK_SIZE, SCREEN_HEIGHT - BLOCK_SIZE, BLOCK_SIZE)
-        self.x = random.choice(valid_x_range)
-        self.y = random.choice(valid_y_range)
-        while (self.x, self.y) in snake.body:
-            self.x = random.choice(valid_x_range)
-            self.y = random.choice(valid_y_range)
+        # Calculate the valid cell positions within the chessboard pattern
+        valid_cells = []
+        for row in range(NUM_ROWS):
+            for column in range(NUM_COLS):
+                cell_x = column * CELL_WIDTH + CELL_WIDTH // 2
+                cell_y = row * CELL_HEIGHT + CELL_HEIGHT // 2
+                valid_cells.append((cell_x, cell_y))
 
+        # Filter out cells that collide with the snake's body
+        valid_cells = [cell for cell in valid_cells if cell not in snake.body]
+
+        # Choose a random cell position within the valid range
+        self.x, self.y = random.choice(valid_cells)
         self.apple = arcade.load_texture("images/apple_snake1.png")
 
     def draw(self):
+        hitbox_width = APPLE_SIZE
+        hitbox_height = APPLE_SIZE
+
         arcade.draw_texture_rectangle(
-            self.x, self.y, APPLE_SIZE, APPLE_SIZE, self.apple
+            self.x, self.y, hitbox_width, hitbox_height, self.apple
         )
