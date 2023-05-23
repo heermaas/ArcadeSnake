@@ -1,12 +1,12 @@
 import arcade
 import random
-import vectormath as vmath
+# import vectormath as vmath
 
 SCREEN_WIDTH = 800
 SCREEN_HEIGHT = 600
 BLOCK_SIZE = 20
-SNAKE_SIZE = 15
-APPLE_SIZE = 40
+SNAKE_SIZE = 40
+APPLE_SIZE = 30
 SNAKE_SPEED = 5
 NUM_ROWS = 15
 NUM_COLS = 20
@@ -16,10 +16,8 @@ CELL_WIDTH = SCREEN_WIDTH // 20
 
 class Snake:
     def __init__(self, border_wrapping=False):
-        valid_x_range = range(BLOCK_SIZE, SCREEN_WIDTH - BLOCK_SIZE, BLOCK_SIZE)
-        valid_y_range = range(BLOCK_SIZE, SCREEN_HEIGHT - BLOCK_SIZE, BLOCK_SIZE)
-        self.x = random.choice(valid_x_range)
-        self.y = random.choice(valid_y_range)
+        self.x = SCREEN_WIDTH // 2
+        self.y = SCREEN_HEIGHT // 2
         self.direction = ""
         self.body = []
         self.body.append((self.x, self.y))
@@ -98,10 +96,68 @@ class Snake:
         return False
 
     def draw(self):
-        for segment in self.body:
-            arcade.draw_circle_filled(
-                segment[0], segment[1], SNAKE_SIZE, arcade.color.BLUE
-            )
+        # Get the position of the snake's head and tail
+        head_x, head_y = self.body[0]
+        tail_x, tail_y = self.body[-1]
+
+        # Assign a default texture to head_texture
+        head_texture = self.head_up
+
+        # Assign a default texture to tail_texture
+        tail_texture = self.tail_down
+
+        # Calculate the direction of the snake's head
+        if self.direction == "up":
+            head_texture = self.head_up
+            tail_texture = self.tail_up
+        elif self.direction == "down":
+            head_texture = self.head_down
+            tail_texture = self.tail_down
+        elif self.direction == "right":
+            head_texture = self.head_right
+            tail_texture = self.tail_right
+        elif self.direction == "left":
+            head_texture = self.head_left
+            tail_texture = self.tail_left
+
+        # Draw the snake's body segments with the appropriate texture
+        for i in range(1, len(self.body) - 1):
+            segment_x, segment_y = self.body[i]
+            prev_segment_x, prev_segment_y = self.body[i - 1]
+            next_segment_x, next_segment_y = self.body[i + 1]
+
+            texture = self.body_vertical  # Assign a default texture
+
+            if segment_x == prev_segment_x == next_segment_x:
+                texture = self.body_vertical
+            elif segment_y == prev_segment_y == next_segment_y:
+                texture = self.body_horizontal
+            elif (segment_x < prev_segment_x and segment_x < next_segment_x) or (
+                    segment_x > prev_segment_x and segment_x > next_segment_x):
+                texture = self.body_horizontal
+            elif (segment_y < prev_segment_y and segment_y < next_segment_y) or (
+                    segment_y > prev_segment_y and segment_y > next_segment_y):
+                texture = self.body_vertical
+            elif (segment_x < prev_segment_x and segment_y > next_segment_y) or (
+                    segment_x > prev_segment_x and segment_y < next_segment_y):
+                texture = self.body_br
+            elif (segment_x > prev_segment_x and segment_y > next_segment_y) or (
+                    segment_x < prev_segment_x and segment_y < next_segment_y):
+                texture = self.body_bl
+            elif (segment_x < prev_segment_x and segment_y < next_segment_y) or (
+                    segment_x > prev_segment_x and segment_y > next_segment_y):
+                texture = self.body_tl
+            elif (segment_x > prev_segment_x and segment_y < next_segment_y) or (
+                    segment_x < prev_segment_x and segment_y > next_segment_y):
+                texture = self.body_tr
+
+            arcade.draw_texture_rectangle(segment_x, segment_y, SNAKE_SIZE, SNAKE_SIZE, texture)
+
+        # Draw the snake's tail with the appropriate texture
+        arcade.draw_texture_rectangle(tail_x, tail_y, SNAKE_SIZE, SNAKE_SIZE, tail_texture)
+
+        # Draw the snake's head with the appropriate texture
+        arcade.draw_texture_rectangle(head_x, head_y, SNAKE_SIZE, SNAKE_SIZE, head_texture)
 
 
 class Apple:
