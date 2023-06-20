@@ -1,13 +1,35 @@
+from game import *
 import arcade
-import random
+import arcade.gui
 
 SCREEN_WIDTH = 800
 SCREEN_HEIGHT = 600
 BLOCK_SIZE = 20
-SNAKE_SIZE = BLOCK_SIZE
+SNAKE_SIZE = 15
 APPLE_SIZE = BLOCK_SIZE
 SNAKE_SPEED = 5
 GAME_TITLE = "Snake Game"
+NUM_ROWS = 15
+NUM_COLS = 20
+CELL_HEIGHT = SCREEN_HEIGHT // 15
+CELL_WIDTH = SCREEN_WIDTH // 20
+
+
+def draw_chessboard():
+    for row in range(NUM_ROWS):
+        for column in range(NUM_COLS):
+            # Calculate the coordinates of the current cell
+            x = column * CELL_WIDTH
+            y = row * CELL_HEIGHT
+
+            # Alternate the color of the cells
+            if (row + column) % 2 == 0:
+                color = arcade.color.GREEN_YELLOW
+            else:
+                color = arcade.color.GREEN
+
+            # Draw the cell
+            arcade.draw_rectangle_filled(x + CELL_WIDTH // 2, y + CELL_HEIGHT // 2, CELL_WIDTH, CELL_HEIGHT, color)
 
 
 class StartView(arcade.View):
@@ -16,7 +38,7 @@ class StartView(arcade.View):
         self.current_option = 0
 
     def on_show(self):
-        arcade.set_background_color(arcade.color.BLACK)
+        arcade.set_background_color(arcade.color.GREEN)
 
     def on_draw(self):
         arcade.start_render()
@@ -104,6 +126,71 @@ class StartView(arcade.View):
         self.window.close()  # Close the window to exit the game
 
 
+<<<<<<< HEAD
+=======
+class GameModeView(arcade.View):
+    def __init__(self):
+        super().__init__()
+        self.current_option = 0
+
+    def on_show(self):
+        arcade.set_background_color(arcade.color.GREEN)
+
+    def on_draw(self):
+        arcade.start_render()
+        arcade.draw_text(
+            "Select Game Mode",
+            SCREEN_WIDTH / 2,
+            SCREEN_HEIGHT / 2 + 100,
+            arcade.color.WHITE,
+            font_size=48,
+            anchor_x="center",
+        )
+        arcade.draw_text(
+            "Easy",
+            SCREEN_WIDTH / 2,
+            SCREEN_HEIGHT / 2,
+            arcade.color.WHITE,
+            font_size=22,
+            anchor_x="center",
+        )
+        arcade.draw_text(
+            "Normal",
+            SCREEN_WIDTH / 2,
+            SCREEN_HEIGHT / 2 - 50,
+            arcade.color.WHITE,
+            font_size=22,
+            anchor_x="center",
+        )
+        self.draw_cursor()
+
+    def draw_cursor(self):
+        cursor_x = SCREEN_WIDTH / 2 - 75
+        cursor_y = SCREEN_HEIGHT / 2 + 10 - self.current_option * 50
+        arcade.draw_triangle_filled(
+            cursor_x, cursor_y, cursor_x - 10, cursor_y - 10, cursor_x + 10, cursor_y - 10, arcade.color.WHITE
+        )
+
+    def update_option(self, option):
+        self.current_option = option
+
+    def on_key_press(self, key, modifiers):
+        if key == arcade.key.UP or key == arcade.key.W:
+            if self.current_option > 0:
+                self.current_option -= 1
+        elif key == arcade.key.DOWN or key == arcade.key.S:
+            if self.current_option < 1:
+                self.current_option += 1
+        elif key == arcade.key.ENTER:
+            if self.current_option == 0:
+                game_view = GameView(border_wrapping=True)
+                self.window.show_view(game_view)
+            elif self.current_option == 1:
+                game_view = GameView(border_wrapping=False)
+                self.window.show_view(game_view)
+
+
+>>>>>>> 64ea797987e5cebfb9fbc7d41861dfde32f276cc
 class GameOverView(arcade.View):
     def __init__(self, score):
         super().__init__()
@@ -111,7 +198,7 @@ class GameOverView(arcade.View):
         self.current_option = 0
 
     def on_show(self):
-        arcade.set_background_color(arcade.color.BLACK)
+        arcade.set_background_color(arcade.color.GREEN)
 
     def on_draw(self):
         arcade.start_render()
@@ -362,15 +449,21 @@ class GameView(arcade.View):
         self.current_option = 0
 
     def on_show(self):
-        arcade.set_background_color(arcade.color.BLACK)
+        arcade.set_background_color(arcade.color.DARK_GREEN)
 
     def on_draw(self):
         arcade.start_render()
+<<<<<<< HEAD
 
         # Draw the scoreboard area
         arcade.draw_rectangle_filled(
             SCREEN_WIDTH // 2, SCREEN_HEIGHT - 30, SCREEN_WIDTH, 60, arcade.color.DARK_GRAY
         )
+=======
+        draw_chessboard()
+        self.snake.draw()
+        self.apple.draw()
+>>>>>>> 64ea797987e5cebfb9fbc7d41861dfde32f276cc
         arcade.draw_text(
             f"Score: {self.snake.score}",
             10,
@@ -537,6 +630,7 @@ class PauseView(arcade.View):
             self.window.show_view(game_over_view)
 
 
+<<<<<<< HEAD
 class Snake:
     def __init__(self):
         self.x = SCREEN_WIDTH / 2
@@ -612,6 +706,8 @@ class Apple:
         )
 
 
+=======
+>>>>>>> 64ea797987e5cebfb9fbc7d41861dfde32f276cc
 def main():
     window = arcade.Window(SCREEN_WIDTH, SCREEN_HEIGHT, GAME_TITLE)
     start_view = StartView()
