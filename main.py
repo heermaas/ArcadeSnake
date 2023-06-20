@@ -73,8 +73,8 @@ class StartView(arcade.View):
                 self.current_option += 1
         elif key == arcade.key.ENTER:
             if self.current_option == 0:
-                game_mode_view = GameModeView()
-                self.window.show_view(game_mode_view)
+                game_view = GameView()
+                self.window.show_view(game_view)
             elif self.current_option == 1:
                 high_scores_view = HighScoresView()
                 self.window.show_view(high_scores_view)
@@ -83,87 +83,25 @@ class StartView(arcade.View):
 
     def on_mouse_press(self, x, y, button, modifiers):
         if (
-            SCREEN_WIDTH / 2 - 50 < x < SCREEN_WIDTH / 2 + 50
-            and SCREEN_HEIGHT / 2 - 130 < y < SCREEN_HEIGHT / 2 - 70
+                SCREEN_WIDTH / 2 - 50 < x < SCREEN_WIDTH / 2 + 50
+                and SCREEN_HEIGHT / 2 - 130 < y < SCREEN_HEIGHT / 2 - 70
         ):
-            game_mode_view = GameModeView()
-            self.window.show_view(game_mode_view)
+            game_view = GameView()
+            self.window.show_view(game_view)
         elif (
-            SCREEN_WIDTH / 2 - 80 < x < SCREEN_WIDTH / 2 + 80
-            and SCREEN_HEIGHT / 2 - 180 < y < SCREEN_HEIGHT / 2 - 120
+                SCREEN_WIDTH / 2 - 80 < x < SCREEN_WIDTH / 2 + 80
+                and SCREEN_HEIGHT / 2 - 180 < y < SCREEN_HEIGHT / 2 - 120
         ):
             high_scores_view = HighScoresView()
             self.window.show_view(high_scores_view)
         elif (
-            SCREEN_WIDTH / 2 - 40 < x < SCREEN_WIDTH / 2 + 40
-            and SCREEN_HEIGHT / 2 - 230 < y < SCREEN_HEIGHT / 2 - 170
+                SCREEN_WIDTH / 2 - 40 < x < SCREEN_WIDTH / 2 + 40
+                and SCREEN_HEIGHT / 2 - 230 < y < SCREEN_HEIGHT / 2 - 170
         ):
             self.exit_game()
 
     def exit_game(self):
         self.window.close()  # Close the window to exit the game
-
-
-class GameModeView(arcade.View):
-    def __init__(self):
-        super().__init__()
-        self.current_option = 0
-
-    def on_show(self):
-        arcade.set_background_color(arcade.color.BLACK)
-
-    def on_draw(self):
-        arcade.start_render()
-        arcade.draw_text(
-            "Select Game Mode",
-            SCREEN_WIDTH / 2,
-            SCREEN_HEIGHT / 2 + 100,
-            arcade.color.WHITE,
-            font_size=48,
-            anchor_x="center",
-        )
-        arcade.draw_text(
-            "Easy",
-            SCREEN_WIDTH / 2,
-            SCREEN_HEIGHT / 2,
-            arcade.color.WHITE,
-            font_size=22,
-            anchor_x="center",
-        )
-        arcade.draw_text(
-            "Normal",
-            SCREEN_WIDTH / 2,
-            SCREEN_HEIGHT / 2 - 50,
-            arcade.color.WHITE,
-            font_size=22,
-            anchor_x="center",
-        )
-        self.draw_cursor()
-
-    def draw_cursor(self):
-        cursor_x = SCREEN_WIDTH / 2 - 75
-        cursor_y = SCREEN_HEIGHT / 2 + 10 - self.current_option * 50
-        arcade.draw_triangle_filled(
-            cursor_x, cursor_y, cursor_x - 10, cursor_y - 10, cursor_x + 10, cursor_y - 10, arcade.color.WHITE
-        )
-
-    def update_option(self, option):
-        self.current_option = option
-
-    def on_key_press(self, key, modifiers):
-        if key == arcade.key.UP or key == arcade.key.W:
-            if self.current_option > 0:
-                self.current_option -= 1
-        elif key == arcade.key.DOWN or key == arcade.key.S:
-            if self.current_option < 1:
-                self.current_option += 1
-        elif key == arcade.key.ENTER:
-            if self.current_option == 0:
-                game_view = GameView(border_wrapping=True)
-                self.window.show_view(game_view)
-            elif self.current_option == 1:
-                game_view = GameView(border_wrapping=False)
-                self.window.show_view(game_view)
 
 
 class GameOverView(arcade.View):
@@ -238,8 +176,8 @@ class GameOverView(arcade.View):
                 self.current_option += 1
         elif key == arcade.key.ENTER:
             if self.current_option == 0:
-                game_mode_view = GameModeView()
-                self.window.show_view(game_mode_view)
+                game_view = GameView()
+                self.window.show_view(game_view)
             elif self.current_option == 1:
                 start_view = StartView()
                 self.window.show_view(start_view)
@@ -248,20 +186,20 @@ class GameOverView(arcade.View):
 
     def on_mouse_press(self, x, y, button, modifiers):
         if (
-            SCREEN_WIDTH / 2 - 60 < x < SCREEN_WIDTH / 2 + 60
-            and SCREEN_HEIGHT / 2 - 180 < y < SCREEN_HEIGHT / 2 - 120
+                SCREEN_WIDTH / 2 - 60 < x < SCREEN_WIDTH / 2 + 60
+                and SCREEN_HEIGHT / 2 - 180 < y < SCREEN_HEIGHT / 2 - 120
         ):
-            game_mode_view = GameModeView()
-            self.window.show_view(game_mode_view)
+            game_view = GameView()
+            self.window.show_view(game_view)
         elif (
-            SCREEN_WIDTH / 2 - 80 < x < SCREEN_WIDTH / 2 + 80
-            and SCREEN_HEIGHT / 2 - 230 < y < SCREEN_HEIGHT / 2 - 170
+                SCREEN_WIDTH / 2 - 80 < x < SCREEN_WIDTH / 2 + 80
+                and SCREEN_HEIGHT / 2 - 230 < y < SCREEN_HEIGHT / 2 - 170
         ):
             start_view = StartView()
             self.window.show_view(start_view)
         elif (
-            SCREEN_WIDTH / 2 - 40 < x < SCREEN_WIDTH / 2 + 40
-            and SCREEN_HEIGHT / 2 - 280 < y < SCREEN_HEIGHT / 2 - 220
+                SCREEN_WIDTH / 2 - 40 < x < SCREEN_WIDTH / 2 + 40
+                and SCREEN_HEIGHT / 2 - 280 < y < SCREEN_HEIGHT / 2 - 220
         ):
             self.window.close()  # Close the window to exit the game
 
@@ -334,8 +272,8 @@ class SaveScoreView(arcade.View):
 
     def on_mouse_press(self, x, y, button, modifiers):
         if (
-            SCREEN_WIDTH / 2 - 120 < x < SCREEN_WIDTH / 2 - 80
-            and SCREEN_HEIGHT / 2 - 180 < y < SCREEN_HEIGHT / 2 - 130
+                SCREEN_WIDTH / 2 - 120 < x < SCREEN_WIDTH / 2 - 80
+                and SCREEN_HEIGHT / 2 - 180 < y < SCREEN_HEIGHT / 2 - 130
         ):
             self.save_score()
         game_over_view = GameOverView(self.score)
@@ -380,7 +318,7 @@ class HighScoresView(arcade.View):
             for i in range(max_scores):
                 score = self.scores[i]
                 arcade.draw_text(
-                    f"{i+1}. {score[0]} - {score[1]}",
+                    f"{i + 1}. {score[0]} - {score[1]}",
                     SCREEN_WIDTH / 2,
                     SCREEN_HEIGHT / 2 + 50 - i * 50,
                     arcade.color.WHITE,
@@ -416,9 +354,9 @@ class HighScoresView(arcade.View):
 
 
 class GameView(arcade.View):
-    def __init__(self, border_wrapping=False):
+    def __init__(self):
         super().__init__()
-        self.snake = Snake(border_wrapping)
+        self.snake = Snake()
         self.apple = Apple(self.snake)
         self.paused = False
         self.current_option = 0
@@ -428,8 +366,11 @@ class GameView(arcade.View):
 
     def on_draw(self):
         arcade.start_render()
-        self.snake.draw()
-        self.apple.draw()
+
+        # Draw the scoreboard area
+        arcade.draw_rectangle_filled(
+            SCREEN_WIDTH // 2, SCREEN_HEIGHT - 30, SCREEN_WIDTH, 60, arcade.color.DARK_GRAY
+        )
         arcade.draw_text(
             f"Score: {self.snake.score}",
             10,
@@ -438,20 +379,23 @@ class GameView(arcade.View):
             font_size=18,
         )
 
+        # Draw the game area
+        arcade.draw_rectangle_filled(
+            SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2, SCREEN_WIDTH, SCREEN_HEIGHT - 60, arcade.color.BLACK
+        )
+        self.snake.draw()
+        self.apple.draw()
+
     def on_key_press(self, key, modifiers):
         if not self.paused:
             if key in (arcade.key.RIGHT, arcade.key.D):
                 self.snake.change_direction("right")
-                self.snake.start_moving()
             elif key in (arcade.key.LEFT, arcade.key.A):
                 self.snake.change_direction("left")
-                self.snake.start_moving()
             elif key in (arcade.key.UP, arcade.key.W):
                 self.snake.change_direction("up")
-                self.snake.start_moving()
             elif key in (arcade.key.DOWN, arcade.key.S):
                 self.snake.change_direction("down")
-                self.snake.start_moving()
             elif key == arcade.key.ESCAPE:
                 self.paused = True
                 pause_view = PauseView(self)  # Pass the current instance of GameView to PauseView
@@ -480,7 +424,7 @@ class GameView(arcade.View):
                         self.window.show_view(start_view)
 
     def update(self, delta_time):
-        if not self.paused and self.snake.moving:
+        if not self.paused:
             self.snake.move()
             if self.snake.check_collision():
                 save_score_view = SaveScoreView(self.snake.score)
@@ -574,58 +518,43 @@ class PauseView(arcade.View):
 
     def on_mouse_press(self, x, y, button, modifiers):
         if (
-            SCREEN_WIDTH / 2 - 50 < x < SCREEN_WIDTH / 2 + 50
-            and SCREEN_HEIGHT / 2 - 130 < y < SCREEN_HEIGHT / 2 - 70
+                SCREEN_WIDTH / 2 - 50 < x < SCREEN_WIDTH / 2 + 50
+                and SCREEN_HEIGHT / 2 - 130 < y < SCREEN_HEIGHT / 2 - 70
         ):
             self.game_view.paused = False
             self.window.show_view(self.game_view)
         elif (
-            SCREEN_WIDTH / 2 - 80 < x < SCREEN_WIDTH / 2 + 80
-            and SCREEN_HEIGHT / 2 - 180 < y < SCREEN_HEIGHT / 2 - 120
+                SCREEN_WIDTH / 2 - 80 < x < SCREEN_WIDTH / 2 + 80
+                and SCREEN_HEIGHT / 2 - 180 < y < SCREEN_HEIGHT / 2 - 120
         ):
             start_view = StartView()
             self.window.show_view(start_view)
         elif (
-            SCREEN_WIDTH / 2 - 40 < x < SCREEN_WIDTH / 2 + 40
-            and SCREEN_HEIGHT / 2 - 230 < y < SCREEN_HEIGHT / 2 - 170
+                SCREEN_WIDTH / 2 - 40 < x < SCREEN_WIDTH / 2 + 40
+                and SCREEN_HEIGHT / 2 - 230 < y < SCREEN_HEIGHT / 2 - 170
         ):
             game_over_view = GameOverView(self.game_view.snake.score)
             self.window.show_view(game_over_view)
 
 
 class Snake:
-    def __init__(self, border_wrapping=False):
-        valid_x_range = range(BLOCK_SIZE, SCREEN_WIDTH - BLOCK_SIZE, BLOCK_SIZE)
-        valid_y_range = range(BLOCK_SIZE, SCREEN_HEIGHT - BLOCK_SIZE, BLOCK_SIZE)
-        self.x = random.choice(valid_x_range)
-        self.y = random.choice(valid_y_range)
+    def __init__(self):
+        self.x = SCREEN_WIDTH / 2
+        self.y = SCREEN_HEIGHT / 2
         self.direction = ""
         self.body = []
         self.body.append((self.x, self.y))
         self.score = 0
-        self.moving = False
-        self.border_wrapping = border_wrapping
-
-    def start_moving(self):
-        self.moving = True
 
     def move(self):
         if self.direction == "right":
             self.x += SNAKE_SPEED
-            if self.border_wrapping and self.x >= SCREEN_WIDTH:
-                self.x = 0
         elif self.direction == "left":
             self.x -= SNAKE_SPEED
-            if self.border_wrapping and self.x < 0:
-                self.x = SCREEN_WIDTH - BLOCK_SIZE
         elif self.direction == "up":
             self.y += SNAKE_SPEED
-            if self.border_wrapping and self.y >= SCREEN_HEIGHT:
-                self.y = 0
         elif self.direction == "down":
             self.y -= SNAKE_SPEED
-            if self.border_wrapping and self.y < 0:
-                self.y = SCREEN_HEIGHT - BLOCK_SIZE
 
     def change_direction(self, new_direction):
         if new_direction == "right" and self.direction != "left":
@@ -639,8 +568,10 @@ class Snake:
 
     def check_collision(self):
         if (
-            not self.border_wrapping
-            and (self.x < 0 or self.x >= SCREEN_WIDTH or self.y < 0 or self.y >= SCREEN_HEIGHT)
+                self.x < 0
+                or self.x >= SCREEN_WIDTH
+                or self.y < 0
+                or self.y >= SCREEN_HEIGHT - 30
         ):
             return True
         for segment in self.body[1:]:
@@ -650,10 +581,10 @@ class Snake:
 
     def eat_apple(self, apple):
         if (
-            self.x < apple.x + APPLE_SIZE
-            and self.x + SNAKE_SIZE > apple.x
-            and self.y < apple.y + APPLE_SIZE
-            and self.y + SNAKE_SIZE > apple.y
+                self.x < apple.x + APPLE_SIZE
+                and self.x + SNAKE_SIZE > apple.x
+                and self.y < apple.y + APPLE_SIZE
+                and self.y + SNAKE_SIZE > apple.y
         ):
             return True
         return False
@@ -668,7 +599,7 @@ class Snake:
 class Apple:
     def __init__(self, snake):
         valid_x_range = range(BLOCK_SIZE, SCREEN_WIDTH - BLOCK_SIZE, BLOCK_SIZE)
-        valid_y_range = range(BLOCK_SIZE, SCREEN_HEIGHT - BLOCK_SIZE, BLOCK_SIZE)
+        valid_y_range = range(BLOCK_SIZE, SCREEN_HEIGHT - BLOCK_SIZE - 30, BLOCK_SIZE)
         self.x = random.choice(valid_x_range)
         self.y = random.choice(valid_y_range)
         while (self.x, self.y) in snake.body:
