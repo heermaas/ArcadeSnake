@@ -1,5 +1,6 @@
 import arcade
 import random
+import re
 
 SCREEN_WIDTH = 800
 SCREEN_HEIGHT = 600
@@ -203,6 +204,85 @@ class GameOverView(arcade.View):
             self.window.close()  # Close the window to exit the game
 
 
+class SaveScoreNameView(arcade.View):
+    def __init__(self, score):
+        super().__init__()
+        self.score = score
+        self.player_name = ""
+        self.error_message = ""
+
+    def on_show(self):
+        arcade.set_background_color(arcade.color.BLACK)
+
+    def on_draw(self):
+        arcade.start_render()
+        arcade.draw_text(
+            "Save Score",
+            SCREEN_WIDTH / 2,
+            SCREEN_HEIGHT / 2,
+            arcade.color.WHITE,
+            font_size=64,
+            anchor_x="center",
+        )
+        arcade.draw_text(
+            f"Do you want to save your score of {self.score}?",
+            SCREEN_WIDTH / 2,
+            SCREEN_HEIGHT / 2 - 100,
+            arcade.color.WHITE,
+            font_size=22,
+            anchor_x="center",
+        )
+        arcade.draw_text(
+            "Enter your name:",
+            SCREEN_WIDTH / 2,
+            SCREEN_HEIGHT / 2 - 150,
+            arcade.color.WHITE,
+            font_size=22,
+            anchor_x="center",
+        )
+        arcade.draw_text(
+            self.player_name,
+            SCREEN_WIDTH / 2,
+            SCREEN_HEIGHT / 2 - 200,
+            arcade.color.WHITE,
+            font_size=22,
+            anchor_x="center",
+        )
+        if self.error_message:
+            arcade.draw_text(
+                self.error_message,
+                SCREEN_WIDTH / 2,
+                SCREEN_HEIGHT / 2 - 250,
+                arcade.color.RED,
+                font_size=18,
+                anchor_x="center",
+            )
+
+    def on_key_press(self, key, modifiers):
+        if key == arcade.key.BACKSPACE:
+            self.player_name = self.player_name[:-1]
+        elif key == arcade.key.ENTER:
+            self.save_score_with_name()
+            game_over_view = GameOverView(self.score)
+            self.window.show_view(game_over_view)
+        elif re.match(r"^[a-zA-Z0-9]$", chr(key)):
+            if len(self.player_name) < 8:
+                self.player_name += chr(key)
+            else:
+                self.error_message = "Name must be at most 8 characters long."
+
+    def save_score_with_name(self):
+        if not self.player_name:
+            self.player_name = "Player"
+        with open("Hiscore.txt", "a") as file:
+            file.write(f"{self.player_name},{self.score}\n")
+
+    def on_mouse_press(self, x, y, button, modifiers):
+        self.save_score_with_name()
+        game_over_view = GameOverView(self.score)
+        self.window.show_view(game_over_view)
+
+
 class SaveScoreView(arcade.View):
     def __init__(self, score):
         super().__init__()
@@ -265,22 +345,25 @@ class SaveScoreView(arcade.View):
             self.current_option = 1
         elif key == arcade.key.ENTER:
             if self.current_option == 0:
-                self.save_score()
-            game_over_view = GameOverView(self.score)
-            self.window.show_view(game_over_view)
+                save_name_view = SaveScoreNameView(self.score)
+                self.window.show_view(save_name_view)
+            else:
+                game_over_view = GameOverView(self.score)
+                self.window.show_view(game_over_view)
 
     def on_mouse_press(self, x, y, button, modifiers):
         if (
                 SCREEN_WIDTH / 2 - 120 < x < SCREEN_WIDTH / 2 - 80
                 and SCREEN_HEIGHT / 2 - 180 < y < SCREEN_HEIGHT / 2 - 130
         ):
-            self.save_score()
-        game_over_view = GameOverView(self.score)
-        self.window.show_view(game_over_view)
-
-    def save_score(self):
-        with open("Hiscore.txt", "a") as file:
-            file.write(f"Player,{self.score}\n")
+            save_name_view = SaveScoreNameView(self.score)
+            self.window.show_view(save_name_view)
+        elif (
+                SCREEN_WIDTH / 2 - 40 < x < SCREEN_WIDTH / 2 + 40
+                and SCREEN_HEIGHT / 2 - 280 < y < SCREEN_HEIGHT / 2 - 220
+        ):
+            game_over_view = GameOverView(self.score)
+            self.window.show_view(game_over_view)
 
 
 class HighScoresView(arcade.View):
@@ -568,9 +651,11 @@ class Snake:
     def __init__(self):
         self.x = (SCREEN_WIDTH // 2 // BLOCK_SIZE) * BLOCK_SIZE + BLOCK_SIZE // 2
         self.y = (SCREEN_HEIGHT // 2 // BLOCK_SIZE) * BLOCK_SIZE + BLOCK_SIZE // 2
-        self.direction = ""
+        self.direction = "right"
         self.body = []
         self.body.append((self.x, self.y))
+        self.body.append((self.x - BLOCK_SIZE, self.y))  # Add the second segment
+        self.body.append((self.x - 2 * BLOCK_SIZE, self.y))  # Add the third segment
         self.score = 0
 
 
@@ -644,15 +729,14 @@ class Apple:
 
         if valid_positions:
             self.x, self.y = random.choice(valid_positions)
+            self.apple = arcade.load_texture("images/apple_snake1.png")
         else:
             raise NoValidApplePositionError("No valid position for the apple.")
 
     def draw(self):
-        arcade.draw_rectangle_filled(
-            self.x, self.y, APPLE_SIZE, APPLE_SIZE, arcade.color.RED
+        arcade.draw_texture_rectangle(
+            self.x, self.y, APPLE_SIZE, APPLE_SIZE, self.apple
         )
-
-
 
 
 
