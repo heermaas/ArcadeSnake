@@ -12,6 +12,7 @@ SNAKE_LENGTH = 3
 GAME_TITLE = "Snake Game"
 scoreboard_height = BLOCK_SIZE * 2
 
+
 class StartView(arcade.View):
     def __init__(self):
         super().__init__()
@@ -446,7 +447,6 @@ class GameView(arcade.View):
         self.paused = False
         self.current_option = 0
         self.movement_timer = 0
-        self.is_snake_moving = False
         self.input_cooldown = False
 
     def on_show(self):
@@ -458,12 +458,12 @@ class GameView(arcade.View):
         # Draw the scoreboard area
         arcade.draw_rectangle_filled(
             SCREEN_WIDTH // 2, SCREEN_HEIGHT - scoreboard_height // 2, SCREEN_WIDTH, scoreboard_height,
-            arcade.color.DARK_GRAY
+            arcade.color.LIGHT_BLUE
         )
         arcade.draw_text(
             f"Score: {self.snake.score}",
             10,
-            SCREEN_HEIGHT - scoreboard_height // 2 - 25 ,
+            SCREEN_HEIGHT - scoreboard_height // 2 - 25,
             arcade.color.WHITE,
             font_size=36,
         )
@@ -471,20 +471,34 @@ class GameView(arcade.View):
         # Draw the game area
         game_height = SCREEN_HEIGHT - scoreboard_height
         arcade.draw_rectangle_filled(
-            SCREEN_WIDTH // 2, game_height // 2, SCREEN_WIDTH, game_height, arcade.color.BLACK
+            SCREEN_WIDTH // 2, game_height // 2, SCREEN_WIDTH, game_height, arcade.color.GREEN
         )
 
-        # Draw grid lines
-        for x in range(BLOCK_SIZE, SCREEN_WIDTH, BLOCK_SIZE):
-            arcade.draw_line(x, 0, x, game_height, arcade.color.GRAY + (128,), 1)
-        for y in range(BLOCK_SIZE, game_height, BLOCK_SIZE):
-            arcade.draw_line(0, y, SCREEN_WIDTH, y, arcade.color.GRAY + (128,), 1)
+        # Draw the grid with alternating colors
+        for row in range(0, game_height, BLOCK_SIZE):
+            for column in range(0, SCREEN_WIDTH, BLOCK_SIZE):
+                if (row // BLOCK_SIZE + column // BLOCK_SIZE) % 2 == 0:
+                    arcade.draw_rectangle_filled(
+                        column + BLOCK_SIZE // 2,
+                        row + BLOCK_SIZE // 2,
+                        BLOCK_SIZE,
+                        BLOCK_SIZE,
+                        arcade.color.GREEN
+                    )
+                else:
+                    arcade.draw_rectangle_filled(
+                        column + BLOCK_SIZE // 2,
+                        row + BLOCK_SIZE // 2,
+                        BLOCK_SIZE,
+                        BLOCK_SIZE,
+                        arcade.color.YELLOW
+                    )
 
         self.snake.draw()
         self.apple.draw()
 
     def on_key_press(self, key, modifiers):
-        if not self.paused and not self.is_snake_moving and not self.input_cooldown:
+        if not self.paused and not self.snake.is_snake_moving and not self.input_cooldown:
             if key in (arcade.key.RIGHT, arcade.key.D):
                 self.snake.change_direction("right")
                 self.input_cooldown = True
@@ -528,7 +542,7 @@ class GameView(arcade.View):
         if not self.paused:
             self.movement_timer += delta_time
             if self.movement_timer >= 0.2:
-                self.is_snake_moving = True
+                self.snake.is_snake_moving = True
                 self.snake.move()
                 if self.snake.check_collision():
                     save_score_view = SaveScoreView(self.snake.score)
@@ -548,7 +562,7 @@ class GameView(arcade.View):
                     self.snake.body.pop()
 
                 self.movement_timer = 0
-                self.is_snake_moving = False
+                self.snake.is_snake_moving = False
                 self.input_cooldown = False
 
     def update_option(self, option):
@@ -653,13 +667,12 @@ class Snake:
     def __init__(self):
         self.x = (SCREEN_WIDTH // 2 // BLOCK_SIZE) * BLOCK_SIZE + BLOCK_SIZE // 2
         self.y = (SCREEN_HEIGHT // 2 // BLOCK_SIZE) * BLOCK_SIZE + BLOCK_SIZE // 2
+        print(self.x, self.y)
         self.direction = "right"
-        self.body = []
-        self.body.append((self.x, self.y))
+        self.body = [(420, 300), (380, 300), (340, 300)]
         self.score = 0
-        self.body.append((self.x - BLOCK_SIZE, self.y))
-        self.body.append((self.x - 2 * BLOCK_SIZE, self.y))
-        
+        self.is_snake_moving = False
+
     def move(self):
         movements = {
             "right": (BLOCK_SIZE, 0),
@@ -669,6 +682,7 @@ class Snake:
         }
 
         move = movements.get(self.direction, (0, 0))
+        print(self.body)
         self.x += move[0]
         self.y += move[1]
 
@@ -692,6 +706,7 @@ class Snake:
             return True
         for segment in self.body[1:]:
             if self.x == segment[0] and self.y == segment[1]:
+                print(self.x, self.y)
                 return True
         return False
 
@@ -708,7 +723,7 @@ class Snake:
     def draw(self):
         for segment in self.body:
             arcade.draw_rectangle_filled(
-                segment[0], segment[1], SNAKE_SIZE, SNAKE_SIZE, arcade.color.GREEN
+                segment[0], segment[1], SNAKE_SIZE, SNAKE_SIZE, arcade.color.BLUE
             )
 
 
@@ -740,6 +755,8 @@ class Apple:
         arcade.draw_texture_rectangle(
             self.x, self.y, APPLE_SIZE, APPLE_SIZE, self.apple
         )
+
+
 
 
 
