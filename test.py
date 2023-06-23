@@ -498,48 +498,43 @@ class GameView(arcade.View):
         self.apple.draw()
 
     def on_key_press(self, key, modifiers):
-        if not self.paused and not self.snake.is_snake_moving and not self.input_cooldown:
-            if key in (arcade.key.RIGHT, arcade.key.D):
-                self.snake.change_direction("right")
-                self.input_cooldown = True
-            elif key in (arcade.key.LEFT, arcade.key.A):
-                self.snake.change_direction("left")
-                self.input_cooldown = True
-            elif key in (arcade.key.UP, arcade.key.W):
-                self.snake.change_direction("up")
-                self.input_cooldown = True
-            elif key in (arcade.key.DOWN, arcade.key.S):
-                self.snake.change_direction("down")
-                self.input_cooldown = True
-            elif key == arcade.key.ESCAPE:
-                self.paused = True
-                pause_view = PauseView(self)  # Pass the current instance of GameView to PauseView
-                self.window.show_view(pause_view)
-            elif key == arcade.key.RETURN:
-                self.paused = True
-                pause_view = PauseView(self)
-                self.window.show_view(pause_view)
-        else:
-            if key == arcade.key.UP or key == arcade.key.W:
-                pause_view = self.window.current_view
-                if isinstance(pause_view, PauseView):  # Check if current view is PauseView
+        if self.paused:
+            pause_view = self.window.current_view
+            if isinstance(pause_view, PauseView):  # Check if current view is PauseView
+                if key == arcade.key.UP or key == arcade.key.W:
                     pause_view.update_option(pause_view.current_option - 1)
-            elif key == arcade.key.DOWN or key == arcade.key.S:
-                pause_view = self.window.current_view
-                if isinstance(pause_view, PauseView):  # Check if current view is PauseView
+                elif key == arcade.key.DOWN or key == arcade.key.S:
                     pause_view.update_option(pause_view.current_option + 1)
-            elif key == arcade.key.ENTER:
-                pause_view = self.window.current_view
-                if isinstance(pause_view, PauseView):  # Check if current view is PauseView
+                elif key == arcade.key.ENTER:
                     if pause_view.current_option == 0:
                         self.paused = False
                         self.window.show_view(self)
                     elif pause_view.current_option == 1:
                         start_view = StartView()
                         self.window.show_view(start_view)
+        else:
+            if not self.input_cooldown:
+                if key == arcade.key.ESCAPE or key == arcade.key.RETURN:
+                    self.paused = True
+                    pause_view = PauseView(self)
+                    self.window.show_view(pause_view)
+                else:
+                    directions = {
+                        arcade.key.RIGHT: "right",
+                        arcade.key.D: "right",
+                        arcade.key.LEFT: "left",
+                        arcade.key.A: "left",
+                        arcade.key.UP: "up",
+                        arcade.key.W: "up",
+                        arcade.key.DOWN: "down",
+                        arcade.key.S: "down",
+                    }
+                    self.snake.change_direction(directions[key])
+                    self.snake.is_snake_moving = True
+                self.input_cooldown = True
 
     def update(self, delta_time):
-        if not self.paused:
+        if not self.paused and self.snake.is_snake_moving:
             self.movement_timer += delta_time
             if self.movement_timer >= 0.2:
                 self.snake.is_snake_moving = True
@@ -562,7 +557,6 @@ class GameView(arcade.View):
                     self.snake.body.pop()
 
                 self.movement_timer = 0
-                self.snake.is_snake_moving = False
                 self.input_cooldown = False
 
     def update_option(self, option):
@@ -755,9 +749,6 @@ class Apple:
         arcade.draw_texture_rectangle(
             self.x, self.y, APPLE_SIZE, APPLE_SIZE, self.apple
         )
-
-
-
 
 
 def main():
