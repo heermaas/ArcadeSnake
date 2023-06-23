@@ -8,8 +8,10 @@ BLOCK_SIZE = 40
 SNAKE_SIZE = BLOCK_SIZE
 APPLE_SIZE = BLOCK_SIZE
 SNAKE_SPEED = 1
+SNAKE_LENGTH = 3
 GAME_TITLE = "Snake Game"
 scoreboard_height = BLOCK_SIZE * 2
+
 class StartView(arcade.View):
     def __init__(self):
         super().__init__()
@@ -542,7 +544,7 @@ class GameView(arcade.View):
                     self.window.show_view(game_over_view)
 
                 self.snake.body.insert(0, (self.snake.x, self.snake.y))
-                if len(self.snake.body) > self.snake.score // 100 + 1:
+                if len(self.snake.body) > self.snake.score // 100 + SNAKE_LENGTH:
                     self.snake.body.pop()
 
                 self.movement_timer = 0
@@ -654,20 +656,21 @@ class Snake:
         self.direction = "right"
         self.body = []
         self.body.append((self.x, self.y))
-        self.body.append((self.x - BLOCK_SIZE, self.y))  # Add the second segment
-        self.body.append((self.x - 2 * BLOCK_SIZE, self.y))  # Add the third segment
         self.score = 0
-
-
+        self.body.append((self.x - BLOCK_SIZE, self.y))
+        self.body.append((self.x - 2 * BLOCK_SIZE, self.y))
+        
     def move(self):
-        if self.direction == "right":
-            self.x += BLOCK_SIZE
-        elif self.direction == "left":
-            self.x -= BLOCK_SIZE
-        elif self.direction == "up":
-            self.y += BLOCK_SIZE
-        elif self.direction == "down":
-            self.y -= BLOCK_SIZE
+        movements = {
+            "right": (BLOCK_SIZE, 0),
+            "left": (-BLOCK_SIZE, 0),
+            "up": (0, BLOCK_SIZE),
+            "down": (0, -BLOCK_SIZE),
+        }
+
+        move = movements.get(self.direction, (0, 0))
+        self.x += move[0]
+        self.y += move[1]
 
     def change_direction(self, new_direction):
         if new_direction == "right" and self.direction != "left":
@@ -718,6 +721,7 @@ class Apple:
         self.snake = snake
         self.previous_position = previous_position
         self.spawn()
+        self.apple = arcade.load_texture("images/apple_snake1.png")
 
     def spawn(self):
         valid_positions = []
@@ -729,7 +733,6 @@ class Apple:
 
         if valid_positions:
             self.x, self.y = random.choice(valid_positions)
-            self.apple = arcade.load_texture("images/apple_snake1.png")
         else:
             raise NoValidApplePositionError("No valid position for the apple.")
 
