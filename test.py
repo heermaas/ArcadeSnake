@@ -10,6 +10,8 @@ APPLE_SIZE = BLOCK_SIZE
 MUSHROOM_SIZE = BLOCK_SIZE
 SNAKE_LENGTH = 3
 GAME_TITLE = "Snake Game"
+CAPTION = "Navigiere, Wachse, Überlebe!"
+SUB_HEADING = "Ein Projekt von Abdelrhman Hassan, Adrian Birlin, Christian Ambs & Manuel Heer"
 scoreboard_height = BLOCK_SIZE * 2
 
 
@@ -17,51 +19,74 @@ class StartView(arcade.View):
     def __init__(self):
         super().__init__()
         self.current_option = 0
+        self.menu_items = [
+            "Spiel starten",
+            "Highscore",
+            "Beenden",
+        ]
+        self.hovered_item = None
 
     def on_show_view(self):
-        arcade.set_background_color(arcade.color.BLACK)
+        arcade.set_background_color(arcade.color.AO)
 
     def on_draw(self):
         arcade.start_render()
         arcade.draw_text(
             GAME_TITLE,
             SCREEN_WIDTH / 2,
-            SCREEN_HEIGHT / 2,
+            SCREEN_HEIGHT / 2 + 50,
             arcade.color.WHITE,
             font_size=64,
             anchor_x="center",
         )
         arcade.draw_text(
-            "Start",
+            CAPTION,
             SCREEN_WIDTH / 2,
-            SCREEN_HEIGHT / 2 - 100,
+            SCREEN_HEIGHT / 2 + 10,
             arcade.color.WHITE,
-            font_size=22,
+            font_size=20,
             anchor_x="center",
         )
         arcade.draw_text(
-            "High Score",
-            SCREEN_WIDTH / 2,
-            SCREEN_HEIGHT / 2 - 150,
+            SUB_HEADING,
+            SCREEN_WIDTH / 2 - 140,
+            SCREEN_HEIGHT / 2 - 295,
             arcade.color.WHITE,
-            font_size=22,
+            font_size=10,
             anchor_x="center",
         )
-        arcade.draw_text(
-            "Exit",
-            SCREEN_WIDTH / 2,
-            SCREEN_HEIGHT / 2 - 200,
-            arcade.color.WHITE,
-            font_size=22,
-            anchor_x="center",
-        )
+        for i, item in enumerate(self.menu_items):
+            x = SCREEN_WIDTH / 2
+            y = SCREEN_HEIGHT / 2 - 100 - i * 50
+            if self.hovered_item == i:
+                arcade.draw_text(
+                    item,
+                    x,
+                    y,
+                    (96, 124, 252),
+                    font_size=22,
+                    anchor_x="center",
+                )
+            else:
+                arcade.draw_text(
+                    item,
+                    x,
+                    y,
+                    arcade.color.WHITE,
+                    font_size=22,
+                    anchor_x="center",
+                )
         self.draw_cursor()
 
     def draw_cursor(self):
         cursor_x = SCREEN_WIDTH / 2 - 100
         cursor_y = SCREEN_HEIGHT / 2 - 80 - self.current_option * 50
+        if self.hovered_item is not None:
+            cursor_color = (96, 124, 252)
+        else:
+            cursor_color = arcade.color.WHITE
         arcade.draw_triangle_filled(
-            cursor_x, cursor_y, cursor_x - 10, cursor_y - 10, cursor_x + 10, cursor_y - 10, arcade.color.WHITE
+            cursor_x, cursor_y, cursor_x - 10, cursor_y - 10, cursor_x + 10, cursor_y - 10, cursor_color
         )
 
     def update_option(self, option):
@@ -72,39 +97,51 @@ class StartView(arcade.View):
             if self.current_option > 0:
                 self.current_option -= 1
         elif key == arcade.key.DOWN or key == arcade.key.S:
-            if self.current_option < 2:
+            if self.current_option < len(self.menu_items) - 1:
                 self.current_option += 1
         elif key == arcade.key.ENTER:
             if self.current_option == 0:
                 mode_selection_view = ModeSelectionView()
-                self.window.show_view(mode_selection_view)  # Zeige ModeSelectionView an
+                self.window.show_view(mode_selection_view)
             elif self.current_option == 1:
                 high_scores_view = HighScoresView()
                 self.window.show_view(high_scores_view)
             elif self.current_option == 2:
                 self.exit_game()
 
+        self.hovered_item = self.current_option
+
+    def on_mouse_motion(self, x, y, dx, dy):
+        for i, _ in enumerate(self.menu_items):
+            item_x = SCREEN_WIDTH / 2
+            item_y = SCREEN_HEIGHT / 2 - 100 - i * 40
+            item_width = 200
+            item_height = 30
+            if (
+                    item_x - item_width / 2 < x < item_x + item_width / 2
+                    and item_y - item_height / 2 < y < item_y + item_height / 2
+            ):
+                self.hovered_item = i
+                self.current_option = i  # Update current_option as well
+                break
+        else:
+            self.hovered_item = None
+
     def on_mouse_press(self, x, y, button, modifiers):
-        if (
-                SCREEN_WIDTH / 2 - 50 < x < SCREEN_WIDTH / 2 + 50
-                and SCREEN_HEIGHT / 2 - 130 < y < SCREEN_HEIGHT / 2 - 70
-        ):
-            mode_selection_view = ModeSelectionView()
-            self.window.show_view(mode_selection_view)  # Zeige ModeSelectionView an
-        elif (
-                SCREEN_WIDTH / 2 - 80 < x < SCREEN_WIDTH / 2 + 80
-                and SCREEN_HEIGHT / 2 - 180 < y < SCREEN_HEIGHT / 2 - 120
-        ):
-            high_scores_view = HighScoresView()
-            self.window.show_view(high_scores_view)
-        elif (
-                SCREEN_WIDTH / 2 - 40 < x < SCREEN_WIDTH / 2 + 40
-                and SCREEN_HEIGHT / 2 - 230 < y < SCREEN_HEIGHT / 2 - 170
-        ):
-            self.exit_game()
+        if self.hovered_item is not None:
+            if self.hovered_item == 0:
+                mode_selection_view = ModeSelectionView()
+                self.window.show_view(mode_selection_view)
+            elif self.hovered_item == 1:
+                high_scores_view = HighScoresView()
+                self.window.show_view(high_scores_view)
+            elif self.hovered_item == 2:
+                self.exit_game()
 
     def exit_game(self):
-        self.window.close()  # Close the window to exit the game
+        self.window.close()
+
+
 
 
 class ModeSelectionView(arcade.View):
@@ -719,7 +756,7 @@ class PauseView(arcade.View):
                     )
         arcade.draw_rectangle_filled(SCREEN_WIDTH // 2, 260, 480, 440, (0, 0, 0, 50))
         arcade.draw_text(
-            "Paused",
+            "Pausiert",
             SCREEN_WIDTH / 2,
             SCREEN_HEIGHT / 2,
             arcade.color.WHITE,
@@ -727,7 +764,7 @@ class PauseView(arcade.View):
             anchor_x="center",
         )
         arcade.draw_text(
-            "Return",
+            "Zurück",
             SCREEN_WIDTH / 2,
             SCREEN_HEIGHT / 2 - 100,
             arcade.color.WHITE,
@@ -735,7 +772,7 @@ class PauseView(arcade.View):
             anchor_x="center",
         )
         arcade.draw_text(
-            "Main Menu",
+            "Hauptmenü",
             SCREEN_WIDTH / 2,
             SCREEN_HEIGHT / 2 - 150,
             arcade.color.WHITE,
@@ -743,7 +780,7 @@ class PauseView(arcade.View):
             anchor_x="center",
         )
         arcade.draw_text(
-            "Give Up",
+            "Aufgeben",
             SCREEN_WIDTH / 2,
             SCREEN_HEIGHT / 2 - 200,
             arcade.color.WHITE,
