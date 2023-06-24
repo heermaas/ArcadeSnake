@@ -7,7 +7,7 @@ SCREEN_HEIGHT = 600
 BLOCK_SIZE = 40
 SNAKE_SIZE = BLOCK_SIZE
 APPLE_SIZE = BLOCK_SIZE
-SNAKE_SPEED = 1
+MUSHROOM_SIZE = BLOCK_SIZE
 SNAKE_LENGTH = 3
 GAME_TITLE = "Snake Game"
 scoreboard_height = BLOCK_SIZE * 2
@@ -76,8 +76,8 @@ class StartView(arcade.View):
                 self.current_option += 1
         elif key == arcade.key.ENTER:
             if self.current_option == 0:
-                game_view = GameView()
-                self.window.show_view(game_view)
+                mode_selection_view = ModeSelectionView()
+                self.window.show_view(mode_selection_view)  # Zeige ModeSelectionView an
             elif self.current_option == 1:
                 high_scores_view = HighScoresView()
                 self.window.show_view(high_scores_view)
@@ -89,8 +89,8 @@ class StartView(arcade.View):
                 SCREEN_WIDTH / 2 - 50 < x < SCREEN_WIDTH / 2 + 50
                 and SCREEN_HEIGHT / 2 - 130 < y < SCREEN_HEIGHT / 2 - 70
         ):
-            game_view = GameView()
-            self.window.show_view(game_view)
+            mode_selection_view = ModeSelectionView()
+            self.window.show_view(mode_selection_view)  # Zeige ModeSelectionView an
         elif (
                 SCREEN_WIDTH / 2 - 80 < x < SCREEN_WIDTH / 2 + 80
                 and SCREEN_HEIGHT / 2 - 180 < y < SCREEN_HEIGHT / 2 - 120
@@ -107,11 +107,90 @@ class StartView(arcade.View):
         self.window.close()  # Close the window to exit the game
 
 
+class ModeSelectionView(arcade.View):
+    def __init__(self):
+        super().__init__()
+        self.current_option = 0
+        self.party_mode = False
+
+    def on_show(self):
+        arcade.set_background_color(arcade.color.BLACK)
+
+    def on_draw(self):
+        arcade.start_render()
+        arcade.draw_text(
+            "Select Game Mode",
+            SCREEN_WIDTH / 2,
+            SCREEN_HEIGHT / 2,
+            arcade.color.WHITE,
+            font_size=64,
+            anchor_x="center",
+        )
+        arcade.draw_text(
+            "Normal Mode",
+            SCREEN_WIDTH / 2,
+            SCREEN_HEIGHT / 2 - 100,
+            arcade.color.WHITE,
+            font_size=22,
+            anchor_x="center",
+        )
+        arcade.draw_text(
+            "Party Mode",
+            SCREEN_WIDTH / 2,
+            SCREEN_HEIGHT / 2 - 150,
+            arcade.color.WHITE,
+            font_size=22,
+            anchor_x="center",
+        )
+        self.draw_cursor()
+
+    def draw_cursor(self):
+        cursor_x = SCREEN_WIDTH / 2 - 100
+        cursor_y = SCREEN_HEIGHT / 2 - 80 - self.current_option * 50
+        arcade.draw_triangle_filled(
+            cursor_x, cursor_y, cursor_x - 10, cursor_y - 10, cursor_x + 10, cursor_y - 10, arcade.color.WHITE
+        )
+
+    def update_option(self, option):
+        self.current_option = option
+
+    def on_key_press(self, key, modifiers):
+        if key == arcade.key.UP or key == arcade.key.W:
+            if self.current_option > 0:
+                self.current_option -= 1
+        elif key == arcade.key.DOWN or key == arcade.key.S:
+            if self.current_option < 1:
+                self.current_option += 1
+        elif key == arcade.key.ENTER:
+            if self.current_option == 0:
+                game_view = GameView(party_mode=self.party_mode)
+                self.window.show_view(game_view)
+            elif self.current_option == 1:
+                self.party_mode = True
+                game_view = GameView(party_mode=self.party_mode)
+                self.window.show_view(game_view)
+
+    def on_mouse_press(self, x, y, button, modifiers):
+        if (
+                SCREEN_WIDTH / 2 - 50 < x < SCREEN_WIDTH / 2 + 50
+                and SCREEN_HEIGHT / 2 - 130 < y < SCREEN_HEIGHT / 2 - 70
+        ):
+            game_view = GameView()
+            self.window.show_view(game_view)
+        elif (
+                SCREEN_WIDTH / 2 - 80 < x < SCREEN_WIDTH / 2 + 80
+                and SCREEN_HEIGHT / 2 - 180 < y < SCREEN_HEIGHT / 2 - 120
+        ):
+            self.party_mode = True
+            game_view = GameView()
+            self.window.show_view(game_view)
+
 class GameOverView(arcade.View):
-    def __init__(self, score):
+    def __init__(self, score, party_mode):
         super().__init__()
         self.score = score
         self.current_option = 0
+        self.party_mode = party_mode
 
     def on_show(self):
         arcade.set_background_color(arcade.color.BLACK)
@@ -179,7 +258,7 @@ class GameOverView(arcade.View):
                 self.current_option += 1
         elif key == arcade.key.ENTER:
             if self.current_option == 0:
-                game_view = GameView()
+                game_view = GameView(party_mode=self.party_mode)
                 self.window.show_view(game_view)
             elif self.current_option == 1:
                 start_view = StartView()
@@ -192,7 +271,7 @@ class GameOverView(arcade.View):
                 SCREEN_WIDTH / 2 - 60 < x < SCREEN_WIDTH / 2 + 60
                 and SCREEN_HEIGHT / 2 - 180 < y < SCREEN_HEIGHT / 2 - 120
         ):
-            game_view = GameView()
+            game_view = GameView(party_mode=self.party_mode)
             self.window.show_view(game_view)
         elif (
                 SCREEN_WIDTH / 2 - 80 < x < SCREEN_WIDTH / 2 + 80
@@ -208,11 +287,12 @@ class GameOverView(arcade.View):
 
 
 class SaveScoreNameView(arcade.View):
-    def __init__(self, score):
+    def __init__(self, score, party_mode):
         super().__init__()
         self.score = score
         self.player_name = ""
         self.error_message = ""
+        self.party_mode = party_mode
 
     def on_show(self):
         arcade.set_background_color(arcade.color.BLACK)
@@ -266,7 +346,7 @@ class SaveScoreNameView(arcade.View):
             self.player_name = self.player_name[:-1]
         elif key == arcade.key.ENTER:
             self.save_score_with_name()
-            game_over_view = GameOverView(self.score)
+            game_over_view = GameOverView(self.score, self.party_mode)
             self.window.show_view(game_over_view)
         elif re.match(r"^[a-zA-Z0-9]$", chr(key)):
             if len(self.player_name) < 8:
@@ -282,15 +362,16 @@ class SaveScoreNameView(arcade.View):
 
     def on_mouse_press(self, x, y, button, modifiers):
         self.save_score_with_name()
-        game_over_view = GameOverView(self.score)
+        game_over_view = GameOverView(self.score, self.party_mode)
         self.window.show_view(game_over_view)
 
 
 class SaveScoreView(arcade.View):
-    def __init__(self, score):
+    def __init__(self, score, party_mode):
         super().__init__()
         self.score = score
         self.current_option = 0
+        self.party_mode = party_mode
 
     def on_show(self):
         arcade.set_background_color(arcade.color.BLACK)
@@ -348,10 +429,10 @@ class SaveScoreView(arcade.View):
             self.current_option = 1
         elif key == arcade.key.ENTER:
             if self.current_option == 0:
-                save_name_view = SaveScoreNameView(self.score)
+                save_name_view = SaveScoreNameView(self.score, self.party_mode)
                 self.window.show_view(save_name_view)
             else:
-                game_over_view = GameOverView(self.score)
+                game_over_view = GameOverView(self.score, self.party_mode)
                 self.window.show_view(game_over_view)
 
     def on_mouse_press(self, x, y, button, modifiers):
@@ -359,13 +440,13 @@ class SaveScoreView(arcade.View):
                 SCREEN_WIDTH / 2 - 120 < x < SCREEN_WIDTH / 2 - 80
                 and SCREEN_HEIGHT / 2 - 180 < y < SCREEN_HEIGHT / 2 - 130
         ):
-            save_name_view = SaveScoreNameView(self.score)
+            save_name_view = SaveScoreNameView(self.score, self.party_mode)
             self.window.show_view(save_name_view)
         elif (
                 SCREEN_WIDTH / 2 - 40 < x < SCREEN_WIDTH / 2 + 40
                 and SCREEN_HEIGHT / 2 - 280 < y < SCREEN_HEIGHT / 2 - 220
         ):
-            game_over_view = GameOverView(self.score)
+            game_over_view = GameOverView(self.score, self.party_mode)
             self.window.show_view(game_over_view)
 
 
@@ -439,15 +520,19 @@ class HighScoresView(arcade.View):
 
 
 class GameView(arcade.View):
-    def __init__(self):
+    def __init__(self, party_mode=False):
         super().__init__()
         self.snake = Snake()
         self.apple = Apple(self.snake)
         self.previous_apple_position = (self.apple.x, self.apple.y)
+        self.mushroom = Mushroom(self.snake)
+        self.previous_mushroom_position = (self.mushroom.x, self.mushroom.y)
         self.paused = False
         self.current_option = 0
         self.movement_timer = 0
+        self.move_border = 0.2
         self.input_cooldown = False
+        self.party_mode = party_mode
 
     def on_show(self):
         arcade.set_background_color(arcade.color.BLACK)
@@ -496,6 +581,8 @@ class GameView(arcade.View):
 
         self.snake.draw()
         self.apple.draw()
+        if self.party_mode:
+            self.mushroom.draw()
 
     def on_key_press(self, key, modifiers):
         if self.paused:
@@ -536,11 +623,11 @@ class GameView(arcade.View):
     def update(self, delta_time):
         if not self.paused and self.snake.is_snake_moving:
             self.movement_timer += delta_time
-            if self.movement_timer >= 0.2:
+            if self.movement_timer >= self.move_border:
                 self.snake.is_snake_moving = True
                 self.snake.move()
                 if self.snake.check_collision():
-                    save_score_view = SaveScoreView(self.snake.score)
+                    save_score_view = SaveScoreView(self.snake.score, self.party_mode)
                     self.window.show_view(save_score_view)
 
                 try:
@@ -548,8 +635,16 @@ class GameView(arcade.View):
                         self.snake.score += 100
                         self.previous_apple_position = (self.apple.x, self.apple.y)
                         self.apple = Apple(self.snake, self.previous_apple_position)
+                        if random.randint(1, 5) == 2:
+                            self.mushroom = Mushroom(self.snake, self.previous_mushroom_position)
+
+                    if self.snake.eat_mushroom(self.mushroom):
+                        self.move_border *= 1-(2.5*self.move_border)
+                        self.previous_mushroom_position = (self.mushroom.x, self.mushroom.y)
+                        self.mushroom = Mushroom(self.snake, self.previous_mushroom_position)
+
                 except NoValidApplePositionError:
-                    game_over_view = GameOverView(self.snake.score)
+                    game_over_view = GameOverView(self.snake.score, self.party_mode)
                     self.window.show_view(game_over_view)
 
                 self.snake.body.insert(0, (self.snake.x, self.snake.y))
@@ -633,7 +728,7 @@ class PauseView(arcade.View):
                 start_view = StartView()
                 self.window.show_view(start_view)
             elif self.current_option == 2:
-                game_over_view = GameOverView(self.game_view.snake.score)
+                game_over_view = GameOverView(self.game_view.snake.score, self.game_view.party_mode)
                 self.window.show_view(game_over_view)
 
     def on_mouse_press(self, x, y, button, modifiers):
@@ -653,7 +748,7 @@ class PauseView(arcade.View):
                 SCREEN_WIDTH / 2 - 40 < x < SCREEN_WIDTH / 2 + 40
                 and SCREEN_HEIGHT / 2 - 230 < y < SCREEN_HEIGHT / 2 - 170
         ):
-            game_over_view = GameOverView(self.game_view.snake.score)
+            game_over_view = GameOverView(self.game_view.snake.score, self.game_view.party_mode)
             self.window.show_view(game_over_view)
 
 
@@ -726,6 +821,16 @@ class Snake:
                 and self.x + APPLE_SIZE > snake.x
                 and self.y < snake.y + SNAKE_SIZE
                 and self.y + APPLE_SIZE > snake.y
+        ):
+            return True
+        return False
+
+    def eat_mushroom(self, snake):
+        if (
+                self.x < snake.x + SNAKE_SIZE
+                and self.x + MUSHROOM_SIZE > snake.x
+                and self.y < snake.y + SNAKE_SIZE
+                and self.y + MUSHROOM_SIZE > snake.y
         ):
             return True
         return False
@@ -831,6 +936,30 @@ class Apple:
             self.x, self.y, APPLE_SIZE, APPLE_SIZE, self.apple
         )
 
+class Mushroom:
+    def __init__(self, snake, previous_position=None):
+        self.snake = snake
+        self.previous_position = previous_position
+        self.spawn()
+        self.mushroom = arcade.load_texture("images/mushroom.png")
+
+    def spawn(self):
+        valid_positions = []
+        for x in range(BLOCK_SIZE, SCREEN_WIDTH - BLOCK_SIZE, BLOCK_SIZE):
+            for y in range(BLOCK_SIZE, SCREEN_HEIGHT - BLOCK_SIZE * 3, BLOCK_SIZE):
+                position = (x + BLOCK_SIZE // 2, y + BLOCK_SIZE // 2)
+                if position not in self.snake.body and position != self.previous_position:
+                    valid_positions.append(position)
+
+        if valid_positions:
+            self.x, self.y = random.choice(valid_positions)
+        else:
+            raise NoValidApplePositionError("No valid position for the mushroom.")
+
+    def draw(self):
+        arcade.draw_texture_rectangle(
+            self.x, self.y, MUSHROOM_SIZE, MUSHROOM_SIZE, self.mushroom
+        )
 
 def main():
     window = arcade.Window(SCREEN_WIDTH, SCREEN_HEIGHT, GAME_TITLE)
