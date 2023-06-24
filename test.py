@@ -661,7 +661,6 @@ class Snake:
     def __init__(self):
         self.x = (SCREEN_WIDTH // 2 // BLOCK_SIZE) * BLOCK_SIZE + BLOCK_SIZE // 2
         self.y = (SCREEN_HEIGHT // 2 // BLOCK_SIZE) * BLOCK_SIZE + BLOCK_SIZE // 2
-        print(self.x, self.y)
         self.direction = "right"
         self.body = [(420, 300), (380, 300), (340, 300)]
         self.score = 0
@@ -694,7 +693,6 @@ class Snake:
         }
 
         move = movements.get(self.direction, (0, 0))
-        print(self.body)
         self.x += move[0]
         self.y += move[1]
 
@@ -732,17 +730,11 @@ class Snake:
             return True
         return False
 
-    def grow(self):
-        tail_x, tail_y = self.body[-1]
-        second_to_last_x, second_to_last_y = self.body[-2]
-        new_segment_x = tail_x + (tail_x - second_to_last_x)
-        new_segment_y = tail_y + (tail_y - second_to_last_y)
-        self.body.append((new_segment_x, new_segment_y))
-
     def draw(self):
         head_x, head_y = self.body[0]
         segment_x, segment_y = self.body[1]
         tail_x, tail_y = self.body[-1]
+        second_segment_x, second_segment_y = self.body[-2]
 
         # Draw the head
         head_relation_x = segment_x - head_x
@@ -761,17 +753,19 @@ class Snake:
         # Draw the body segments
         for index in range(1, len(self.body)):
             segment = self.body[index]
-            tail_texture = self.tail_right
             if index == len(self.body) - 1:
+                tail_relation_x = second_segment_x - tail_x
+                tail_relation_y = second_segment_y - tail_y
                 # Last segment (tail)
-                if tail_x == segment_x and tail_y == segment_y + BLOCK_SIZE:
-                    tail_texture = self.tail_up
-                elif tail_x == segment_x and tail_y == segment_y - BLOCK_SIZE:
-                    tail_texture = self.tail_down
-                elif tail_x == segment_x + BLOCK_SIZE and tail_y == segment_y:
-                    tail_texture = self.tail_right
-                elif tail_x == segment_x - BLOCK_SIZE and tail_y == segment_y:
+                tail_texture = self.tail_right
+                if tail_relation_x == BLOCK_SIZE and tail_relation_y == 0:
                     tail_texture = self.tail_left
+                elif tail_relation_x == -BLOCK_SIZE and tail_relation_y == 0:
+                    tail_texture = self.tail_right
+                elif tail_relation_x == 0 and tail_relation_y == BLOCK_SIZE:
+                    tail_texture = self.tail_down
+                elif tail_relation_x == 0 and tail_relation_y == -BLOCK_SIZE:
+                    tail_texture = self.tail_up
                 arcade.draw_texture_rectangle(segment[0], segment[1], SNAKE_SIZE, SNAKE_SIZE, tail_texture)
             else:
                 # Body segment
