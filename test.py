@@ -458,7 +458,7 @@ class GameView(arcade.View):
         # Draw the scoreboard area
         arcade.draw_rectangle_filled(
             SCREEN_WIDTH // 2, SCREEN_HEIGHT - scoreboard_height // 2, SCREEN_WIDTH, scoreboard_height,
-            arcade.color.LIGHT_BLUE
+            arcade.color.DARK_GREEN
         )
         arcade.draw_text(
             f"Score: {self.snake.score}",
@@ -667,6 +667,24 @@ class Snake:
         self.score = 0
         self.is_snake_moving = False
 
+        self.head_up = arcade.load_texture("images/head_up.png")
+        self.head_down = arcade.load_texture("images/head_down.png")
+        self.head_right = arcade.load_texture("images/head_right.png")
+        self.head_left = arcade.load_texture("images/head_left.png")
+
+        self.tail_up = arcade.load_texture("images/tail_up.png")
+        self.tail_down = arcade.load_texture("images/tail_down.png")
+        self.tail_right = arcade.load_texture("images/tail_right.png")
+        self.tail_left = arcade.load_texture("images/tail_left.png")
+
+        self.body_vertical = arcade.load_texture("images/body_vertical.png")
+        self.body_horizontal = arcade.load_texture("images/body_horizontal.png")
+
+        self.body_tr = arcade.load_texture("images/body_tr.png")
+        self.body_tl = arcade.load_texture("images/body_tl.png")
+        self.body_br = arcade.load_texture("images/body_br.png")
+        self.body_bl = arcade.load_texture("images/body_bl.png")
+
     def move(self):
         movements = {
             "right": (BLOCK_SIZE, 0),
@@ -714,11 +732,80 @@ class Snake:
             return True
         return False
 
+    def grow(self):
+        tail_x, tail_y = self.body[-1]
+        second_to_last_x, second_to_last_y = self.body[-2]
+        new_segment_x = tail_x + (tail_x - second_to_last_x)
+        new_segment_y = tail_y + (tail_y - second_to_last_y)
+        self.body.append((new_segment_x, new_segment_y))
+
     def draw(self):
-        for segment in self.body:
-            arcade.draw_rectangle_filled(
-                segment[0], segment[1], SNAKE_SIZE, SNAKE_SIZE, arcade.color.BLUE
-            )
+        head_x, head_y = self.body[0]
+        segment_x, segment_y = self.body[1]
+        tail_x, tail_y = self.body[-1]
+
+        # Draw the head
+        head_relation_x = segment_x - head_x
+        head_relation_y = segment_y - head_y
+        head_texture = None
+        if head_relation_x == 0 and head_relation_y == BLOCK_SIZE:
+            head_texture = self.head_down
+        elif head_relation_x == 0 and head_relation_y == -BLOCK_SIZE:
+            head_texture = self.head_up
+        elif head_relation_x == BLOCK_SIZE and head_relation_y == 0:
+            head_texture = self.head_left
+        elif head_relation_x == -BLOCK_SIZE and head_relation_y == 0:
+            head_texture = self.head_right
+        arcade.draw_texture_rectangle(self.x, self.y, SNAKE_SIZE, SNAKE_SIZE, head_texture)
+
+        # Draw the body segments
+        for index in range(1, len(self.body)):
+            segment = self.body[index]
+            tail_texture = self.tail_right
+            if index == len(self.body) - 1:
+                # Last segment (tail)
+                if tail_x == segment_x and tail_y == segment_y + BLOCK_SIZE:
+                    tail_texture = self.tail_up
+                elif tail_x == segment_x and tail_y == segment_y - BLOCK_SIZE:
+                    tail_texture = self.tail_down
+                elif tail_x == segment_x + BLOCK_SIZE and tail_y == segment_y:
+                    tail_texture = self.tail_right
+                elif tail_x == segment_x - BLOCK_SIZE and tail_y == segment_y:
+                    tail_texture = self.tail_left
+                arcade.draw_texture_rectangle(segment[0], segment[1], SNAKE_SIZE, SNAKE_SIZE, tail_texture)
+            else:
+                # Body segment
+                next_segment_x, next_segment_y = self.body[index + 1]
+                previous_segment_x, previous_segment_y = self.body[index - 1]
+
+                if segment_x == next_segment_x == previous_segment_x:
+                    body_texture = self.body_vertical
+                elif segment_y == next_segment_y == previous_segment_y:
+                    body_texture = self.body_horizontal
+                else:
+                    if segment_x < previous_segment_x:
+                        if segment_y < next_segment_y:
+                            body_texture = self.body_tr
+                        else:
+                            body_texture = self.body_br
+                    elif segment_x > previous_segment_x:
+                        if segment_y < next_segment_y:
+                            body_texture = self.body_tl
+                        else:
+                            body_texture = self.body_bl
+                    else:
+                        if segment_y < previous_segment_y:
+                            if segment_x < next_segment_x:
+                                body_texture = self.body_tr
+                            else:
+                                body_texture = self.body_tl
+                        else:
+                            if segment_x < next_segment_x:
+                                body_texture = self.body_br
+                            else:
+                                body_texture = self.body_bl
+
+                arcade.draw_texture_rectangle(segment[0], segment[1], SNAKE_SIZE, SNAKE_SIZE, body_texture)
 
 
 class NoValidApplePositionError(Exception):
