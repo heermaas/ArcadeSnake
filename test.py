@@ -18,7 +18,7 @@ class StartView(arcade.View):
         super().__init__()
         self.current_option = 0
 
-    def on_show(self):
+    def on_show_view(self):
         arcade.set_background_color(arcade.color.BLACK)
 
     def on_draw(self):
@@ -113,7 +113,7 @@ class GameOverView(arcade.View):
         self.score = score
         self.current_option = 0
 
-    def on_show(self):
+    def on_show_view(self):
         arcade.set_background_color(arcade.color.BLACK)
 
     def on_draw(self):
@@ -214,7 +214,7 @@ class SaveScoreNameView(arcade.View):
         self.player_name = ""
         self.error_message = ""
 
-    def on_show(self):
+    def on_show_view(self):
         arcade.set_background_color(arcade.color.BLACK)
 
     def on_draw(self):
@@ -292,7 +292,7 @@ class SaveScoreView(arcade.View):
         self.score = score
         self.current_option = 0
 
-    def on_show(self):
+    def on_show_view(self):
         arcade.set_background_color(arcade.color.BLACK)
 
     def on_draw(self):
@@ -375,7 +375,7 @@ class HighScoresView(arcade.View):
         self.current_option = 0
         self.scores = []
 
-    def on_show(self):
+    def on_show_view(self):
         arcade.set_background_color(arcade.color.BLACK)
         self.load_scores()
 
@@ -449,7 +449,7 @@ class GameView(arcade.View):
         self.movement_timer = 0
         self.input_cooldown = False
 
-    def on_show(self):
+    def on_show_view(self):
         arcade.set_background_color(arcade.color.BLACK)
 
     def on_draw(self):
@@ -569,7 +569,7 @@ class PauseView(arcade.View):
         self.game_view = game_view
         self.current_option = 0
 
-    def on_show(self):
+    def on_show_view(self):
         arcade.set_background_color(arcade.color.BLACK)
 
     def on_draw(self):
@@ -628,7 +628,8 @@ class PauseView(arcade.View):
         elif key == arcade.key.ENTER:
             if self.current_option == 0:
                 self.game_view.paused = False
-                self.window.show_view(self.game_view)  # Show the stored GameView
+                self.game_view.input_cooldown = False  # Reset input cooldown
+                self.window.show_view(self.game_view)
             elif self.current_option == 1:
                 start_view = StartView()
                 self.window.show_view(start_view)
@@ -642,6 +643,7 @@ class PauseView(arcade.View):
                 and SCREEN_HEIGHT / 2 - 130 < y < SCREEN_HEIGHT / 2 - 70
         ):
             self.game_view.paused = False
+            self.game_view.input_cooldown = False  # Reset input cooldown
             self.window.show_view(self.game_view)
         elif (
                 SCREEN_WIDTH / 2 - 80 < x < SCREEN_WIDTH / 2 + 80
@@ -662,7 +664,10 @@ class Snake:
         self.x = (SCREEN_WIDTH // 2 // BLOCK_SIZE) * BLOCK_SIZE + BLOCK_SIZE // 2
         self.y = (SCREEN_HEIGHT // 2 // BLOCK_SIZE) * BLOCK_SIZE + BLOCK_SIZE // 2
         self.direction = "right"
-        self.body = [(420, 300), (380, 300), (340, 300)]
+        self.body = []
+        self.body.append((self.x, self.y))
+        self.body.append((self.x - BLOCK_SIZE, self.y))  # Add the second segment
+        self.body.append((self.x - 2 * BLOCK_SIZE, self.y))
         self.score = 0
         self.is_snake_moving = False
 
