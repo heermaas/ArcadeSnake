@@ -535,6 +535,15 @@ class GameView(arcade.View):
         self.input_cooldown = False
         self.party_mode = party_mode
         self.star = arcade.load_texture("images/star.png")
+        self.total_time = 0.0
+        self.timer_text = arcade.Text(
+            text="00:00:00",
+            start_x=SCREEN_WIDTH // 2,
+            start_y=SCREEN_HEIGHT // 2 - 50,
+            color=arcade.color.WHITE,
+            font_size=100,
+            anchor_x="center",
+        )
 
     def on_show_view(self):
         arcade.set_background_color(arcade.color.BLACK)
@@ -542,11 +551,13 @@ class GameView(arcade.View):
     def draw_apple_count(self):
         # Set the font style, size, and color
         arcade.draw_texture_rectangle(460, SCREEN_HEIGHT - scoreboard_height // 2, 50, 50, self.apple.apple)
-        arcade.draw_text(str(self.snake.apple_count), 490, SCREEN_HEIGHT - scoreboard_height // 2 - 20, arcade.color.WHITE, font_size=36)
+        arcade.draw_text(str(self.snake.apple_count), 490, SCREEN_HEIGHT - scoreboard_height // 2 - 20,
+                         arcade.color.WHITE, font_size=36)
 
     def draw_score_count(self):
         arcade.draw_texture_rectangle(50, SCREEN_HEIGHT - scoreboard_height // 2, 50, 50, self.star)
-        arcade.draw_text(str(self.snake.score), 80, SCREEN_HEIGHT - scoreboard_height // 2 - 20, arcade.color.WHITE, font_size=36,)
+        arcade.draw_text(str(self.snake.score), 80, SCREEN_HEIGHT - scoreboard_height // 2 - 20,
+                         arcade.color.WHITE, font_size=36,)
 
     def on_draw(self):
         arcade.start_render()
@@ -554,10 +565,10 @@ class GameView(arcade.View):
         # Draw the scoreboard area
         arcade.draw_rectangle_filled(
             SCREEN_WIDTH // 2, SCREEN_HEIGHT - scoreboard_height // 2, SCREEN_WIDTH, scoreboard_height,
-            arcade.color.DARK_GREEN
-        )
+            arcade.color.AVOCADO)
         self.draw_score_count()
         self.draw_apple_count()
+        self.timer_text.draw()
 
         # Draw the game area
         game_height = SCREEN_HEIGHT - scoreboard_height
@@ -574,7 +585,7 @@ class GameView(arcade.View):
                         row + BLOCK_SIZE // 2,
                         BLOCK_SIZE,
                         BLOCK_SIZE,
-                        arcade.color.GREEN
+                        arcade.color.APPLE_GREEN
                     )
                 else:
                     arcade.draw_rectangle_filled(
@@ -582,7 +593,7 @@ class GameView(arcade.View):
                         row + BLOCK_SIZE // 2,
                         BLOCK_SIZE,
                         BLOCK_SIZE,
-                        arcade.color.YELLOW
+                        arcade.color.ANDROID_GREEN
                     )
 
         self.snake.draw()
@@ -676,6 +687,37 @@ class PauseView(arcade.View):
 
     def on_draw(self):
         arcade.start_render()
+        # Draw the scoreboard area
+        arcade.draw_rectangle_filled(
+            SCREEN_WIDTH // 2, SCREEN_HEIGHT - scoreboard_height // 2, SCREEN_WIDTH, scoreboard_height,
+            arcade.color.AVOCADO)
+
+        # Draw the game area
+        game_height = SCREEN_HEIGHT - scoreboard_height
+        arcade.draw_rectangle_filled(
+            SCREEN_WIDTH // 2, game_height // 2, SCREEN_WIDTH, game_height, arcade.color.GREEN
+        )
+
+        # Draw the grid with alternating colors
+        for row in range(0, game_height, BLOCK_SIZE):
+            for column in range(0, SCREEN_WIDTH, BLOCK_SIZE):
+                if (row // BLOCK_SIZE + column // BLOCK_SIZE) % 2 == 0:
+                    arcade.draw_rectangle_filled(
+                        column + BLOCK_SIZE // 2,
+                        row + BLOCK_SIZE // 2,
+                        BLOCK_SIZE,
+                        BLOCK_SIZE,
+                        arcade.color.APPLE_GREEN
+                    )
+                else:
+                    arcade.draw_rectangle_filled(
+                        column + BLOCK_SIZE // 2,
+                        row + BLOCK_SIZE // 2,
+                        BLOCK_SIZE,
+                        BLOCK_SIZE,
+                        arcade.color.ANDROID_GREEN
+                    )
+        arcade.draw_rectangle_filled(SCREEN_WIDTH // 2, 260, 480, 440, (0, 0, 0, 50))
         arcade.draw_text(
             "Paused",
             SCREEN_WIDTH / 2,
