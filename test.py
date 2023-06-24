@@ -4,7 +4,7 @@ import re
 
 SCREEN_WIDTH = 800
 SCREEN_HEIGHT = 600
-BLOCK_SIZE = 40
+BLOCK_SIZE = 80
 SNAKE_SIZE = BLOCK_SIZE
 APPLE_SIZE = BLOCK_SIZE
 MUSHROOM_SIZE = BLOCK_SIZE
@@ -18,7 +18,7 @@ class StartView(arcade.View):
         super().__init__()
         self.current_option = 0
 
-    def on_show(self):
+    def on_show_view(self):
         arcade.set_background_color(arcade.color.BLACK)
 
     def on_draw(self):
@@ -192,7 +192,7 @@ class GameOverView(arcade.View):
         self.current_option = 0
         self.party_mode = party_mode
 
-    def on_show(self):
+    def on_show_view(self):
         arcade.set_background_color(arcade.color.BLACK)
 
     def on_draw(self):
@@ -294,7 +294,7 @@ class SaveScoreNameView(arcade.View):
         self.error_message = ""
         self.party_mode = party_mode
 
-    def on_show(self):
+    def on_show_view(self):
         arcade.set_background_color(arcade.color.BLACK)
 
     def on_draw(self):
@@ -373,7 +373,7 @@ class SaveScoreView(arcade.View):
         self.current_option = 0
         self.party_mode = party_mode
 
-    def on_show(self):
+    def on_show_view(self):
         arcade.set_background_color(arcade.color.BLACK)
 
     def on_draw(self):
@@ -456,7 +456,7 @@ class HighScoresView(arcade.View):
         self.current_option = 0
         self.scores = []
 
-    def on_show(self):
+    def on_show_view(self):
         arcade.set_background_color(arcade.color.BLACK)
         self.load_scores()
 
@@ -534,7 +534,7 @@ class GameView(arcade.View):
         self.input_cooldown = False
         self.party_mode = party_mode
 
-    def on_show(self):
+    def on_show_view(self):
         arcade.set_background_color(arcade.color.BLACK)
 
     def on_draw(self):
@@ -664,7 +664,7 @@ class PauseView(arcade.View):
         self.game_view = game_view
         self.current_option = 0
 
-    def on_show(self):
+    def on_show_view(self):
         arcade.set_background_color(arcade.color.BLACK)
 
     def on_draw(self):
@@ -723,7 +723,8 @@ class PauseView(arcade.View):
         elif key == arcade.key.ENTER:
             if self.current_option == 0:
                 self.game_view.paused = False
-                self.window.show_view(self.game_view)  # Show the stored GameView
+                self.game_view.input_cooldown = False  # Reset input cooldown
+                self.window.show_view(self.game_view)
             elif self.current_option == 1:
                 start_view = StartView()
                 self.window.show_view(start_view)
@@ -737,6 +738,7 @@ class PauseView(arcade.View):
                 and SCREEN_HEIGHT / 2 - 130 < y < SCREEN_HEIGHT / 2 - 70
         ):
             self.game_view.paused = False
+            self.game_view.input_cooldown = False  # Reset input cooldown
             self.window.show_view(self.game_view)
         elif (
                 SCREEN_WIDTH / 2 - 80 < x < SCREEN_WIDTH / 2 + 80
@@ -754,10 +756,13 @@ class PauseView(arcade.View):
 
 class Snake:
     def __init__(self):
-        self.x = (SCREEN_WIDTH // 2 // BLOCK_SIZE) * BLOCK_SIZE + BLOCK_SIZE // 2
-        self.y = (SCREEN_HEIGHT // 2 // BLOCK_SIZE) * BLOCK_SIZE + BLOCK_SIZE // 2
+        self.x = random.randint(2, (SCREEN_WIDTH - BLOCK_SIZE * 2) // BLOCK_SIZE) * BLOCK_SIZE + BLOCK_SIZE // 2
+        self.y = random.randint(2, (SCREEN_HEIGHT - BLOCK_SIZE * 2 - scoreboard_height) // BLOCK_SIZE) * BLOCK_SIZE + BLOCK_SIZE // 2
         self.direction = "right"
-        self.body = [(420, 300), (380, 300), (340, 300)]
+        self.body = []
+        self.body.append((self.x, self.y))
+        self.body.append((self.x - BLOCK_SIZE, self.y))  # Add the second segment
+        self.body.append((self.x - 2 * BLOCK_SIZE, self.y))
         self.score = 0
         self.is_snake_moving = False
 
@@ -836,12 +841,12 @@ class Snake:
         return False
 
     def draw(self):
+        # Draw the head
         head_x, head_y = self.body[0]
         segment_x, segment_y = self.body[1]
         tail_x, tail_y = self.body[-1]
         second_segment_x, second_segment_y = self.body[-2]
 
-        # Draw the head
         head_relation_x = segment_x - head_x
         head_relation_y = segment_y - head_y
         head_texture = None
@@ -858,11 +863,13 @@ class Snake:
         # Draw the body segments
         for index in range(1, len(self.body)):
             segment = self.body[index]
+            segment_x, segment_y = segment
+
             if index == len(self.body) - 1:
+                # Last segment (tail)
                 tail_relation_x = second_segment_x - tail_x
                 tail_relation_y = second_segment_y - tail_y
-                # Last segment (tail)
-                tail_texture = self.tail_right
+                tail_texture = None
                 if tail_relation_x == BLOCK_SIZE and tail_relation_y == 0:
                     tail_texture = self.tail_left
                 elif tail_relation_x == -BLOCK_SIZE and tail_relation_y == 0:
@@ -871,7 +878,7 @@ class Snake:
                     tail_texture = self.tail_down
                 elif tail_relation_x == 0 and tail_relation_y == -BLOCK_SIZE:
                     tail_texture = self.tail_up
-                arcade.draw_texture_rectangle(segment[0], segment[1], SNAKE_SIZE, SNAKE_SIZE, tail_texture)
+                arcade.draw_texture_rectangle(segment_x, segment_y, SNAKE_SIZE, SNAKE_SIZE, tail_texture)
             else:
                 # Body segment
                 next_segment_x, next_segment_y = self.body[index + 1]
@@ -904,7 +911,7 @@ class Snake:
                             else:
                                 body_texture = self.body_bl
 
-                arcade.draw_texture_rectangle(segment[0], segment[1], SNAKE_SIZE, SNAKE_SIZE, body_texture)
+                arcade.draw_texture_rectangle(segment_x, segment_y, SNAKE_SIZE, SNAKE_SIZE, body_texture)
 
 
 class NoValidApplePositionError(Exception):
