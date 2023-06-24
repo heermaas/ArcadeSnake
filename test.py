@@ -4,7 +4,7 @@ import re
 
 SCREEN_WIDTH = 800
 SCREEN_HEIGHT = 600
-BLOCK_SIZE = 40
+BLOCK_SIZE = 80
 SNAKE_SIZE = BLOCK_SIZE
 APPLE_SIZE = BLOCK_SIZE
 SNAKE_SPEED = 1
@@ -661,8 +661,8 @@ class PauseView(arcade.View):
 
 class Snake:
     def __init__(self):
-        self.x = (SCREEN_WIDTH // 2 // BLOCK_SIZE) * BLOCK_SIZE + BLOCK_SIZE // 2
-        self.y = (SCREEN_HEIGHT // 2 // BLOCK_SIZE) * BLOCK_SIZE + BLOCK_SIZE // 2
+        self.x = random.randint(2, (SCREEN_WIDTH - BLOCK_SIZE * 2) // BLOCK_SIZE) * BLOCK_SIZE + BLOCK_SIZE // 2
+        self.y = random.randint(2, (SCREEN_HEIGHT - BLOCK_SIZE * 2 - scoreboard_height) // BLOCK_SIZE) * BLOCK_SIZE + BLOCK_SIZE // 2
         self.direction = "right"
         self.body = []
         self.body.append((self.x, self.y))
