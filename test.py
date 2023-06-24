@@ -731,12 +731,12 @@ class Snake:
         return False
 
     def draw(self):
+        # Draw the head
         head_x, head_y = self.body[0]
         segment_x, segment_y = self.body[1]
         tail_x, tail_y = self.body[-1]
         second_segment_x, second_segment_y = self.body[-2]
 
-        # Draw the head
         head_relation_x = segment_x - head_x
         head_relation_y = segment_y - head_y
         head_texture = None
@@ -753,11 +753,13 @@ class Snake:
         # Draw the body segments
         for index in range(1, len(self.body)):
             segment = self.body[index]
+            segment_x, segment_y = segment
+
             if index == len(self.body) - 1:
+                # Last segment (tail)
                 tail_relation_x = second_segment_x - tail_x
                 tail_relation_y = second_segment_y - tail_y
-                # Last segment (tail)
-                tail_texture = self.tail_right
+                tail_texture = None
                 if tail_relation_x == BLOCK_SIZE and tail_relation_y == 0:
                     tail_texture = self.tail_left
                 elif tail_relation_x == -BLOCK_SIZE and tail_relation_y == 0:
@@ -766,7 +768,7 @@ class Snake:
                     tail_texture = self.tail_down
                 elif tail_relation_x == 0 and tail_relation_y == -BLOCK_SIZE:
                     tail_texture = self.tail_up
-                arcade.draw_texture_rectangle(segment[0], segment[1], SNAKE_SIZE, SNAKE_SIZE, tail_texture)
+                arcade.draw_texture_rectangle(segment_x, segment_y, SNAKE_SIZE, SNAKE_SIZE, tail_texture)
             else:
                 # Body segment
                 next_segment_x, next_segment_y = self.body[index + 1]
@@ -799,7 +801,7 @@ class Snake:
                             else:
                                 body_texture = self.body_bl
 
-                arcade.draw_texture_rectangle(segment[0], segment[1], SNAKE_SIZE, SNAKE_SIZE, body_texture)
+                arcade.draw_texture_rectangle(segment_x, segment_y, SNAKE_SIZE, SNAKE_SIZE, body_texture)
 
 
 class NoValidApplePositionError(Exception):
