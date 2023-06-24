@@ -4,7 +4,7 @@ import re
 
 SCREEN_WIDTH = 800
 SCREEN_HEIGHT = 600
-BLOCK_SIZE = 80
+BLOCK_SIZE = 40
 SNAKE_SIZE = BLOCK_SIZE
 APPLE_SIZE = BLOCK_SIZE
 MUSHROOM_SIZE = BLOCK_SIZE
@@ -184,6 +184,7 @@ class ModeSelectionView(arcade.View):
             self.party_mode = True
             game_view = GameView()
             self.window.show_view(game_view)
+
 
 class GameOverView(arcade.View):
     def __init__(self, score, party_mode):
@@ -533,9 +534,19 @@ class GameView(arcade.View):
         self.move_border = 0.2
         self.input_cooldown = False
         self.party_mode = party_mode
+        self.star = arcade.load_texture("images/star.png")
 
     def on_show_view(self):
         arcade.set_background_color(arcade.color.BLACK)
+
+    def draw_apple_count(self):
+        # Set the font style, size, and color
+        arcade.draw_texture_rectangle(460, SCREEN_HEIGHT - scoreboard_height // 2, 50, 50, self.apple.apple)
+        arcade.draw_text(str(self.snake.apple_count), 490, SCREEN_HEIGHT - scoreboard_height // 2 - 20, arcade.color.WHITE, font_size=36)
+
+    def draw_score_count(self):
+        arcade.draw_texture_rectangle(50, SCREEN_HEIGHT - scoreboard_height // 2, 50, 50, self.star)
+        arcade.draw_text(str(self.snake.score), 80, SCREEN_HEIGHT - scoreboard_height // 2 - 20, arcade.color.WHITE, font_size=36,)
 
     def on_draw(self):
         arcade.start_render()
@@ -545,13 +556,8 @@ class GameView(arcade.View):
             SCREEN_WIDTH // 2, SCREEN_HEIGHT - scoreboard_height // 2, SCREEN_WIDTH, scoreboard_height,
             arcade.color.DARK_GREEN
         )
-        arcade.draw_text(
-            f"Score: {self.snake.score}",
-            10,
-            SCREEN_HEIGHT - scoreboard_height // 2 - 25,
-            arcade.color.WHITE,
-            font_size=36,
-        )
+        self.draw_score_count()
+        self.draw_apple_count()
 
         # Draw the game area
         game_height = SCREEN_HEIGHT - scoreboard_height
@@ -633,6 +639,7 @@ class GameView(arcade.View):
                 try:
                     if self.snake.eat_apple(self.apple):
                         self.snake.score += 100
+                        self.snake.apple_count += 1
                         self.previous_apple_position = (self.apple.x, self.apple.y)
                         self.apple = Apple(self.snake, self.previous_apple_position)
                         if random.randint(1, 5) == 2:
@@ -765,6 +772,7 @@ class Snake:
         self.body.append((self.x - 2 * BLOCK_SIZE, self.y))
         self.score = 0
         self.is_snake_moving = False
+        self.apple_count = 0
 
         self.head_up = arcade.load_texture("images/head_up.png")
         self.head_down = arcade.load_texture("images/head_down.png")
@@ -923,7 +931,7 @@ class Apple:
         self.snake = snake
         self.previous_position = previous_position
         self.spawn()
-        self.apple = arcade.load_texture("images/apple_snake1.png")
+        self.apple = arcade.load_texture("images/apple.png")
 
     def spawn(self):
         valid_positions = []
@@ -942,6 +950,7 @@ class Apple:
         arcade.draw_texture_rectangle(
             self.x, self.y, APPLE_SIZE, APPLE_SIZE, self.apple
         )
+
 
 class Mushroom:
     def __init__(self, snake, previous_position=None):
