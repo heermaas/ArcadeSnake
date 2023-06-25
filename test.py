@@ -108,7 +108,7 @@ class StartView(arcade.View):
             "Anleitung",
             SCREEN_WIDTH / 2,
             SCREEN_HEIGHT / 2 - 200,
-            self.get_item_color(2),  # Color of the fourth menu item
+            self.get_item_color(2),
             font_size=22,
             anchor_x="center",
         )
@@ -116,7 +116,7 @@ class StartView(arcade.View):
             "Beenden",
             SCREEN_WIDTH / 2,
             SCREEN_HEIGHT / 2 - 250,
-            self.get_item_color(3),  # Color of the fourth menu item
+            self.get_item_color(3),
             font_size=22,
             anchor_x="center",
 
@@ -412,10 +412,17 @@ class GameOverView(arcade.View):
         self.apple = Apple(self.snake)
         self.score = score
         self.eaten_apple = apple_count
+        self.menu_items = [
+            "Neustarten",
+            "Hauptmenü",
+            "Beenden",
+        ]
+        self.hovered_item = None
         self.current_option = 0
         self.party_mode = party_mode
         self.bgm = bgm
         self.sound_effect_menu = BGM(5)
+        self.click_effect_menu = BGM(8)
         self.star = arcade.load_texture("images/star.png")
 
     def on_show_view(self):
@@ -465,7 +472,7 @@ class GameOverView(arcade.View):
             "Neustarten",
             SCREEN_WIDTH / 2,
             SCREEN_HEIGHT / 2 - 150,
-            arcade.color.WHITE,
+            self.get_item_color(0),
             font_size=22,
             anchor_x="center",
         )
@@ -473,7 +480,7 @@ class GameOverView(arcade.View):
             "Hauptmenü",
             SCREEN_WIDTH / 2,
             SCREEN_HEIGHT / 2 - 200,
-            arcade.color.WHITE,
+            self.get_item_color(1),
             font_size=22,
             anchor_x="center",
         )
@@ -481,7 +488,7 @@ class GameOverView(arcade.View):
             "Beenden",
             SCREEN_WIDTH / 2,
             SCREEN_HEIGHT / 2 - 250,
-            arcade.color.WHITE,
+            self.get_item_color(2),
             font_size=22,
             anchor_x="center",
         )
@@ -490,9 +497,16 @@ class GameOverView(arcade.View):
     def draw_cursor(self):
         cursor_x = SCREEN_WIDTH / 2 - 100
         cursor_y = SCREEN_HEIGHT / 2 - 130 - self.current_option * 50
+        cursor_color = self.get_item_color(self.current_option)
         arcade.draw_triangle_filled(
-            cursor_x, cursor_y, cursor_x - 10, cursor_y - 10, cursor_x + 10, cursor_y - 10, arcade.color.WHITE
+            cursor_x, cursor_y, cursor_x - 10, cursor_y - 10, cursor_x + 10, cursor_y - 10, cursor_color
         )
+
+    def get_item_color(self, item_index):
+        if self.current_option == item_index or self.hovered_item == item_index:
+            return 96, 124, 252
+        else:
+            return arcade.color.WHITE
 
     def update_option(self, option):
         self.current_option = option
@@ -507,6 +521,7 @@ class GameOverView(arcade.View):
                 self.sound_effect_menu.play_music(volume=0.1, loop=False)
                 self.current_option += 1
         elif key == arcade.key.ENTER:
+            self.click_effect_menu.play_music(volume=0.1, loop=False)
             if self.current_option == 0:
                 game_view = GameView(party_mode=self.party_mode)
                 self.window.show_view(game_view)
@@ -516,23 +531,49 @@ class GameOverView(arcade.View):
             elif self.current_option == 2:
                 self.window.close()  # Close the window to exit the game
 
+            self.hovered_item = self.current_option
+
+    def on_mouse_motion(self, x, y, dx, dy):
+        for i, _ in enumerate(self.menu_items):
+            item_x = SCREEN_WIDTH / 2
+            item_y = SCREEN_HEIGHT / 2 - 150 - i * 50
+            item_width = 120
+            item_height = 50
+            if i == 1:
+                item_height = 25  # Decrease the height of the hitbox for the second item
+
+            if (
+                    item_x - item_width / 2 < x < item_x + item_width / 2
+                    and item_y - item_height / 2 < y < item_y + item_height / 2
+            ):
+                if self.hovered_item != i:
+                    self.sound_effect_menu.play_music(volume=0.1, loop=False)
+                self.hovered_item = i
+                self.current_option = i
+                break
+        else:
+            self.hovered_item = None
+
     def on_mouse_press(self, x, y, button, modifiers):
         if (
                 SCREEN_WIDTH / 2 - 60 < x < SCREEN_WIDTH / 2 + 60
                 and SCREEN_HEIGHT / 2 - 180 < y < SCREEN_HEIGHT / 2 - 120
         ):
+            self.click_effect_menu.play_music(volume=0.1, loop=False)
             game_view = GameView(party_mode=self.party_mode)
             self.window.show_view(game_view)
         elif (
                 SCREEN_WIDTH / 2 - 80 < x < SCREEN_WIDTH / 2 + 80
                 and SCREEN_HEIGHT / 2 - 230 < y < SCREEN_HEIGHT / 2 - 170
         ):
+            self.click_effect_menu.play_music(volume=0.1, loop=False)
             start_view = StartView()
             self.window.show_view(start_view)
         elif (
                 SCREEN_WIDTH / 2 - 40 < x < SCREEN_WIDTH / 2 + 40
                 and SCREEN_HEIGHT / 2 - 280 < y < SCREEN_HEIGHT / 2 - 220
         ):
+            self.click_effect_menu.play_music(volume=0.1, loop=False)
             self.window.close()  # Close the window to exit the game
 
 
