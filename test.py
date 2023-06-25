@@ -635,6 +635,7 @@ class SaveScoreView(arcade.View):
         self.bgm.play_music(volume=0.1, loop=True)
         self.game_bgm = game_view_bgm
         self.game_bgm.stop_audio()
+        self.click_effect_menu = BGM(8)
 
     def on_show_view(self):
         arcade.set_background_color(arcade.color.BLACK)
@@ -702,6 +703,7 @@ class SaveScoreView(arcade.View):
                 self.current_option = 1
                 self.sound_effect_menu.play_music(volume=0.1, loop=False)
         elif key == arcade.key.ENTER:
+            self.click_effect_menu.play_music(volume=0.1, loop=False)
             if self.current_option == 0:
                 save_name_view = SaveScoreNameView(self.score, self.party_mode, self.bgm, self.apple_count)
                 self.window.show_view(save_name_view)
@@ -734,12 +736,14 @@ class SaveScoreView(arcade.View):
                 SCREEN_WIDTH / 2 - 120 < x < SCREEN_WIDTH / 2 - 70
                 and SCREEN_HEIGHT / 2 - 200 < y < SCREEN_HEIGHT / 2 - 170
         ):
+            self.click_effect_menu.play_music(volume=0.1, loop=False)
             save_name_view = SaveScoreNameView(self.score, self.party_mode, self.bgm)
             self.window.show_view(save_name_view)
         elif (
                 SCREEN_WIDTH / 2 + 80 < x < SCREEN_WIDTH / 2 + 130
                 and SCREEN_HEIGHT / 2 - 200 < y < SCREEN_HEIGHT / 2 - 170
         ):
+            self.click_effect_menu.play_music(volume=0.1, loop=False)
             game_over_view = GameOverView(self.score, self.party_mode, self.bgm, self.apple_count)
             self.window.show_view(game_over_view)
 
