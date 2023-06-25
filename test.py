@@ -25,6 +25,7 @@ class StartView(arcade.View):
             "Beenden",
         ]
         self.hovered_item = None
+        self.current_option = 0
 
     def on_show_view(self):
         arcade.set_background_color(arcade.color.AO)
@@ -35,7 +36,6 @@ class StartView(arcade.View):
             GAME_TITLE,
             SCREEN_WIDTH / 2,
             SCREEN_HEIGHT / 2 + 50,
-            arcade.color.WHITE,
             font_size=64,
             anchor_x="center",
         )
@@ -55,39 +55,45 @@ class StartView(arcade.View):
             font_size=10,
             anchor_x="center",
         )
-        for i, item in enumerate(self.menu_items):
-            x = SCREEN_WIDTH / 2
-            y = SCREEN_HEIGHT / 2 - 100 - i * 50
-            if self.hovered_item == i:
-                arcade.draw_text(
-                    item,
-                    x,
-                    y,
-                    (96, 124, 252),
-                    font_size=22,
-                    anchor_x="center",
-                )
-            else:
-                arcade.draw_text(
-                    item,
-                    x,
-                    y,
-                    arcade.color.WHITE,
-                    font_size=22,
-                    anchor_x="center",
-                )
+        arcade.draw_text(
+            "Spiel starten",
+            SCREEN_WIDTH / 2,
+            SCREEN_HEIGHT / 2 - 100,
+            self.get_item_color(0),  # Color of the second menu item
+            font_size=22,
+            anchor_x="center",
+        )
+        arcade.draw_text(
+            "Highscore",
+            SCREEN_WIDTH / 2,
+            SCREEN_HEIGHT / 2 - 150,
+            self.get_item_color(1),  # Color of the third menu item
+            font_size=22,
+            anchor_x="center",
+        )
+        arcade.draw_text(
+            "Beenden",
+            SCREEN_WIDTH / 2,
+            SCREEN_HEIGHT / 2 - 200,
+            self.get_item_color(2),  # Color of the fourth menu item
+            font_size=22,
+            anchor_x="center",
+        )
         self.draw_cursor()
 
     def draw_cursor(self):
         cursor_x = SCREEN_WIDTH / 2 - 100
         cursor_y = SCREEN_HEIGHT / 2 - 80 - self.current_option * 50
-        if self.hovered_item is not None:
-            cursor_color = (96, 124, 252)
-        else:
-            cursor_color = arcade.color.WHITE
+        cursor_color = self.get_item_color(self.current_option)
         arcade.draw_triangle_filled(
             cursor_x, cursor_y, cursor_x - 10, cursor_y - 10, cursor_x + 10, cursor_y - 10, cursor_color
         )
+
+    def get_item_color(self, item_index):
+        if self.current_option == item_index or self.hovered_item == item_index:
+            return 96, 124, 252
+        else:
+            return arcade.color.WHITE
 
     def update_option(self, option):
         self.current_option = option
@@ -686,6 +692,7 @@ class GameView(arcade.View):
 
                 try:
                     if self.snake.eat_apple(self.apple):
+                        self.snake.play_eating_sound()
                         self.snake.score += 100
                         self.snake.apple_count += 1
                         self.previous_apple_position = (self.apple.x, self.apple.y)
@@ -694,6 +701,7 @@ class GameView(arcade.View):
                             self.mushroom = Mushroom(self.snake, self.previous_mushroom_position)
 
                     if self.snake.eat_mushroom(self.mushroom):
+                        self.snake.play_mushroom_sound()
                         self.move_border *= 1-(2.5*self.move_border)
                         self.previous_mushroom_position = (self.mushroom.x, self.mushroom.y)
                         self.mushroom = Mushroom(self.snake, self.previous_mushroom_position)
@@ -870,6 +878,8 @@ class Snake:
         self.body_tl = arcade.load_texture("images/body_tl.png")
         self.body_br = arcade.load_texture("images/body_br.png")
         self.body_bl = arcade.load_texture("images/body_bl.png")
+        self.eating_sound = arcade.load_sound('sounds/eating-sound.mp3')
+        self.mushroom_sound = arcade.load_sound('sounds/eat_mushroom.mp3')
 
     def move(self):
         movements = {
@@ -882,6 +892,12 @@ class Snake:
         move = movements.get(self.direction, (0, 0))
         self.x += move[0]
         self.y += move[1]
+
+    def play_eating_sound(self):
+        self.eating_sound.play(volume=0.1)
+
+    def play_mushroom_sound(self):
+        self.mushroom_sound.play()
 
     def change_direction(self, new_direction):
         if new_direction == "right" and self.direction != "left":
