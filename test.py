@@ -551,7 +551,7 @@ class SaveScoreNameView(arcade.View):
     def on_draw(self):
         arcade.start_render()
         arcade.draw_text(
-            "Save Score",
+            "Punktzahl speichern",
             SCREEN_WIDTH / 2,
             SCREEN_HEIGHT / 2,
             arcade.color.WHITE,
@@ -559,7 +559,7 @@ class SaveScoreNameView(arcade.View):
             anchor_x="center",
         )
         arcade.draw_text(
-            f"Do you want to save your score of {self.score}?",
+            f"Willst du deine folgende Punktzahl speichern: {self.score}?",
             SCREEN_WIDTH / 2,
             SCREEN_HEIGHT / 2 - 100,
             arcade.color.WHITE,
@@ -567,7 +567,7 @@ class SaveScoreNameView(arcade.View):
             anchor_x="center",
         )
         arcade.draw_text(
-            "Enter your name:",
+            "Gebe deinen Namen ein:",
             SCREEN_WIDTH / 2,
             SCREEN_HEIGHT / 2 - 150,
             arcade.color.WHITE,
@@ -720,6 +720,8 @@ class SaveScoreView(arcade.View):
                     item_x - item_width / 2 < x < item_x + item_width / 2
                     and item_y - item_height / 2 < y < item_y + item_height / 2
             ):
+                if self.hovered_item != i:
+                    self.sound_effect_menu.play_music(volume=0.1, loop=False)
                 self.hovered_item = i
                 self.current_option = i  # Update current_option as well
                 break
@@ -728,16 +730,16 @@ class SaveScoreView(arcade.View):
 
     def on_mouse_press(self, x, y, button, modifiers):
         if (
-                SCREEN_WIDTH / 2 - 120 < x < SCREEN_WIDTH / 2 - 80
-                and SCREEN_HEIGHT / 2 - 180 < y < SCREEN_HEIGHT / 2 - 130
+                SCREEN_WIDTH / 2 - 120 < x < SCREEN_WIDTH / 2 - 70
+                and SCREEN_HEIGHT / 2 - 200 < y < SCREEN_HEIGHT / 2 - 170
         ):
-            save_name_view = SaveScoreNameView(self.score, self.party_mode)
+            save_name_view = SaveScoreNameView(self.score, self.party_mode, self.bgm)
             self.window.show_view(save_name_view)
         elif (
-                SCREEN_WIDTH / 2 - 40 < x < SCREEN_WIDTH / 2 + 40
-                and SCREEN_HEIGHT / 2 - 280 < y < SCREEN_HEIGHT / 2 - 220
+                SCREEN_WIDTH / 2 + 80 < x < SCREEN_WIDTH / 2 + 130
+                and SCREEN_HEIGHT / 2 - 200 < y < SCREEN_HEIGHT / 2 - 170
         ):
-            game_over_view = GameOverView(self.score, self.party_mode)
+            game_over_view = GameOverView(self.score, self.party_mode, self.bgm, self.apple_count)
             self.window.show_view(game_over_view)
 
 
