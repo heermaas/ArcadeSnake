@@ -21,7 +21,7 @@ class StartView(arcade.View):
         self.current_option = 0
         self.menu_items = [
             "Spiel starten",
-            "Highscore",
+            "Leaderboard",
             "Beenden",
         ]
         self.hovered_item = None
@@ -64,7 +64,7 @@ class StartView(arcade.View):
             anchor_x="center",
         )
         arcade.draw_text(
-            "Highscore",
+            "Leaderboard",
             SCREEN_WIDTH / 2,
             SCREEN_HEIGHT / 2 - 150,
             self.get_item_color(1),  # Color of the third menu item
@@ -148,40 +148,52 @@ class StartView(arcade.View):
         self.window.close()
 
 
-
-
 class ModeSelectionView(arcade.View):
     def __init__(self):
         super().__init__()
         self.current_option = 0
+        self.menu_items = [
+            "Normal",
+            "Party",
+            "Zurück",
+        ]
         self.party_mode = False
+        self.hovered_item = -1
 
     def on_show(self):
-        arcade.set_background_color(arcade.color.BLACK)
+        arcade.set_background_color(arcade.color.AO)
 
     def on_draw(self):
         arcade.start_render()
         arcade.draw_text(
-            "Select Game Mode",
+            "Wähle einen Modus",
             SCREEN_WIDTH / 2,
-            SCREEN_HEIGHT / 2,
+            SCREEN_HEIGHT / 2 + 50,
             arcade.color.WHITE,
             font_size=64,
             anchor_x="center",
         )
         arcade.draw_text(
-            "Normal Mode",
+            "Normal",
             SCREEN_WIDTH / 2,
             SCREEN_HEIGHT / 2 - 100,
-            arcade.color.WHITE,
+            self.get_item_color(0),
             font_size=22,
             anchor_x="center",
         )
         arcade.draw_text(
-            "Party Mode",
+            "Party",
             SCREEN_WIDTH / 2,
             SCREEN_HEIGHT / 2 - 150,
-            arcade.color.WHITE,
+            self.get_item_color(1),
+            font_size=22,
+            anchor_x="center",
+        )
+        arcade.draw_text(
+            "Zurück",
+            SCREEN_WIDTH / 2,
+            SCREEN_HEIGHT / 2 - 200,
+            self.get_item_color(2),
             font_size=22,
             anchor_x="center",
         )
@@ -190,9 +202,16 @@ class ModeSelectionView(arcade.View):
     def draw_cursor(self):
         cursor_x = SCREEN_WIDTH / 2 - 100
         cursor_y = SCREEN_HEIGHT / 2 - 80 - self.current_option * 50
+        cursor_color = self.get_item_color(self.current_option)
         arcade.draw_triangle_filled(
-            cursor_x, cursor_y, cursor_x - 10, cursor_y - 10, cursor_x + 10, cursor_y - 10, arcade.color.WHITE
+            cursor_x, cursor_y, cursor_x - 10, cursor_y - 10, cursor_x + 10, cursor_y - 10, cursor_color
         )
+
+    def get_item_color(self, item_index):
+        if self.current_option == item_index or self.hovered_item == item_index:
+            return 96, 124, 252
+        else:
+            return arcade.color.WHITE
 
     def update_option(self, option):
         self.current_option = option
@@ -202,7 +221,7 @@ class ModeSelectionView(arcade.View):
             if self.current_option > 0:
                 self.current_option -= 1
         elif key == arcade.key.DOWN or key == arcade.key.S:
-            if self.current_option < 1:
+            if self.current_option < 2:
                 self.current_option += 1
         elif key == arcade.key.ENTER:
             if self.current_option == 0:
@@ -212,21 +231,38 @@ class ModeSelectionView(arcade.View):
                 self.party_mode = True
                 game_view = GameView(party_mode=self.party_mode)
                 self.window.show_view(game_view)
+            elif self.current_option == 2:
+                start_view = StartView()
+                self.window.show_view(start_view)
+
+    def on_mouse_motion(self, x, y, dx, dy):
+        for i, _ in enumerate(self.menu_items):
+            item_x = SCREEN_WIDTH / 2
+            item_y = SCREEN_HEIGHT / 2 - 100 - i * 40
+            item_width = 200
+            item_height = 30
+            if (
+                    item_x - item_width / 2 < x < item_x + item_width / 2
+                    and item_y - item_height / 2 < y < item_y + item_height / 2
+            ):
+                self.hovered_item = i
+                self.current_option = i  # Update current_option as well
+                break
+        else:
+            self.hovered_item = None
 
     def on_mouse_press(self, x, y, button, modifiers):
-        if (
-                SCREEN_WIDTH / 2 - 50 < x < SCREEN_WIDTH / 2 + 50
-                and SCREEN_HEIGHT / 2 - 130 < y < SCREEN_HEIGHT / 2 - 70
-        ):
-            game_view = GameView()
-            self.window.show_view(game_view)
-        elif (
-                SCREEN_WIDTH / 2 - 80 < x < SCREEN_WIDTH / 2 + 80
-                and SCREEN_HEIGHT / 2 - 180 < y < SCREEN_HEIGHT / 2 - 120
-        ):
-            self.party_mode = True
-            game_view = GameView()
-            self.window.show_view(game_view)
+        if self.hovered_item is not None:
+            if self.hovered_item == 0:
+                game_view = GameView()
+                self.window.show_view(game_view)
+            elif self.hovered_item == 1:
+                self.party_mode = True
+                game_view = GameView()
+                self.window.show_view(game_view)
+            elif self.hovered_item == 2:
+                start_view = StartView()
+                self.window.show_view(start_view)
 
 
 class GameOverView(arcade.View):
@@ -245,7 +281,7 @@ class GameOverView(arcade.View):
             "Game Over",
             SCREEN_WIDTH / 2,
             SCREEN_HEIGHT / 2,
-            arcade.color.WHITE,
+            arcade.color.RED,
             font_size=64,
             anchor_x="center",
         )
@@ -578,6 +614,7 @@ class GameView(arcade.View):
         self.input_cooldown = False
         self.party_mode = party_mode
         self.star = arcade.load_texture("images/star.png")
+        self.music = arcade.load_sound("sounds/backgroundmusic.ogg")
         self.total_time = 0.0
         self.timer_text = arcade.Text(
             text="00:00:00",
@@ -1071,6 +1108,7 @@ class Mushroom:
         arcade.draw_texture_rectangle(
             self.x, self.y, MUSHROOM_SIZE, MUSHROOM_SIZE, self.mushroom
         )
+
 
 def main():
     window = arcade.Window(SCREEN_WIDTH, SCREEN_HEIGHT, GAME_TITLE)
