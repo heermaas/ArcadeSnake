@@ -537,12 +537,13 @@ class GameOverView(arcade.View):
 
 
 class SaveScoreNameView(arcade.View):
-    def __init__(self, score, party_mode, bgm):
+    def __init__(self, score, party_mode, bgm, apple_count):
         super().__init__()
         self.score = score
         self.player_name = ""
         self.error_message = ""
         self.party_mode = party_mode
+        self.apple_count = apple_count
         self.bgm = bgm
 
     def on_show_view(self):
@@ -597,7 +598,7 @@ class SaveScoreNameView(arcade.View):
             self.player_name = self.player_name[:-1]
         elif key == arcade.key.ENTER:
             self.save_score_with_name()
-            game_over_view = GameOverView(self.score, self.party_mode, self.bgm)
+            game_over_view = GameOverView(self.score, self.party_mode, self.bgm, self.apple_count)
             self.window.show_view(game_over_view)
         elif re.match(r"^[a-zA-Z0-9]$", chr(key)):
             if len(self.player_name) < 8:
@@ -613,7 +614,7 @@ class SaveScoreNameView(arcade.View):
 
     def on_mouse_press(self, x, y, button, modifiers):
         self.save_score_with_name()
-        game_over_view = GameOverView(self.score, self.party_mode, self.bgm)
+        game_over_view = GameOverView(self.score, self.party_mode, self.bgm, self.apple_count)
         self.window.show_view(game_over_view)
 
 
@@ -702,7 +703,7 @@ class SaveScoreView(arcade.View):
                 self.sound_effect_menu.play_music(volume=0.1, loop=False)
         elif key == arcade.key.ENTER:
             if self.current_option == 0:
-                save_name_view = SaveScoreNameView(self.score, self.party_mode, self.bgm)
+                save_name_view = SaveScoreNameView(self.score, self.party_mode, self.bgm, self.apple_count)
                 self.window.show_view(save_name_view)
             else:
                 game_over_view = GameOverView(self.score, self.party_mode, self.bgm, self.apple_count)
