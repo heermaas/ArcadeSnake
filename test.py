@@ -19,7 +19,8 @@ scoreboard_height = BLOCK_SIZE * 2
 
 class BGM:
     def __init__(self, song_index):
-        self.music_list = ["bgm/MainMenu.mp3", "bgm/Battle.mp3", "bgm/GameOver.mp3", "bgm/Chomp.mp3", "bgm/Wall.mp3"]
+        self.music_list = ["bgm/MainMenu2.mp3", "bgm/Battle.mp3", "bgm/GameOver.mp3", "bgm/Chomp.mp3", "bgm/Wall.mp3",
+                           "bgm/Switch.mp3"]
         self.current_song_index = song_index
         self.player = None
         self.music = None
@@ -50,8 +51,8 @@ class StartView(arcade.View):
         self.hovered_item = None
         self.current_option = 0
         self.bgm = BGM(0)
-        self.sound_effect_menu = BGM(3)
-        self.bgm.play_music(volume=0.5, loop=True)
+        self.sound_effect_menu = BGM(5)
+        self.bgm.play_music(volume=0.3, loop=True)
 
     def on_show_view(self):
         arcade.set_background_color(arcade.color.AO)
@@ -139,11 +140,11 @@ class StartView(arcade.View):
     def on_key_press(self, key, modifiers):
         if key == arcade.key.UP or key == arcade.key.W:
             if self.current_option > 0:
-                self.sound_effect_menu.play_music(volume=0.5, loop=False)
+                self.sound_effect_menu.play_music(volume=0.1, loop=False)
                 self.current_option -= 1
         elif key == arcade.key.DOWN or key == arcade.key.S:
             if self.current_option < len(self.menu_items) - 1:
-                self.sound_effect_menu.play_music(volume=0.5, loop=False)
+                self.sound_effect_menu.play_music(volume=0.1, loop=False)
                 self.current_option += 1
         elif key == arcade.key.ENTER:
             if self.current_option == 0:
@@ -274,6 +275,7 @@ class ModeSelectionView(arcade.View):
             "Zurück",
         ]
         self.party_mode = False
+        self.sound_effect_menu = BGM(5)
         self.hovered_item = -1
 
     def on_show(self):
@@ -335,11 +337,11 @@ class ModeSelectionView(arcade.View):
     def on_key_press(self, key, modifiers):
         if key == arcade.key.UP or key == arcade.key.W:
             if self.current_option > 0:
-                self.sound_effect_menu.play_music(volume=0.5, loop=False)
+                self.sound_effect_menu.play_music(volume=0.1, loop=False)
                 self.current_option -= 1
         elif key == arcade.key.DOWN or key == arcade.key.S:
             if self.current_option < 2:
-                self.sound_effect_menu.play_music(volume=0.5, loop=False)
+                self.sound_effect_menu.play_music(volume=0.1, loop=False)
                 self.current_option += 1
         elif key == arcade.key.ENTER:
             if self.current_option == 0:
@@ -742,7 +744,7 @@ class GameView(arcade.View):
         self.previous_apple_position = (self.apple.x, self.apple.y)
         if party_mode:
             self.mushroom = Mushroom(self.snake)
-            self.previous_mushroom_position = (self.mushroom.x, self.mushroom.y)
+            self.previous_apple_position = (self.mushroom.x, self.mushroom.y)
         self.paused = False
         self.current_option = 0
         self.movement_timer = 0
@@ -873,7 +875,7 @@ class GameView(arcade.View):
                         self.previous_apple_position = (self.apple.x, self.apple.y)
                         self.apple = Apple(self.snake, self.previous_apple_position)
                         if self.party_mode and random.randint(1, 5) == 2:
-                            self.mushroom = Mushroom(self.snake, self.previous_mushroom_position)
+                            self.mushroom = Mushroom(self.snake, self.previous_apple_position)
 
                     if self.party_mode:
                         if self.snake.eat_mushroom(self.mushroom):
@@ -881,8 +883,8 @@ class GameView(arcade.View):
                             border_timer = threading.Timer(10, self.higher_border, args=[factor])
                             border_timer.start()
                             self.move_border *= factor
-                            self.previous_mushroom_position = (self.mushroom.x, self.mushroom.y)
-                            self.mushroom = Mushroom(self.snake, self.previous_mushroom_position)
+                            self.previous_apple_position = (self.mushroom.x, self.mushroom.y)
+                            self.mushroom = Mushroom(self.snake, self.previous_apple_position)
 
                 except NoValidApplePositionError:
                     save_score_view = SaveScoreView(self.snake.score, self.bgm)
