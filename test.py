@@ -1,6 +1,7 @@
 import arcade
 import random
 import re
+import threading
 
 SCREEN_WIDTH = 800
 SCREEN_HEIGHT = 600
@@ -821,13 +822,16 @@ class GameView(arcade.View):
                         self.snake.apple_count += 1
                         self.previous_apple_position = (self.apple.x, self.apple.y)
                         self.apple = Apple(self.snake, self.previous_apple_position)
-                        if random.randint(1, 5) == 2:
+                        if self.party_mode and random.randint(1, 5) == 2:
                             self.mushroom = Mushroom(self.snake, self.previous_mushroom_position)
 
                     if self.party_mode:
                         if self.snake.eat_mushroom(self.mushroom):
                             self.snake.play_mushroom_sound()
-                            self.move_border *= 1-(2.5*self.move_border)
+                            factor = 1-(2.5*self.move_border)
+                            border_timer = threading.Timer(10, self.higher_border, args=[factor])
+                            border_timer.start()
+                            self.move_border *= factor
                             self.previous_mushroom_position = (self.mushroom.x, self.mushroom.y)
                             self.mushroom = Mushroom(self.snake, self.previous_mushroom_position)
 
@@ -841,6 +845,9 @@ class GameView(arcade.View):
 
                 self.movement_timer = 0
                 self.input_cooldown = False
+
+    def higher_border(self, factor):
+        self.move_border /= factor
 
     def update_option(self, option):
         pass  # This is here because PauseView inherits from GameView
