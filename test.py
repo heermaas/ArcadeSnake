@@ -21,6 +21,7 @@ class StartView(arcade.View):
         self.current_option = 0
         self.menu_items = [
             "Spiel starten",
+            "Anleitung",
             "Leaderboard",
             "Beenden",
         ]
@@ -72,10 +73,18 @@ class StartView(arcade.View):
             anchor_x="center",
         )
         arcade.draw_text(
-            "Beenden",
+            "Anleitung",
             SCREEN_WIDTH / 2,
             SCREEN_HEIGHT / 2 - 200,
-            self.get_item_color(2),  # Color of the fourth menu item
+            self.get_item_color(2),  # Color of the third menu item
+            font_size=22,
+            anchor_x="center",
+        )
+        arcade.draw_text(
+            "Beenden",
+            SCREEN_WIDTH / 2,
+            SCREEN_HEIGHT / 2 - 250,
+            self.get_item_color(3),  # Color of the fourth menu item
             font_size=22,
             anchor_x="center",
         )
@@ -113,6 +122,9 @@ class StartView(arcade.View):
                 high_scores_view = HighScoresView()
                 self.window.show_view(high_scores_view)
             elif self.current_option == 2:
+                instruction_view = InstructionsView()
+                self.window.show_view(instruction_view)
+            elif self.current_option == 3:
                 self.exit_game()
 
         self.hovered_item = self.current_option
@@ -142,10 +154,82 @@ class StartView(arcade.View):
                 high_scores_view = HighScoresView()
                 self.window.show_view(high_scores_view)
             elif self.hovered_item == 2:
+                instruction_view = InstructionsView()
+                self.window.show_view(instruction_view)
+            elif self.hovered_item == 3:
                 self.exit_game()
 
     def exit_game(self):
         self.window.close()
+
+
+class InstructionsView(arcade.View):
+    def __init__(self):
+        super().__init__()
+        self.current_option = 0
+        self.arrow_keys = arcade.load_texture("images/ArrowKeys.png")
+        self.wasd_keys = arcade.load_texture("images/WASDKeys.png")
+
+    def on_show_view(self):
+        arcade.set_background_color(arcade.color.AO)
+
+    def on_draw(self):
+        arcade.start_render()
+        arcade.draw_text(
+            "Anleitung",
+            SCREEN_WIDTH / 2,
+            SCREEN_HEIGHT / 2 + 200,
+            arcade.color.WHITE,
+            font_size=48,
+            anchor_x="center",
+        )
+        arcade.draw_texture_rectangle(
+            SCREEN_WIDTH // 2 + 200,
+            SCREEN_HEIGHT // 2 + 50,
+            self.wasd_keys.width // 2,
+            self.wasd_keys.height // 2,
+            self.wasd_keys,
+        )
+        arcade.draw_texture_rectangle(
+            SCREEN_WIDTH // 2 - 200,
+            SCREEN_HEIGHT // 2 + 45,
+            self.arrow_keys.width // 2,
+            self.arrow_keys.height // 2,
+            self.arrow_keys,
+        )
+        arcade.draw_text(
+            "Benutze die Pfeilasten oder WASD um die Schlange zu bewegen.",
+            SCREEN_WIDTH / 2,
+            SCREEN_HEIGHT / 2 - 100,
+            arcade.color.WHITE,
+            font_size=18,
+            anchor_x="center",
+        )
+        arcade.draw_text(
+            "Sammel so viele Äpfel wie es geht und berühre nicht die Wand oder dich selber!",
+            SCREEN_WIDTH / 2,
+            SCREEN_HEIGHT / 2 - 150,
+            arcade.color.WHITE,
+            font_size=15,
+            anchor_x="center",
+        )
+        arcade.draw_text(
+            "Klicke Enter oder drücke die Maus um zurückzukehren",
+            SCREEN_WIDTH / 2,
+            SCREEN_HEIGHT / 2 - 230,
+            arcade.color.WHITE,
+            font_size=18,
+            anchor_x="center",
+        )
+
+    def on_key_press(self, key, modifiers):
+        if key == arcade.key.ENTER:
+            start_view = StartView()
+            self.window.show_view(start_view)
+
+    def on_mouse_press(self, x, y, button, modifiers):
+        start_view = StartView()
+        self.window.show_view(start_view)
 
 
 class ModeSelectionView(arcade.View):
@@ -294,7 +378,7 @@ class GameOverView(arcade.View):
             anchor_x="center",
         )
         arcade.draw_text(
-            "Restart",
+            "Neustarten",
             SCREEN_WIDTH / 2,
             SCREEN_HEIGHT / 2 - 150,
             arcade.color.WHITE,
@@ -302,7 +386,7 @@ class GameOverView(arcade.View):
             anchor_x="center",
         )
         arcade.draw_text(
-            "Main Menu",
+            "Hauptmenü",
             SCREEN_WIDTH / 2,
             SCREEN_HEIGHT / 2 - 200,
             arcade.color.WHITE,
@@ -310,7 +394,7 @@ class GameOverView(arcade.View):
             anchor_x="center",
         )
         arcade.draw_text(
-            "Exit",
+            "Beenden",
             SCREEN_WIDTH / 2,
             SCREEN_HEIGHT / 2 - 250,
             arcade.color.WHITE,
@@ -724,6 +808,7 @@ class GameView(arcade.View):
                 self.snake.is_snake_moving = True
                 self.snake.move()
                 if self.snake.check_collision():
+                    self.snake.death_sound.play()
                     save_score_view = SaveScoreView(self.snake.score, self.party_mode)
                     self.window.show_view(save_score_view)
 
@@ -915,8 +1000,9 @@ class Snake:
         self.body_tl = arcade.load_texture("images/body_tl.png")
         self.body_br = arcade.load_texture("images/body_br.png")
         self.body_bl = arcade.load_texture("images/body_bl.png")
-        self.eating_sound = arcade.load_sound('sounds/eating-sound.mp3')
-        self.mushroom_sound = arcade.load_sound('sounds/eat_mushroom.mp3')
+        self.eating_sound = arcade.load_sound("sounds/eating-sound.mp3")
+        self.mushroom_sound = arcade.load_sound("sounds/eat_mushroom.mp3")
+        self.death_sound = arcade.load_sound("sounds/deathsound.mp3")
 
     def move(self):
         movements = {
