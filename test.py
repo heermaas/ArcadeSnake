@@ -22,7 +22,7 @@ scoreboard_height = BLOCK_SIZE * 2
 class BGM:
     def __init__(self, song_index):
         self.music_list = ["bgm/MainMenu2.mp3", "bgm/GameMusic2.mp3", "bgm/GameOver.mp3", "bgm/Chomp.mp3", "bgm/Death.mp3",
-                           "bgm/Switch.mp3", "bgm/mirror.mp3", "bgm/diamond.mp3"]
+                           "bgm/Switch.mp3", "bgm/mirror.mp3", "bgm/diamond.mp3", "bgm/Click.wav"]
         self.current_song_index = song_index
         self.player = None
         self.music = None
@@ -47,13 +47,14 @@ class StartView(arcade.View):
         self.menu_items = [
             "Spiel starten",
             "Anleitung",
-            "Leaderboard",
+            "Bestenliste",
             "Beenden",
         ]
         self.hovered_item = None
         self.current_option = 0
         self.bgm = BGM(0)
         self.sound_effect_menu = BGM(5)
+        self.click_effect_menu = BGM(8)
         self.bgm.play_music(volume=0.3, loop=True)
 
     def on_show_view(self):
@@ -96,7 +97,7 @@ class StartView(arcade.View):
             anchor_x="center",
         )
         arcade.draw_text(
-            "Leaderboard",
+            "Bestenliste",
             SCREEN_WIDTH / 2,
             SCREEN_HEIGHT / 2 - 150,
             self.get_item_color(1),  # Color of the third menu item
@@ -149,6 +150,7 @@ class StartView(arcade.View):
                 self.sound_effect_menu.play_music(volume=0.1, loop=False)
                 self.current_option += 1
         elif key == arcade.key.ENTER:
+            self.click_effect_menu.play_music(volume=0.1, loop=False)
             if self.current_option == 0:
                 mode_selection_view = ModeSelectionView()
                 self.window.show_view(mode_selection_view)
@@ -169,10 +171,17 @@ class StartView(arcade.View):
             item_y = SCREEN_HEIGHT / 2 - 100 - i * 40
             item_width = 200
             item_height = 30
+
+            # Adjust hitbox size for the second menu item
+            if i == 1:
+                item_height = 25  # Decrease the height of the hitbox for the second item
+
             if (
                     item_x - item_width / 2 < x < item_x + item_width / 2
                     and item_y - item_height / 2 < y < item_y + item_height / 2
             ):
+                if self.hovered_item != i:
+                    self.sound_effect_menu.play_music(volume=0.1, loop=False)
                 self.hovered_item = i
                 self.current_option = i
                 break
@@ -181,6 +190,7 @@ class StartView(arcade.View):
 
     def on_mouse_press(self, x, y, button, modifiers):
         if self.hovered_item is not None:
+            self.click_effect_menu.play_music(volume=0.1, loop=False)
             if self.hovered_item == 0:
                 mode_selection_view = ModeSelectionView()
                 self.window.show_view(mode_selection_view)
@@ -204,6 +214,7 @@ class InstructionsView(arcade.View):
         self.arrow_keys = arcade.load_texture("images/ArrowKeys.png")
         self.wasd_keys = arcade.load_texture("images/WASDKeys.png")
         self.sound_effect_menu = BGM(3)
+        self.click_effect_menu = BGM(8)
 
     def on_show_view(self):
         arcade.set_background_color(arcade.color.AO)
@@ -249,7 +260,7 @@ class InstructionsView(arcade.View):
             anchor_x="center",
         )
         arcade.draw_text(
-            "Klicke Enter oder drücke die Maus um zurückzukehren",
+            "Drücke Enter oder klicke die Maus um zurückzukehren",
             SCREEN_WIDTH / 2,
             SCREEN_HEIGHT / 2 - 230,
             arcade.color.WHITE,
@@ -259,10 +270,12 @@ class InstructionsView(arcade.View):
 
     def on_key_press(self, key, modifiers):
         if key == arcade.key.ENTER:
+            self.click_effect_menu.play_music(volume=0.1, loop=False)
             start_view = StartView()
             self.window.show_view(start_view)
 
     def on_mouse_press(self, x, y, button, modifiers):
+        self.click_effect_menu.play_music(volume=0.1, loop=False)
         start_view = StartView()
         self.window.show_view(start_view)
 
@@ -706,7 +719,7 @@ class HighScoresView(arcade.View):
         self.scores = []
 
     def on_show_view(self):
-        arcade.set_background_color(arcade.color.BLACK)
+        arcade.set_background_color(arcade.color.AO)
         self.load_scores()
 
     def load_scores(self):
@@ -721,7 +734,7 @@ class HighScoresView(arcade.View):
     def on_draw(self):
         arcade.start_render()
         arcade.draw_text(
-            "High Scores",
+            "Bestenliste",
             SCREEN_WIDTH / 2,
             SCREEN_HEIGHT / 2 + 100,
             arcade.color.WHITE,
@@ -742,7 +755,7 @@ class HighScoresView(arcade.View):
                 )
         else:
             arcade.draw_text(
-                "No high scores yet!",
+                "Noch keinen Highscore",
                 SCREEN_WIDTH / 2,
                 SCREEN_HEIGHT / 2 + 50,
                 arcade.color.WHITE,
@@ -750,7 +763,7 @@ class HighScoresView(arcade.View):
                 anchor_x="center",
             )
         arcade.draw_text(
-            "Press Enter or Click Mouse to Return",
+            "Drücke Enter oder klicke die Maus um zurückzukehren",
             SCREEN_WIDTH / 2,
             SCREEN_HEIGHT / 2 - 200,  # Adjust the vertical position here
             arcade.color.WHITE,
