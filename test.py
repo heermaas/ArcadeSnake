@@ -9,6 +9,8 @@ BLOCK_SIZE = 40
 SNAKE_SIZE = BLOCK_SIZE
 APPLE_SIZE = BLOCK_SIZE
 MUSHROOM_SIZE = BLOCK_SIZE
+MIRROR_SIZE = BLOCK_SIZE
+DIAMOND_SIZE = BLOCK_SIZE
 SNAKE_LENGTH = 3
 GAME_TITLE = "Snake Game"
 CAPTION = "Navigiere, Wachse, Überlebe!"
@@ -694,10 +696,18 @@ class GameView(arcade.View):
         if party_mode:
             self.mushroom = Mushroom(self.snake)
             self.previous_mushroom_position = (self.mushroom.x, self.mushroom.y)
+            self.mushroom = None
+            self.mirror = Mirror(self.snake)
+            self.previous_mirror_position = (self.mirror.x, self.mirror.y)
+            self.mirror = None
+            self.diamond = Diamond(self.snake)
+            self.previous_diamond_position = (self.diamond.x, self.diamond.y)
+            self.diamond = None
         self.paused = False
         self.current_option = 0
         self.movement_timer = 0
-        self.move_border = 0.2
+        self.move_border = 0.15
+        self.mirrored_control = False
         self.input_cooldown = False
         self.party_mode = party_mode
         self.star = arcade.load_texture("images/star.png")
@@ -765,8 +775,12 @@ class GameView(arcade.View):
 
         self.snake.draw()
         self.apple.draw()
-        if self.party_mode:
+        if self.party_mode and self.mushroom is not None:
             self.mushroom.draw()
+        if self.party_mode and self.mirror is not None:
+            self.mirror.draw()
+        if self.party_mode and self.diamond is not None:
+            self.diamond.draw()
 
     def on_key_press(self, key, modifiers):
         if self.paused:
@@ -790,16 +804,28 @@ class GameView(arcade.View):
                     pause_view = PauseView(self)
                     self.window.show_view(pause_view)
                 else:
-                    directions = {
-                        arcade.key.RIGHT: "right",
-                        arcade.key.D: "right",
-                        arcade.key.LEFT: "left",
-                        arcade.key.A: "left",
-                        arcade.key.UP: "up",
-                        arcade.key.W: "up",
-                        arcade.key.DOWN: "down",
-                        arcade.key.S: "down",
-                    }
+                    if self.mirrored_control:
+                        directions = {
+                            arcade.key.RIGHT: "left",
+                            arcade.key.D: "left",
+                            arcade.key.LEFT: "right",
+                            arcade.key.A: "right",
+                            arcade.key.UP: "down",
+                            arcade.key.W: "down",
+                            arcade.key.DOWN: "up",
+                            arcade.key.S: "up",
+                        }
+                    else:
+                        directions = {
+                            arcade.key.RIGHT: "right",
+                            arcade.key.D: "right",
+                            arcade.key.LEFT: "left",
+                            arcade.key.A: "left",
+                            arcade.key.UP: "up",
+                            arcade.key.W: "up",
+                            arcade.key.DOWN: "down",
+                            arcade.key.S: "down",
+                        }
                     self.snake.change_direction(directions[key])
                     self.snake.is_snake_moving = True
                 self.input_cooldown = True
@@ -822,10 +848,20 @@ class GameView(arcade.View):
                         self.snake.apple_count += 1
                         self.previous_apple_position = (self.apple.x, self.apple.y)
                         self.apple = Apple(self.snake, self.previous_apple_position)
-                        if self.party_mode and random.randint(1, 5) == 2:
+                        if self.party_mode and random.randint(1, 4) == 2:
                             self.mushroom = Mushroom(self.snake, self.previous_mushroom_position)
+                            mushroom_timer = threading.Timer(20, self.delete_mushroom)
+                            mushroom_timer.start()
+                        if self.party_mode and random.randint(1, 8) == 2:
+                            self.mirror = Mirror(self.snake, self.previous_mirror_position)
+                            mirror_timer = threading.Timer(20, self.delete_mirror)
+                            mirror_timer.start()
+                        if self.party_mode and random.randint(1, 12) == 2:
+                            self.diamond = Diamond(self.snake, self.previous_diamond_position)
+                            diamond_timer = threading.Timer(10, self.delete_diamond)
+                            diamond_timer.start()
 
-                    if self.party_mode:
+                    if self.party_mode and self.mushroom is not None:
                         if self.snake.eat_mushroom(self.mushroom):
                             self.snake.play_mushroom_sound()
                             factor = 1-(2.5*self.move_border)
@@ -833,7 +869,24 @@ class GameView(arcade.View):
                             border_timer.start()
                             self.move_border *= factor
                             self.previous_mushroom_position = (self.mushroom.x, self.mushroom.y)
-                            self.mushroom = Mushroom(self.snake, self.previous_mushroom_position)
+                            self.mushroom = None
+
+                    if self.party_mode and self.mirror is not None:
+                        if self.snake.eat_mirror(self.mirror):
+                            self.snake.play_mushroom_sound()
+                            if self.mirrored_control:
+                                self.mirrored_control = False
+                            else:
+                                self.mirrored_control = True
+                            self.previous_mirror_position = (self.mirror.x, self.mirror.y)
+                            self.mirror = None
+
+                    if self.party_mode and self.diamond is not None:
+                        if self.snake.eat_diamond(self.diamond):
+                            self.snake.play_mushroom_sound()
+                            self.snake.score += 500
+                            self.previous_diamond_position = (self.diamond.x, self.diamond.y)
+                            self.diamond = None
 
                 except NoValidApplePositionError:
                     game_over_view = GameOverView(self.snake.score, self.party_mode)
@@ -848,6 +901,15 @@ class GameView(arcade.View):
 
     def higher_border(self, factor):
         self.move_border /= factor
+
+    def delete_mushroom(self):
+        self.mushroom = None
+
+    def delete_mirror(self):
+        self.mirror = None
+
+    def delete_diamond(self):
+        self.diamond = None
 
     def update_option(self, option):
         pass  # This is here because PauseView inherits from GameView
@@ -1076,6 +1138,26 @@ class Snake:
             return True
         return False
 
+    def eat_mirror(self, snake):
+        if (
+                self.x < snake.x + SNAKE_SIZE
+                and self.x + MIRROR_SIZE > snake.x
+                and self.y < snake.y + SNAKE_SIZE
+                and self.y + MIRROR_SIZE > snake.y
+        ):
+            return True
+        return False
+
+    def eat_diamond(self, snake):
+        if (
+                self.x < snake.x + SNAKE_SIZE
+                and self.x + DIAMOND_SIZE > snake.x
+                and self.y < snake.y + SNAKE_SIZE
+                and self.y + DIAMOND_SIZE > snake.y
+        ):
+            return True
+        return False
+
     def draw(self):
         # Draw the head
         head_x, head_y = self.body[0]
@@ -1154,6 +1236,18 @@ class NoValidApplePositionError(Exception):
     pass
 
 
+class NoValidMushroomPositionError(Exception):
+    pass
+
+
+class NoValidMirrorPositionError(Exception):
+    pass
+
+
+class NoValidDiamondPositionError(Exception):
+    pass
+
+
 class Apple:
     def __init__(self, snake, previous_position=None):
         self.snake = snake
@@ -1198,11 +1292,63 @@ class Mushroom:
         if valid_positions:
             self.x, self.y = random.choice(valid_positions)
         else:
-            raise NoValidApplePositionError("No valid position for the mushroom.")
+            raise NoValidMushroomPositionError("No valid position for the mushroom.")
 
     def draw(self):
         arcade.draw_texture_rectangle(
             self.x, self.y, MUSHROOM_SIZE, MUSHROOM_SIZE, self.mushroom
+        )
+
+
+class Mirror:
+    def __init__(self, snake, previous_position=None):
+        self.snake = snake
+        self.previous_position = previous_position
+        self.spawn()
+        self.mirror = arcade.load_texture("images/mirror.png")
+
+    def spawn(self):
+        valid_positions = []
+        for x in range(BLOCK_SIZE, SCREEN_WIDTH - BLOCK_SIZE, BLOCK_SIZE):
+            for y in range(BLOCK_SIZE, SCREEN_HEIGHT - BLOCK_SIZE * 3, BLOCK_SIZE):
+                position = (x + BLOCK_SIZE // 2, y + BLOCK_SIZE // 2)
+                if position not in self.snake.body and position != self.previous_position:
+                    valid_positions.append(position)
+
+        if valid_positions:
+            self.x, self.y = random.choice(valid_positions)
+        else:
+            raise NoValidMirrorPositionError("No valid position for the mirror.")
+
+    def draw(self):
+        arcade.draw_texture_rectangle(
+            self.x, self.y, MIRROR_SIZE, MIRROR_SIZE, self.mirror
+        )
+
+
+class Diamond:
+    def __init__(self, snake, previous_position=None):
+        self.snake = snake
+        self.previous_position = previous_position
+        self.spawn()
+        self.diamond = arcade.load_texture("images/diamond.png")
+
+    def spawn(self):
+        valid_positions = []
+        for x in range(BLOCK_SIZE, SCREEN_WIDTH - BLOCK_SIZE, BLOCK_SIZE):
+            for y in range(BLOCK_SIZE, SCREEN_HEIGHT - BLOCK_SIZE * 3, BLOCK_SIZE):
+                position = (x + BLOCK_SIZE // 2, y + BLOCK_SIZE // 2)
+                if position not in self.snake.body and position != self.previous_position:
+                    valid_positions.append(position)
+
+        if valid_positions:
+            self.x, self.y = random.choice(valid_positions)
+        else:
+            raise NoValidDiamondPositionError("No valid position for the diamond.")
+
+    def draw(self):
+        arcade.draw_texture_rectangle(
+            self.x, self.y, DIAMOND_SIZE, DIAMOND_SIZE, self.diamond
         )
 
 
