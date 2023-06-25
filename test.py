@@ -291,6 +291,7 @@ class ModeSelectionView(arcade.View):
         ]
         self.party_mode = False
         self.sound_effect_menu = BGM(5)
+        self.click_effect_menu = BGM(8)
         self.hovered_item = -1
 
     def on_show(self):
@@ -359,6 +360,7 @@ class ModeSelectionView(arcade.View):
                 self.sound_effect_menu.play_music(volume=0.1, loop=False)
                 self.current_option += 1
         elif key == arcade.key.ENTER:
+            self.click_effect_menu.play_music(volume=0.1, loop=False)
             if self.current_option == 0:
                 game_view = GameView(party_mode=self.party_mode)
                 self.window.show_view(game_view)
@@ -380,6 +382,8 @@ class ModeSelectionView(arcade.View):
                     item_x - item_width / 2 < x < item_x + item_width / 2
                     and item_y - item_height / 2 < y < item_y + item_height / 2
             ):
+                if self.hovered_item != i:
+                    self.sound_effect_menu.play_music(volume=0.1, loop=False)
                 self.hovered_item = i
                 self.current_option = i  # Update current_option as well
                 break
@@ -388,6 +392,7 @@ class ModeSelectionView(arcade.View):
 
     def on_mouse_press(self, x, y, button, modifiers):
         if self.hovered_item is not None:
+            self.click_effect_menu.play_music(volume=0.1, loop=False)
             if self.hovered_item == 0:
                 game_view = GameView()
                 self.window.show_view(game_view)
@@ -401,13 +406,17 @@ class ModeSelectionView(arcade.View):
 
 
 class GameOverView(arcade.View):
-    def __init__(self, score, party_mode, bgm):
+    def __init__(self, score, party_mode, bgm, apple_count):
         super().__init__()
+        self.snake = Snake()
+        self.apple = Apple(self.snake)
         self.score = score
+        self.eaten_apple = apple_count
         self.current_option = 0
         self.party_mode = party_mode
         self.bgm = bgm
         self.sound_effect_menu = BGM(5)
+        self.star = arcade.load_texture("images/star.png")
 
     def on_show_view(self):
         arcade.set_background_color(arcade.color.BLACK)
@@ -425,14 +434,33 @@ class GameOverView(arcade.View):
             font_size=64,
             anchor_x="center",
         )
-        arcade.draw_text(
-            f"Score: {self.score}",
-            SCREEN_WIDTH / 2,
-            SCREEN_HEIGHT / 2 - 100,
-            arcade.color.WHITE,
-            font_size=22,
-            anchor_x="center",
+        arcade.draw_texture_rectangle(
+            SCREEN_WIDTH // 2 - 130,
+            SCREEN_HEIGHT // 2 - 70,
+            50,
+            50,
+            self.star
         )
+        arcade.draw_text(
+            str(self.score),
+            SCREEN_WIDTH / 2 - 100,
+            SCREEN_HEIGHT / 2 - 85,
+            arcade.color.WHITE,
+            font_size=30,
+        )
+        arcade.draw_texture_rectangle(
+            SCREEN_WIDTH // 2 + 100,
+            SCREEN_HEIGHT // 2 - 70,
+            50,
+            50,
+            self.apple.apple
+        )
+        arcade.draw_text(
+            str(self.eaten_apple),
+            SCREEN_WIDTH // 2 + 130,
+            SCREEN_HEIGHT // 2 - 85,
+            arcade.color.WHITE,
+            font_size=30)
         arcade.draw_text(
             "Neustarten",
             SCREEN_WIDTH / 2,
@@ -590,10 +618,11 @@ class SaveScoreNameView(arcade.View):
 
 
 class SaveScoreView(arcade.View):
-    def __init__(self, score, party_mode, game_view_bgm):
+    def __init__(self, score, party_mode, game_view_bgm, apple_count):
         super().__init__()
         self.score = score
         self.current_option = 0
+        self.apple_count = apple_count
         self.menu_items = [
             "Ja",
             "Nein",
@@ -676,7 +705,7 @@ class SaveScoreView(arcade.View):
                 save_name_view = SaveScoreNameView(self.score, self.party_mode, self.bgm)
                 self.window.show_view(save_name_view)
             else:
-                game_over_view = GameOverView(self.score, self.party_mode, self.bgm)
+                game_over_view = GameOverView(self.score, self.party_mode, self.bgm, self.apple_count)
                 self.window.show_view(game_over_view)
 
         self.hovered_item = self.current_option
@@ -934,7 +963,7 @@ class GameView(arcade.View):
                 if self.snake.check_collision():
                     self.bgm.stop_audio()
                     time.sleep(2)
-                    save_score_view = SaveScoreView(self.snake.score, self.party_mode, self.bgm)
+                    save_score_view = SaveScoreView(self.snake.score, self.party_mode, self.bgm, self.snake.apple_count)
                     self.window.show_view(save_score_view)
 
                 try:
@@ -1113,8 +1142,9 @@ class PauseView(arcade.View):
                 start_view = StartView()
                 self.window.show_view(start_view)
             elif self.current_option == 2:
-                game_over_view = GameOverView(self.game_view.snake.score, self.game_view.party_mode, self.game_over_bgm)
-                self.self.game_over_bgm.game_over_bgm.play_music(volume=0.5, loop=True)
+                game_over_view = GameOverView(self.game_view.snake.score, self.game_view.party_mode, self.game_over_bgm,
+                                              self.game_view.snake.apple_count)
+                self.game_over_bgm.play_music(volume=0.5, loop=True)
                 self.window.show_view(game_over_view)
 
     def on_mouse_press(self, x, y, button, modifiers):
@@ -1135,8 +1165,8 @@ class PauseView(arcade.View):
                 SCREEN_WIDTH / 2 - 40 < x < SCREEN_WIDTH / 2 + 40
                 and SCREEN_HEIGHT / 2 - 230 < y < SCREEN_HEIGHT / 2 - 170
         ):
-            game_over_view = GameOverView(self.game_view.snake.score, self.game_view.party_mode, self.game_over_bgm)
-            self.self.game_over_bgm.game_over_bgm.play_music(volume=0.5, loop=True)
+            game_over_view = GameOverView(self.game_view.snake.score, self.game_view.party_mode, self.game_over_bgm, self.game_view.snake.apple_count)
+            self.game_over_bgm.play_music(volume=0.5, loop=True)
             self.window.show_view(game_over_view)
 
 
