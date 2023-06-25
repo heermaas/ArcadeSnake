@@ -21,7 +21,7 @@ scoreboard_height = BLOCK_SIZE * 2
 
 class BGM:
     def __init__(self, song_index):
-        self.music_list = ["bgm/MainMenu2.mp3", "bgm/Battle.mp3", "bgm/GameOver.mp3", "bgm/Chomp.mp3", "bgm/Wall.mp3",
+        self.music_list = ["bgm/MainMenu2.mp3", "bgm/GameMusic2.mp3", "bgm/GameOver.mp3", "bgm/Chomp.mp3", "bgm/Death.mp3",
                            "bgm/Switch.mp3", "bgm/mirror.mp3", "bgm/diamond.mp3"]
         self.current_song_index = song_index
         self.player = None
@@ -174,7 +174,7 @@ class StartView(arcade.View):
                     and item_y - item_height / 2 < y < item_y + item_height / 2
             ):
                 self.hovered_item = i
-                self.current_option = i  # Update current_option as well
+                self.current_option = i
                 break
         else:
             self.hovered_item = None
@@ -394,7 +394,7 @@ class GameOverView(arcade.View):
         self.current_option = 0
         self.party_mode = party_mode
         self.bgm = bgm
-        self.sound_effect_menu = BGM(3)
+        self.sound_effect_menu = BGM(5)
 
     def on_show_view(self):
         arcade.set_background_color(arcade.color.BLACK)
@@ -459,11 +459,11 @@ class GameOverView(arcade.View):
     def on_key_press(self, key, modifiers):
         if key == arcade.key.UP or key == arcade.key.W:
             if self.current_option > 0:
-                self.sound_effect_menu.play_music(volume=0.5, loop=False)
+                self.sound_effect_menu.play_music(volume=0.1, loop=False)
                 self.current_option -= 1
         elif key == arcade.key.DOWN or key == arcade.key.S:
             if self.current_option < 2:
-                self.sound_effect_menu.play_music(volume=0.5, loop=False)
+                self.sound_effect_menu.play_music(volume=0.1, loop=False)
                 self.current_option += 1
         elif key == arcade.key.ENTER:
             if self.current_option == 0:
@@ -581,10 +581,15 @@ class SaveScoreView(arcade.View):
         super().__init__()
         self.score = score
         self.current_option = 0
+        self.menu_items = [
+            "Ja",
+            "Nein",
+        ]
+        self.hovered_item = None
         self.party_mode = party_mode
         self.bgm = BGM(2)
-        self.sound_effect_menu = BGM(3)
-        self.bgm.play_music(volume=0.5, loop=True)
+        self.sound_effect_menu = BGM(5)
+        self.bgm.play_music(volume=0.1, loop=True)
         self.game_bgm = game_view_bgm
         self.game_bgm.stop_audio()
 
@@ -594,7 +599,7 @@ class SaveScoreView(arcade.View):
     def on_draw(self):
         arcade.start_render()
         arcade.draw_text(
-            "Save Score",
+            "Punktzahl speichern",
             SCREEN_WIDTH / 2,
             SCREEN_HEIGHT / 2,
             arcade.color.WHITE,
@@ -602,7 +607,7 @@ class SaveScoreView(arcade.View):
             anchor_x="center",
         )
         arcade.draw_text(
-            f"Do you want to save your score of {self.score}?",
+            f"Willst du deine folgende Punktzahl speichern: {self.score}?",
             SCREEN_WIDTH / 2,
             SCREEN_HEIGHT / 2 - 100,
             arcade.color.WHITE,
@@ -610,18 +615,18 @@ class SaveScoreView(arcade.View):
             anchor_x="center",
         )
         arcade.draw_text(
-            "Yes",
-            SCREEN_WIDTH / 2 - 75,  # Adjust the horizontal position here
+            "Ja",
+            SCREEN_WIDTH / 2 - 75,
             SCREEN_HEIGHT / 2 - 200,
-            arcade.color.WHITE,
+            self.get_item_color(0),
             font_size=22,
             anchor_x="center",
         )
         arcade.draw_text(
-            "No",
-            SCREEN_WIDTH / 2 + 120,  # Adjust the horizontal position here
+            "Nein",
+            SCREEN_WIDTH / 2 + 120,
             SCREEN_HEIGHT / 2 - 200,
-            arcade.color.WHITE,
+            self.get_item_color(1),
             font_size=22,
             anchor_x="center",
         )
@@ -630,9 +635,16 @@ class SaveScoreView(arcade.View):
     def draw_cursor(self):
         cursor_x = SCREEN_WIDTH / 2 - 120 if self.current_option == 0 else SCREEN_WIDTH / 2 + 80
         cursor_y = SCREEN_HEIGHT / 2 - 180
+        cursor_color = self.get_item_color(self.current_option)
         arcade.draw_triangle_filled(
-            cursor_x, cursor_y, cursor_x - 10, cursor_y - 10, cursor_x + 10, cursor_y - 10, arcade.color.WHITE
+            cursor_x, cursor_y, cursor_x - 10, cursor_y - 10, cursor_x + 10, cursor_y - 10, cursor_color
         )
+
+    def get_item_color(self, item_index):
+        if self.current_option == item_index or self.hovered_item == item_index:
+            return 96, 124, 252
+        else:
+            return arcade.color.WHITE
 
     def update_option(self, option):
         self.current_option = option
@@ -641,11 +653,11 @@ class SaveScoreView(arcade.View):
         if key == arcade.key.LEFT or key == arcade.key.A:
             if self.current_option != 0:
                 self.current_option = 0
-                self.sound_effect_menu.play_music(volume=0.5, loop=False)
+                self.sound_effect_menu.play_music(volume=0.1, loop=False)
         elif key == arcade.key.RIGHT or key == arcade.key.D:
             if self.current_option != 1:
                 self.current_option = 1
-                self.sound_effect_menu.play_music(volume=0.5, loop=False)
+                self.sound_effect_menu.play_music(volume=0.1, loop=False)
         elif key == arcade.key.ENTER:
             if self.current_option == 0:
                 save_name_view = SaveScoreNameView(self.score, self.party_mode, self.bgm)
@@ -653,6 +665,24 @@ class SaveScoreView(arcade.View):
             else:
                 game_over_view = GameOverView(self.score, self.party_mode, self.bgm)
                 self.window.show_view(game_over_view)
+
+        self.hovered_item = self.current_option
+
+    def on_mouse_motion(self, x, y, dx, dy):
+        for i, _ in enumerate(self.menu_items):
+            item_x = SCREEN_WIDTH / 2 - 75 if i == 0 else SCREEN_WIDTH / 2 + 120
+            item_y = SCREEN_HEIGHT / 2 - 200
+            item_width = 100
+            item_height = 30
+            if (
+                    item_x - item_width / 2 < x < item_x + item_width / 2
+                    and item_y - item_height / 2 < y < item_y + item_height / 2
+            ):
+                self.hovered_item = i
+                self.current_option = i  # Update current_option as well
+                break
+        else:
+            self.hovered_item = None
 
     def on_mouse_press(self, x, y, button, modifiers):
         if (
@@ -761,7 +791,7 @@ class GameView(arcade.View):
         self.mirrored_control = False
         self.input_cooldown = False
         self.bgm = BGM(1)
-        self.bgm.play_music(volume=0.5, loop=True)
+        self.bgm.play_music(volume=0.3, loop=True)
         self.party_mode = party_mode
         self.star = arcade.load_texture("images/star.png")
         self.total_time = 0.0
@@ -890,7 +920,7 @@ class GameView(arcade.View):
                 self.snake.move()
                 if self.snake.check_collision():
                     self.bgm.stop_audio()
-                    time.sleep(1)
+                    time.sleep(2)
                     save_score_view = SaveScoreView(self.snake.score, self.party_mode, self.bgm)
                     self.window.show_view(save_score_view)
 
@@ -1111,7 +1141,7 @@ class Snake:
         self.is_snake_moving = False
         self.apple_count = 0
         self.sound_effect_chomp = BGM(3)
-        self.sound_effect_wall = BGM(3)
+        self.sound_effect_wall = BGM(4)
         self.sound_effect_mirror = BGM(6)
         self.sound_effect_diamond = BGM(7)
 
@@ -1166,7 +1196,7 @@ class Snake:
             return True
         for segment in self.body[1:]:
             if self.x == segment[0] and self.y == segment[1]:
-                print(self.x, self.y)
+                self.sound_effect_wall.play_music(volume=0.5, loop=False)
                 return True
         return False
 
