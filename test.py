@@ -22,7 +22,7 @@ scoreboard_height = BLOCK_SIZE * 2
 class BGM:
     def __init__(self, song_index):
         self.music_list = ["bgm/MainMenu2.mp3", "bgm/Battle.mp3", "bgm/GameOver.mp3", "bgm/Chomp.mp3", "bgm/Wall.mp3",
-                           "bgm/Switch.mp3"]
+                           "bgm/Switch.mp3", "bgm/mirror.mp3", "bgm/diamond.mp3"]
         self.current_song_index = song_index
         self.player = None
         self.music = None
@@ -924,7 +924,6 @@ class GameView(arcade.View):
 
                     if self.party_mode and self.mirror is not None:
                         if self.snake.eat_mirror(self.mirror):
-                            self.snake.play_mushroom_sound()
                             if self.mirrored_control:
                                 self.mirrored_control = False
                             else:
@@ -934,7 +933,6 @@ class GameView(arcade.View):
 
                     if self.party_mode and self.diamond is not None:
                         if self.snake.eat_diamond(self.diamond):
-                            self.snake.play_mushroom_sound()
                             self.snake.score += 500
                             self.previous_diamond_position = (self.diamond.x, self.diamond.y)
                             self.diamond = None
@@ -1113,7 +1111,9 @@ class Snake:
         self.is_snake_moving = False
         self.apple_count = 0
         self.sound_effect_chomp = BGM(3)
-        self.sound_effect_wall = BGM(4)
+        self.sound_effect_wall = BGM(3)
+        self.sound_effect_mirror = BGM(6)
+        self.sound_effect_diamond = BGM(7)
 
         self.head_up = arcade.load_texture("images/head_up.png")
         self.head_down = arcade.load_texture("images/head_down.png")
@@ -1198,6 +1198,7 @@ class Snake:
                 and self.y < snake.y + SNAKE_SIZE
                 and self.y + MIRROR_SIZE > snake.y
         ):
+            self.sound_effect_mirror.play_music(volume=0.5, loop=False)
             return True
         return False
 
@@ -1208,6 +1209,7 @@ class Snake:
                 and self.y < snake.y + SNAKE_SIZE
                 and self.y + DIAMOND_SIZE > snake.y
         ):
+            self.sound_effect_diamond.play_music(volume=0.5, loop=False)
             return True
         return False
 

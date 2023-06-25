@@ -46,3 +46,5 @@ Player,200
 Player,0
 Player,400
 Player,0
+Player,300
+Player,1100
