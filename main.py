@@ -1002,6 +1002,7 @@ class PauseView(arcade.View):
                 self.current_option += 1
         elif key == arcade.key.ENTER:
             if self.current_option == 0:
+                self.bgm.play_music(volume=0.5, loop=True)
                 self.game_view.paused = False
                 self.game_view.input_cooldown = False  # Reset input cooldown
                 self.window.show_view(self.game_view)
@@ -1018,6 +1019,7 @@ class PauseView(arcade.View):
                 SCREEN_WIDTH / 2 - 50 < x < SCREEN_WIDTH / 2 + 50
                 and SCREEN_HEIGHT / 2 - 130 < y < SCREEN_HEIGHT / 2 - 70
         ):
+            self.bgm.play_music(volume=0.5, loop=True)
             self.game_view.paused = False
             self.game_view.input_cooldown = False  # Reset input cooldown
             self.window.show_view(self.game_view)
