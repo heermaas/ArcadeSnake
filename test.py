@@ -21,7 +21,6 @@ class StartView(arcade.View):
         self.current_option = 0
         self.menu_items = [
             "Spiel starten",
-            "Anleitung",
             "Leaderboard",
             "Beenden",
         ]
@@ -73,18 +72,10 @@ class StartView(arcade.View):
             anchor_x="center",
         )
         arcade.draw_text(
-            "Anleitung",
-            SCREEN_WIDTH / 2,
-            SCREEN_HEIGHT / 2 - 200,
-            self.get_item_color(2),  # Color of the third menu item
-            font_size=22,
-            anchor_x="center",
-        )
-        arcade.draw_text(
             "Beenden",
             SCREEN_WIDTH / 2,
-            SCREEN_HEIGHT / 2 - 250,
-            self.get_item_color(3),  # Color of the fourth menu item
+            SCREEN_HEIGHT / 2 - 200,
+            self.get_item_color(2),  # Color of the fourth menu item
             font_size=22,
             anchor_x="center",
         )
@@ -122,9 +113,6 @@ class StartView(arcade.View):
                 high_scores_view = HighScoresView()
                 self.window.show_view(high_scores_view)
             elif self.current_option == 2:
-                instruction_view = InstructionsView()
-                self.window.show_view(instruction_view)
-            elif self.current_option == 3:
                 self.exit_game()
 
         self.hovered_item = self.current_option
@@ -154,82 +142,10 @@ class StartView(arcade.View):
                 high_scores_view = HighScoresView()
                 self.window.show_view(high_scores_view)
             elif self.hovered_item == 2:
-                instruction_view = InstructionsView()
-                self.window.show_view(instruction_view)
-            elif self.hovered_item == 3:
                 self.exit_game()
 
     def exit_game(self):
         self.window.close()
-
-
-class InstructionsView(arcade.View):
-    def __init__(self):
-        super().__init__()
-        self.current_option = 0
-        self.arrow_keys = arcade.load_texture("images/ArrowKeys.png")
-        self.wasd_keys = arcade.load_texture("images/WASDKeys.png")
-
-    def on_show_view(self):
-        arcade.set_background_color(arcade.color.AO)
-
-    def on_draw(self):
-        arcade.start_render()
-        arcade.draw_text(
-            "Anleitung",
-            SCREEN_WIDTH / 2,
-            SCREEN_HEIGHT / 2 + 200,
-            arcade.color.WHITE,
-            font_size=48,
-            anchor_x="center",
-        )
-        arcade.draw_texture_rectangle(
-            SCREEN_WIDTH // 2 + 200,
-            SCREEN_HEIGHT // 2 + 50,
-            self.wasd_keys.width // 2,
-            self.wasd_keys.height // 2,
-            self.wasd_keys,
-        )
-        arcade.draw_texture_rectangle(
-            SCREEN_WIDTH // 2 - 200,
-            SCREEN_HEIGHT // 2 + 45,
-            self.arrow_keys.width // 2,
-            self.arrow_keys.height // 2,
-            self.arrow_keys,
-        )
-        arcade.draw_text(
-            "Benutze die Pfeilasten oder WASD um die Schlange zu bewegen.",
-            SCREEN_WIDTH / 2,
-            SCREEN_HEIGHT / 2 - 100,
-            arcade.color.WHITE,
-            font_size=18,
-            anchor_x="center",
-        )
-        arcade.draw_text(
-            "Sammel so viele Äpfel wie es geht und berühre nicht die Wand oder dich selber!",
-            SCREEN_WIDTH / 2,
-            SCREEN_HEIGHT / 2 - 150,
-            arcade.color.WHITE,
-            font_size=15,
-            anchor_x="center",
-        )
-        arcade.draw_text(
-            "Klicke Enter oder drücke die Maus um zurückzukehren",
-            SCREEN_WIDTH / 2,
-            SCREEN_HEIGHT / 2 - 230,
-            arcade.color.WHITE,
-            font_size=18,
-            anchor_x="center",
-        )
-
-    def on_key_press(self, key, modifiers):
-        if key == arcade.key.ENTER:
-            start_view = StartView()
-            self.window.show_view(start_view)
-
-    def on_mouse_press(self, x, y, button, modifiers):
-        start_view = StartView()
-        self.window.show_view(start_view)
 
 
 class ModeSelectionView(arcade.View):
@@ -378,7 +294,7 @@ class GameOverView(arcade.View):
             anchor_x="center",
         )
         arcade.draw_text(
-            "Neustarten",
+            "Restart",
             SCREEN_WIDTH / 2,
             SCREEN_HEIGHT / 2 - 150,
             arcade.color.WHITE,
@@ -386,7 +302,7 @@ class GameOverView(arcade.View):
             anchor_x="center",
         )
         arcade.draw_text(
-            "Hauptmenü",
+            "Main Menu",
             SCREEN_WIDTH / 2,
             SCREEN_HEIGHT / 2 - 200,
             arcade.color.WHITE,
@@ -394,7 +310,7 @@ class GameOverView(arcade.View):
             anchor_x="center",
         )
         arcade.draw_text(
-            "Beenden",
+            "Exit",
             SCREEN_WIDTH / 2,
             SCREEN_HEIGHT / 2 - 250,
             arcade.color.WHITE,
@@ -689,8 +605,9 @@ class GameView(arcade.View):
         self.snake = Snake()
         self.apple = Apple(self.snake)
         self.previous_apple_position = (self.apple.x, self.apple.y)
-        self.mushroom = Mushroom(self.snake)
-        self.previous_mushroom_position = (self.mushroom.x, self.mushroom.y)
+        if party_mode:
+            self.mushroom = Mushroom(self.snake)
+            self.previous_mushroom_position = (self.mushroom.x, self.mushroom.y)
         self.paused = False
         self.current_option = 0
         self.movement_timer = 0
@@ -808,7 +725,6 @@ class GameView(arcade.View):
                 self.snake.is_snake_moving = True
                 self.snake.move()
                 if self.snake.check_collision():
-                    self.snake.death_sound.play()
                     save_score_view = SaveScoreView(self.snake.score, self.party_mode)
                     self.window.show_view(save_score_view)
 
@@ -822,11 +738,12 @@ class GameView(arcade.View):
                         if random.randint(1, 5) == 2:
                             self.mushroom = Mushroom(self.snake, self.previous_mushroom_position)
 
-                    if self.snake.eat_mushroom(self.mushroom):
-                        self.snake.play_mushroom_sound()
-                        self.move_border *= 1-(2.5*self.move_border)
-                        self.previous_mushroom_position = (self.mushroom.x, self.mushroom.y)
-                        self.mushroom = Mushroom(self.snake, self.previous_mushroom_position)
+                    if self.party_mode:
+                        if self.snake.eat_mushroom(self.mushroom):
+                            self.snake.play_mushroom_sound()
+                            self.move_border *= 1-(2.5*self.move_border)
+                            self.previous_mushroom_position = (self.mushroom.x, self.mushroom.y)
+                            self.mushroom = Mushroom(self.snake, self.previous_mushroom_position)
 
                 except NoValidApplePositionError:
                     game_over_view = GameOverView(self.snake.score, self.party_mode)
