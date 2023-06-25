@@ -1011,7 +1011,7 @@ class PauseView(arcade.View):
                 self.window.show_view(start_view)
             elif self.current_option == 2:
                 game_over_view = GameOverView(self.game_view.snake.score, self.game_view.party_mode, self.game_over_bgm)
-                self.self.game_over_bgm.game_over_bgm.play_music(volume=0.5, loop=True)
+                self.game_over_bgm.play_music(volume=0.5, loop=True)
                 self.window.show_view(game_over_view)
 
     def on_mouse_press(self, x, y, button, modifiers):
@@ -1034,7 +1034,7 @@ class PauseView(arcade.View):
                 and SCREEN_HEIGHT / 2 - 230 < y < SCREEN_HEIGHT / 2 - 170
         ):
             game_over_view = GameOverView(self.game_view.snake.score, self.game_view.party_mode, self.game_over_bgm)
-            self.self.game_over_bgm.game_over_bgm.play_music(volume=0.5, loop=True)
+            self.game_over_bgm.play_music(volume=0.5, loop=True)
             self.window.show_view(game_over_view)
 
 
