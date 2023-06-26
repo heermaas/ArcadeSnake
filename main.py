@@ -5,7 +5,6 @@ import re
 import time
 import threading
 
-# Intitalisierung & Deklarierung der Konstanten
 SCREEN_WIDTH = 800
 SCREEN_HEIGHT = 600
 BLOCK_SIZE = 40
@@ -108,7 +107,6 @@ class StartView(arcade.View):
         arcade.draw_triangle_filled(
             cursor_x, cursor_y, cursor_x - 10, cursor_y + 10, cursor_x - 10, cursor_y - 10, cursor_color
         )
-
     def get_item_color(self, item_index):
         if self.current_option == item_index or self.hovered_item == item_index:
             return 96, 124, 252
@@ -162,11 +160,11 @@ class StartView(arcade.View):
     def menu(self):
         self.click_effect_menu.play_music(volume=0.1, loop=False)
         if self.current_option == 0:
-            mode_selection_view = ModeSelectionView()
+            mode_selection_view = ModeSelectionView("GameView")
             self.window.show_view(mode_selection_view)
         elif self.current_option == 1:
-            high_scores_view = HighScoresView()
-            self.window.show_view(high_scores_view)
+            mode_selection_view = ModeSelectionView("HighScoreView")
+            self.window.show_view(mode_selection_view)
         elif self.current_option == 2:
             instruction_view = InstructionsView()
             self.window.show_view(instruction_view)
@@ -177,81 +175,8 @@ class StartView(arcade.View):
         self.window.close()
 
 
-class InstructionsView(arcade.View):
-    def __init__(self):
-        super().__init__()
-        self.current_option = 0
-        self.arrow_keys = arcade.load_texture("images/ArrowKeys.png")
-        self.wasd_keys = arcade.load_texture("images/WASDKeys.png")
-        self.sound_effect_menu = BGM(3)
-        self.click_effect_menu = BGM(8)
-
-    def on_show_view(self):
-        arcade.set_background_color(arcade.color.AO)
-
-    def on_draw(self):
-        arcade.start_render()
-        arcade.draw_text(
-            "Anleitung",
-            SCREEN_WIDTH / 2,
-            SCREEN_HEIGHT / 2 + 200,
-            arcade.color.WHITE,
-            font_size=48,
-            anchor_x="center",
-        )
-        arcade.draw_texture_rectangle(
-            SCREEN_WIDTH // 2 + 200,
-            SCREEN_HEIGHT // 2 + 50,
-            self.wasd_keys.width // 2,
-            self.wasd_keys.height // 2,
-            self.wasd_keys,
-        )
-        arcade.draw_texture_rectangle(
-            SCREEN_WIDTH // 2 - 200,
-            SCREEN_HEIGHT // 2 + 45,
-            self.arrow_keys.width // 2,
-            self.arrow_keys.height // 2,
-            self.arrow_keys,
-        )
-        arcade.draw_text(
-            "Benutze die Pfeilasten oder WASD um die Schlange zu bewegen.",
-            SCREEN_WIDTH / 2,
-            SCREEN_HEIGHT / 2 - 100,
-            arcade.color.WHITE,
-            font_size=18,
-            anchor_x="center",
-        )
-        arcade.draw_text(
-            "Sammel so viele Äpfel wie es geht und berühre nicht die Wand oder dich selber!",
-            SCREEN_WIDTH / 2,
-            SCREEN_HEIGHT / 2 - 150,
-            arcade.color.WHITE,
-            font_size=15,
-            anchor_x="center",
-        )
-        arcade.draw_text(
-            "Drücke Enter oder klicke die Maus um zurückzukehren",
-            SCREEN_WIDTH / 2,
-            SCREEN_HEIGHT / 2 - 230,
-            arcade.color.WHITE,
-            font_size=18,
-            anchor_x="center",
-        )
-
-    def on_key_press(self, key, modifiers):
-        if key == arcade.key.ENTER:
-            self.click_effect_menu.play_music(volume=0.1, loop=False)
-            start_view = StartView()
-            self.window.show_view(start_view)
-
-    def on_mouse_press(self, x, y, button, modifiers):
-        self.click_effect_menu.play_music(volume=0.1, loop=False)
-        start_view = StartView()
-        self.window.show_view(start_view)
-
-
 class ModeSelectionView(arcade.View):
-    def __init__(self):
+    def __init__(self, next_view):
         super().__init__()
         self.current_option = 0
         self.menu_items = [
@@ -263,6 +188,8 @@ class ModeSelectionView(arcade.View):
         self.sound_effect_menu = BGM(5)
         self.click_effect_menu = BGM(8)
         self.hovered_item = -1
+        self.next_view = next_view
+
 
     def on_show(self):
         arcade.set_background_color(arcade.color.AO)
@@ -348,12 +275,20 @@ class ModeSelectionView(arcade.View):
         elif key == arcade.key.ENTER:
             self.click_effect_menu.play_music(volume=0.1, loop=False)
             if self.current_option == 0:
-                game_view = GameView(party_mode=self.party_mode)
-                self.window.show_view(game_view)
+                if self.next_view == "GameView":
+                    game_view = GameView(party_mode=self.party_mode)
+                    self.window.show_view(game_view)
+                else:
+                    high_scores_view = HighScoresView(self.party_mode)
+                    self.window.show_view(high_scores_view)
             elif self.current_option == 1:
                 self.party_mode = True
-                game_view = GameView(party_mode=self.party_mode)
-                self.window.show_view(game_view)
+                if self.next_view == "GameView":
+                    game_view = GameView(party_mode=self.party_mode)
+                    self.window.show_view(game_view)
+                else:
+                    high_scores_view = HighScoresView(self.party_mode)
+                    self.window.show_view(high_scores_view)
             elif self.current_option == 2:
                 start_view = StartView()
                 self.window.show_view(start_view)
@@ -380,15 +315,162 @@ class ModeSelectionView(arcade.View):
         if self.hovered_item is not None:
             self.click_effect_menu.play_music(volume=0.1, loop=False)
             if self.hovered_item == 0:
-                game_view = GameView()
-                self.window.show_view(game_view)
+                next_view = self.next_view(party_mode=self.party_mode)
+                self.window.show_view(next_view)
             elif self.hovered_item == 1:
                 self.party_mode = True
-                game_view = GameView()
-                self.window.show_view(game_view)
+                next_view = self.next_view(party_mode=self.party_mode)
+                self.window.show_view(next_view)
             elif self.hovered_item == 2:
                 start_view = StartView()
                 self.window.show_view(start_view)
+
+
+class InstructionsView(arcade.View):
+    def __init__(self):
+        super().__init__()
+        self.current_option = 0
+        self.arrow_keys = arcade.load_texture("images/ArrowKeys.png")
+        self.wasd_keys = arcade.load_texture("images/WASDKeys.png")
+        self.sound_effect_menu = BGM(3)
+        self.click_effect_menu = BGM(8)
+
+    def on_show_view(self):
+        arcade.set_background_color(arcade.color.AO)
+
+    def on_draw(self):
+        arcade.start_render()
+        arcade.draw_text(
+            "Anleitung",
+            SCREEN_WIDTH / 2,
+            SCREEN_HEIGHT / 2 + 200,
+            arcade.color.WHITE,
+            font_size=48,
+            anchor_x="center",
+        )
+        arcade.draw_texture_rectangle(
+            SCREEN_WIDTH // 2 + 200,
+            SCREEN_HEIGHT // 2 + 50,
+            self.wasd_keys.width // 2,
+            self.wasd_keys.height // 2,
+            self.wasd_keys,
+        )
+        arcade.draw_texture_rectangle(
+            SCREEN_WIDTH // 2 - 200,
+            SCREEN_HEIGHT // 2 + 45,
+            self.arrow_keys.width // 2,
+            self.arrow_keys.height // 2,
+            self.arrow_keys,
+        )
+        arcade.draw_text(
+            "Benutze die Pfeilasten oder WASD um die Schlange zu bewegen.",
+            SCREEN_WIDTH / 2,
+            SCREEN_HEIGHT / 2 - 100,
+            arcade.color.WHITE,
+            font_size=18,
+            anchor_x="center",
+        )
+        arcade.draw_text(
+            "Sammel so viele Äpfel wie es geht und berühre nicht die Wand oder dich selber!",
+            SCREEN_WIDTH / 2,
+            SCREEN_HEIGHT / 2 - 150,
+            arcade.color.WHITE,
+            font_size=15,
+            anchor_x="center",
+        )
+        arcade.draw_text(
+            "Drücke Enter oder klicke die Maus um zurückzukehren",
+            SCREEN_WIDTH / 2,
+            SCREEN_HEIGHT / 2 - 230,
+            arcade.color.WHITE,
+            font_size=18,
+            anchor_x="center",
+        )
+
+    def on_key_press(self, key, modifiers):
+        if key == arcade.key.ENTER:
+            self.click_effect_menu.play_music(volume=0.1, loop=False)
+            start_view = StartView()
+            self.window.show_view(start_view)
+
+    def on_mouse_press(self, x, y, button, modifiers):
+        self.click_effect_menu.play_music(volume=0.1, loop=False)
+        start_view = StartView()
+        self.window.show_view(start_view)
+
+
+class HighScoresView(arcade.View):
+    def __init__(self, party_mode):
+        super().__init__()
+        self.current_option = 0
+        self.scores = []
+        self.party_mode = party_mode
+        if self.party_mode:
+            self.game_mode = "Party"
+        else:
+            self.game_mode = "Normal"
+
+    def on_show_view(self):
+        arcade.set_background_color(arcade.color.AO)
+        self.load_scores()
+
+    def load_scores(self):
+        try:
+            with open(f"{self.game_mode}_Hiscore.txt", "r") as file:
+                scores = file.readlines()
+                self.scores = [score.strip().split(",") for score in scores]
+                self.scores.sort(key=lambda x: int(x[1]), reverse=True)
+        except FileNotFoundError:
+            self.scores = []
+
+    def on_draw(self):
+        arcade.start_render()
+        arcade.draw_text(
+            "Bestenliste",
+            SCREEN_WIDTH / 2,
+            SCREEN_HEIGHT / 2 + 100,
+            arcade.color.WHITE,
+            font_size=48,
+            anchor_x="center",
+        )
+        if self.scores:
+            max_scores = min(5, len(self.scores))
+            for i in range(max_scores):
+                score = self.scores[i]
+                arcade.draw_text(
+                    f"{i + 1}. {score[0]} - {score[1]}",
+                    SCREEN_WIDTH / 2,
+                    SCREEN_HEIGHT / 2 + 50 - i * 50,
+                    arcade.color.WHITE,
+                    font_size=22,
+                    anchor_x="center",
+                )
+        else:
+            arcade.draw_text(
+                "Noch keinen Highscore",
+                SCREEN_WIDTH / 2,
+                SCREEN_HEIGHT / 2 + 50,
+                arcade.color.WHITE,
+                font_size=22,
+                anchor_x="center",
+            )
+        arcade.draw_text(
+            "Drücke Enter oder klicke die Maus um zurückzukehren",
+            SCREEN_WIDTH / 2,
+            SCREEN_HEIGHT / 2 - 200,  # Adjust the vertical position here
+            arcade.color.WHITE,
+            font_size=18,
+            anchor_x="center",
+        )
+
+    def on_key_press(self, key, modifiers):
+        if key == arcade.key.ENTER:
+            start_view = StartView()
+            self.window.show_view(start_view)
+
+    def on_mouse_press(self, x, y, button, modifiers):
+        start_view = StartView()
+        self.window.show_view(start_view)
 
 
 class GameView(arcade.View):
@@ -947,9 +1029,13 @@ class SaveScoreNameView(arcade.View):
         self.score = score
         self.player_name = ""
         self.error_message = ""
-        self.party_mode = party_mode
         self.apple_count = apple_count
         self.bgm = bgm
+        self.party_mode = party_mode
+        self.game_mode = "Normal"
+        if party_mode:
+            self.game_mode = "Party"
+
 
     def on_show_view(self):
         arcade.set_background_color(arcade.color.BLACK)
@@ -1002,7 +1088,7 @@ class SaveScoreNameView(arcade.View):
         if key == arcade.key.BACKSPACE:
             self.player_name = self.player_name[:-1]
         elif key == arcade.key.ENTER:
-            self.save_score_with_name()
+            self.save_score()
             game_over_view = GameOverView(self.score, self.party_mode, self.bgm, self.apple_count)
             self.window.show_view(game_over_view)
         else:
@@ -1015,86 +1101,16 @@ class SaveScoreNameView(arcade.View):
                 else:
                     self.error_message = "Name kann maximal 8 Zeichen lang sein!"
 
-
-    def save_score_with_name(self):
+    def save_score(self):
         if not self.player_name:
             self.player_name = "Spieler"
-        with open("Hiscore.txt", "a") as file:
+        with open(f"{self.game_mode}_Hiscore.txt", "a") as file:
             file.write(f"{self.player_name},{self.score}\n")
 
     def on_mouse_press(self, x, y, button, modifiers):
-        self.save_score_with_name()
+        self.save_score(self.game_mode)
         game_over_view = GameOverView(self.score, self.party_mode, self.bgm, self.apple_count)
         self.window.show_view(game_over_view)
-
-
-class HighScoresView(arcade.View):
-    def __init__(self):
-        super().__init__()
-        self.current_option = 0
-        self.scores = []
-
-    def on_show_view(self):
-        arcade.set_background_color(arcade.color.AO)
-        self.load_scores()
-
-    def load_scores(self):
-        try:
-            with open("Hiscore.txt", "r") as file:
-                scores = file.readlines()
-                self.scores = [score.strip().split(",") for score in scores]
-                self.scores.sort(key=lambda x: int(x[1]), reverse=True)
-        except FileNotFoundError:
-            self.scores = []
-
-    def on_draw(self):
-        arcade.start_render()
-        arcade.draw_text(
-            "Bestenliste",
-            SCREEN_WIDTH / 2,
-            SCREEN_HEIGHT / 2 + 100,
-            arcade.color.WHITE,
-            font_size=48,
-            anchor_x="center",
-        )
-        if self.scores:
-            max_scores = min(5, len(self.scores))
-            for i in range(max_scores):
-                score = self.scores[i]
-                arcade.draw_text(
-                    f"{i + 1}. {score[0]} - {score[1]}",
-                    SCREEN_WIDTH / 2,
-                    SCREEN_HEIGHT / 2 + 50 - i * 50,
-                    arcade.color.WHITE,
-                    font_size=22,
-                    anchor_x="center",
-                )
-        else:
-            arcade.draw_text(
-                "Noch keinen Highscore",
-                SCREEN_WIDTH / 2,
-                SCREEN_HEIGHT / 2 + 50,
-                arcade.color.WHITE,
-                font_size=22,
-                anchor_x="center",
-            )
-        arcade.draw_text(
-            "Drücke Enter oder klicke die Maus um zurückzukehren",
-            SCREEN_WIDTH / 2,
-            SCREEN_HEIGHT / 2 - 200,  # Adjust the vertical position here
-            arcade.color.WHITE,
-            font_size=18,
-            anchor_x="center",
-        )
-
-    def on_key_press(self, key, modifiers):
-        if key == arcade.key.ENTER:
-            start_view = StartView()
-            self.window.show_view(start_view)
-
-    def on_mouse_press(self, x, y, button, modifiers):
-        start_view = StartView()
-        self.window.show_view(start_view)
 
 
 class GameOverView(arcade.View):
