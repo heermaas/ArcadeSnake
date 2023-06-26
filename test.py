@@ -21,8 +21,8 @@ scoreboard_height = BLOCK_SIZE * 2
 
 class BGM:
     def __init__(self, song_index):
-        self.music_list = ["bgm/MainMenu2.mp3", "bgm/GameMusic2.mp3", "bgm/GameOver.mp3", "bgm/Chomp.mp3", "bgm/Death.mp3",
-                           "bgm/Switch.mp3", "bgm/mirror.mp3", "bgm/diamond.mp3", "bgm/Click.wav"]
+        self.music_list = ["bgm/MainMenu2.mp3", "bgm/GameMusic2.mp3", "bgm/GameOver.mp3", "bgm/Chomp.mp3",
+                           "bgm/Death.mp3", "bgm/Switch.mp3", "bgm/mirror.mp3", "bgm/diamond.mp3", "bgm/Click.wav"]
         self.current_song_index = song_index
         self.player = None
         self.music = None
@@ -794,7 +794,7 @@ class SaveScoreView(arcade.View):
                 and SCREEN_HEIGHT / 2 - 200 < y < SCREEN_HEIGHT / 2 - 170
         ):
             self.click_effect_menu.play_music(volume=0.1, loop=False)
-            save_name_view = SaveScoreNameView(self.score, self.party_mode, self.bgm)
+            save_name_view = SaveScoreNameView(self.score, self.party_mode, self.bgm, self.apple_count)
             self.window.show_view(save_name_view)
         elif (
                 SCREEN_WIDTH / 2 + 80 < x < SCREEN_WIDTH / 2 + 130
@@ -1074,7 +1074,7 @@ class GameView(arcade.View):
                             self.diamond = None
 
                 except NoValidApplePositionError:
-                    save_score_view = SaveScoreView(self.snake.score, self.bgm)
+                    save_score_view = SaveScoreView(self.snake.score, self.bgm, self.snake.apple_count)
                     self.window.show_view(save_score_view)
 
                 self.snake.body.insert(0, (self.snake.x, self.snake.y))
@@ -1199,6 +1199,7 @@ class PauseView(arcade.View):
                 self.current_option += 1
         elif key == arcade.key.ENTER:
             if self.current_option == 0:
+                self.bgm.play_music(volume=0.3, loop=True)
                 self.game_view.paused = False
                 self.game_view.input_cooldown = False  # Reset input cooldown
                 self.window.show_view(self.game_view)
@@ -1216,6 +1217,7 @@ class PauseView(arcade.View):
                 SCREEN_WIDTH / 2 - 50 < x < SCREEN_WIDTH / 2 + 50
                 and SCREEN_HEIGHT / 2 - 130 < y < SCREEN_HEIGHT / 2 - 70
         ):
+            self.bgm.play_music(volume=0.3, loop=True)
             self.game_view.paused = False
             self.game_view.input_cooldown = False  # Reset input cooldown
             self.window.show_view(self.game_view)
