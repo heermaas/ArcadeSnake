@@ -1,6 +1,7 @@
 import arcade
 import random
 
+# Deklarierung & Implementierung der Konstanten
 SCREEN_WIDTH = 800
 SCREEN_HEIGHT = 600
 BLOCK_SIZE = 40
@@ -12,6 +13,7 @@ SCOREBOARD_HEIGHT = BLOCK_SIZE * 2
 
 class Snake:
     def __init__(self):
+        # Initialisierung der Schlange
         self.x = random.randint(2, (SCREEN_WIDTH - BLOCK_SIZE * 2) // BLOCK_SIZE) * BLOCK_SIZE + BLOCK_SIZE // 2
         self.y = random.randint(2, (
                 SCREEN_HEIGHT - BLOCK_SIZE * 2 - SCOREBOARD_HEIGHT) // BLOCK_SIZE) * BLOCK_SIZE + BLOCK_SIZE // 2
@@ -24,6 +26,7 @@ class Snake:
         self.is_snake_moving = False
         self.apple_count = 0
 
+        # Laden der Grafiken für den Schlangenkörper
         self.head_up = arcade.load_texture("images/head_up.png")
         self.head_down = arcade.load_texture("images/head_down.png")
         self.head_right = arcade.load_texture("images/head_right.png")
@@ -88,7 +91,7 @@ class Snake:
         return False
 
     def draw(self):
-        # Draw the head
+        # Zeichne den Kopf
         head_x, head_y = self.body[0]
         segment_x, segment_y = self.body[1]
         tail_x, tail_y = self.body[-1]
@@ -107,13 +110,13 @@ class Snake:
             head_texture = self.head_right
         arcade.draw_texture_rectangle(self.x, self.y, SNAKE_SIZE, SNAKE_SIZE, head_texture)
 
-        # Draw the body segments
+        # Zeichne die Körperteile
         for index in range(1, len(self.body)):
             segment = self.body[index]
             segment_x, segment_y = segment
 
             if index == len(self.body) - 1:
-                # Last segment (tail)
+                # Letztes Körpterteil (Schwanz)
                 tail_relation_x = second_segment_x - tail_x
                 tail_relation_y = second_segment_y - tail_y
                 tail_texture = None
@@ -127,7 +130,7 @@ class Snake:
                     tail_texture = self.tail_up
                 arcade.draw_texture_rectangle(segment_x, segment_y, SNAKE_SIZE, SNAKE_SIZE, tail_texture)
             else:
-                # Body segment
+                # Restliche Körperteile
                 next_segment_x, next_segment_y = self.body[index + 1]
                 previous_segment_x, previous_segment_y = self.body[index - 1]
 
@@ -169,6 +172,7 @@ class ItemToEat:
         self.Item_to_eat = arcade.load_texture(f'images/{item_name}.png')
 
     def spawn(self):
+        # Generiert eine zufällige Position für das zu essende Element
         valid_positions = []
         for x in range(BLOCK_SIZE, SCREEN_WIDTH - BLOCK_SIZE, BLOCK_SIZE):
             for y in range(BLOCK_SIZE, SCREEN_HEIGHT - BLOCK_SIZE * 3, BLOCK_SIZE):
