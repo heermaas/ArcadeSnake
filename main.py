@@ -310,11 +310,27 @@ class ModeSelectionView(arcade.View):
             anchor_x="center",
         )
         arcade.draw_text(
+            "(Klassiches Snake)",
+            SCREEN_WIDTH / 2,
+            SCREEN_HEIGHT / 2 - 120,
+            self.get_item_color(0),
+            font_size=15,
+            anchor_x="center",
+        )
+        arcade.draw_text(
             "Party",
             SCREEN_WIDTH / 2,
             SCREEN_HEIGHT / 2 - 160,
             self.get_item_color(1),
             font_size=22,
+            anchor_x="center",
+        )
+        arcade.draw_text(
+            "(Zusätzliche Items)",
+            SCREEN_WIDTH / 2,
+            SCREEN_HEIGHT / 2 - 180,
+            self.get_item_color(1),
+            font_size=15,
             anchor_x="center",
         )
         arcade.draw_text(
@@ -760,7 +776,7 @@ class PauseView(arcade.View):
         elif key == arcade.key.ENTER:
             self.click_effect_menu.play_music(volume=0.1, loop=False)
             if self.current_option == 0:
-                self.bgm.play_music(volume=0.1, loop=True)
+                self.bgm.play_music(volume=0.3, loop=True)
                 self.game_view.paused = False
                 self.game_view.input_cooldown = False  # Reset input cooldown
                 self.window.show_view(self.game_view)
