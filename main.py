@@ -1,5 +1,6 @@
 from game_objects import *
 from background_music import *
+
 import re
 import time
 import threading
@@ -415,6 +416,7 @@ class GameView(arcade.View):
         self.sound_effect_apple = BGM(3)
         self.sound_effect_mirror = BGM(6)
         self.sound_effect_diamond = BGM(7)
+        self.sound_effect_mushroom = BGM(9)
         self.sound_effect_wall = BGM(4)
         self.bgm.play_music(volume=0.3, loop=True)
         self.party_mode = party_mode
@@ -561,6 +563,7 @@ class GameView(arcade.View):
 
                 if self.party_mode and self.mushroom is not None:
                     if self.snake.eat_item(self.mushroom):
+                        self.sound_effect_mushroom.play_music(volume=0.5, loop=False)
                         factor = 1 - (2.5 * self.move_border)
                         border_timer = threading.Timer(10, self.higher_border, args=[factor])
                         border_timer.start()
