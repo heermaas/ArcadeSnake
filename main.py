@@ -315,12 +315,20 @@ class ModeSelectionView(arcade.View):
         if self.hovered_item is not None:
             self.click_effect_menu.play_music(volume=0.1, loop=False)
             if self.hovered_item == 0:
-                next_view = self.next_view(party_mode=self.party_mode)
-                self.window.show_view(next_view)
+                if self.next_view == "GameView":
+                    game_view = GameView(party_mode=self.party_mode)
+                    self.window.show_view(game_view)
+                else:
+                    high_scores_view = HighScoresView(self.party_mode)
+                    self.window.show_view(high_scores_view)
             elif self.hovered_item == 1:
                 self.party_mode = True
-                next_view = self.next_view(party_mode=self.party_mode)
-                self.window.show_view(next_view)
+                if self.next_view == "GameView":
+                    game_view = GameView(party_mode=self.party_mode)
+                    self.window.show_view(game_view)
+                else:
+                    high_scores_view = HighScoresView(self.party_mode)
+                    self.window.show_view(high_scores_view)
             elif self.hovered_item == 2:
                 start_view = StartView()
                 self.window.show_view(start_view)
@@ -465,8 +473,8 @@ class HighScoresView(arcade.View):
 
     def on_key_press(self, key, modifiers):
         if key == arcade.key.ENTER:
-            start_view = StartView()
-            self.window.show_view(start_view)
+            mode_selection_view = ModeSelectionView("HighScoreView")
+            self.window.show_view(mode_selection_view)
 
     def on_mouse_press(self, x, y, button, modifiers):
         mode_selection_view = ModeSelectionView("HighScoreView")
