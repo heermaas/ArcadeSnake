@@ -21,3 +21,4 @@ Spieler,1100
 Spieler,200
 Spieler,400
 test,0
+boooom33,0

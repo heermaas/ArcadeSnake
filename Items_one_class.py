@@ -561,6 +561,48 @@ class GameView(arcade.View):
             if self.movement_timer >= self.move_border:
                 self.snake.is_snake_moving = True
                 self.snake.move()
+
+                if self.party_mode and random.randint(1, 4) == 2:
+                    self.mushroom = ItemToEat(self.snake, "mushroom", self.previous_mushroom_position)
+                    mushroom_timer = threading.Timer(20.0, self.delete_mushroom)
+                    mushroom_timer.start()
+
+                if self.party_mode and random.randint(1, 8) == 2:
+                    self.mirror = ItemToEat(self.snake, "mirror", self.previous_mushroom_position)
+                    mirror_timer = threading.Timer(20.0, self.delete_mirror)
+                    mirror_timer.start()
+
+                if self.party_mode and random.randint(1, 12) == 2:
+                    self.diamond = ItemToEat(self.snake, "diamond", self.previous_mushroom_position)
+                    diamond_timer = threading.Timer(10.0, self.delete_diamond)
+                    diamond_timer.start()
+
+                if self.party_mode and self.mushroom is not None:
+                    if self.snake.eat_item(self.mushroom):
+                        factor = 1 - (2.5 * self.move_border)
+                        border_timer = threading.Timer(10, self.higher_border, args=[factor])
+                        border_timer.start()
+                        self.move_border *= factor
+                        self.previous_mushroom_position = (self.mushroom.x, self.mushroom.y)
+                        self.mushroom = None
+
+                if self.party_mode and self.mirror is not None:
+                    if self.snake.eat_item(self.mirror):
+                        self.sound_effect_mirror.play_music(volume=0.5, loop=False)
+                        if self.mirrored_control:
+                            self.mirrored_control = False
+                        else:
+                            self.mirrored_control = True
+                        self.previous_mirror_position = (self.mirror.x, self.mirror.y)
+                        self.mirror = None
+
+                if self.party_mode and self.diamond is not None:
+                    if self.snake.eat_item(self.diamond):
+                        self.sound_effect_diamond.play_music(volume=0.5, loop=False)
+                        self.snake.score += 500
+                        self.previous_diamond_position = (self.diamond.x, self.diamond.y)
+                        self.diamond = None
+
                 if self.snake.check_collision():
                     self.sound_effect_wall.play_music(volume=0.5, loop=False)
                     self.bgm.stop_audio()
@@ -575,45 +617,6 @@ class GameView(arcade.View):
                         self.snake.apple_count += 1
                         self.previous_Item_to_eat_position = (self.Item_to_eat.x, self.Item_to_eat.y)
                         self.Item_to_eat = ItemToEat(self.snake, "Apple", self.previous_Item_to_eat_position)
-                        if self.party_mode and random.randint(1, 4) == 2:
-
-                            self.mushroom = ItemToEat(self.snake, "mushroom", self.previous_mushroom_position)
-                            mushroom_timer = threading.Timer(20, self.delete_item("mushroom"))
-                            mushroom_timer.start()
-                        if self.party_mode and random.randint(1, 8) == 2:
-                            self.mirror = ItemToEat(self.snake, "mirror", self.previous_mushroom_position)
-                            mirror_timer = threading.Timer(20, self.delete_item("mirror"))
-                            mirror_timer.start()
-                        if self.party_mode and random.randint(1, 12) == 2:
-                            self.diamond = ItemToEat(self.snake, "diamond", self.previous_mushroom_position)
-                            diamond_timer = threading.Timer(10, self.delete_item("diamond"))
-                            diamond_timer.start()
-
-                    if self.party_mode and self.mushroom is not None:
-                        if self.snake.eat_item(self.mushroom):
-                            factor = 1 - (2.5 * self.move_border)
-                            border_timer = threading.Timer(10, self.higher_border, args=[factor])
-                            border_timer.start()
-                            self.move_border *= factor
-                            self.previous_mushroom_position = (self.mushroom.x, self.mushroom.y)
-                            self.mushroom = None
-
-                    if self.party_mode and self.mirror is not None:
-                        if self.snake.eat_item(self.mirror):
-                            self.sound_effect_mirror.play_music(volume=0.5, loop=False)
-                            if self.mirrored_control:
-                                self.mirrored_control = False
-                            else:
-                                self.mirrored_control = True
-                            self.previous_mirror_position = (self.mirror.x, self.mirror.y)
-                            self.mirror = None
-
-                    if self.party_mode and self.diamond is not None:
-                        if self.snake.eat_item(self.diamond):
-                            self.sound_effect_diamond.play_music(volume=0.5, loop=False)
-                            self.snake.score += 500
-                            self.previous_diamond_position = (self.diamond.x, self.diamond.y)
-                            self.diamond = None
 
                 except NoValidItemToEatPositionError:
                     save_score_view = SaveScoreView(self.snake.score, self.bgm, self.snake.apple_count)
@@ -629,13 +632,14 @@ class GameView(arcade.View):
     def higher_border(self, factor):
         self.move_border /= factor
 
-    def delete_item(self, item):
-        if item == "mushroom":
-            self.mushroom = None
-        elif item == "mirror":
-            self.mirror = None
-        elif item == "diamond":
-            self.diamond = None  
+    def delete_mushroom(self):
+        self.mushroom = None
+
+    def delete_mirror(self):
+        self.mirror = None
+
+    def delete_diamond(self):
+        self.diamond = None
 
     def update_option(self, option):
         pass  # This is here because PauseView inherits from GameView
@@ -1399,7 +1403,7 @@ class ItemToEat:
         if valid_positions:
             self.x, self.y = random.choice(valid_positions)
         else:
-            raise NoValidItemToEatPositionError('No valid position for the Item.')
+            raise NoValidItemToEatPositionError("No valid position for the Item.")
 
     def draw(self):
         arcade.draw_texture_rectangle(
