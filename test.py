@@ -316,17 +316,33 @@ class ModeSelectionView(arcade.View):
             anchor_x="center",
         )
         arcade.draw_text(
+            "(Klassiches Snake)",
+            SCREEN_WIDTH / 2,
+            SCREEN_HEIGHT / 2 - 120,
+            self.get_item_color(0),
+            font_size=15,
+            anchor_x="center",
+        )
+        arcade.draw_text(
             "Party",
             SCREEN_WIDTH / 2,
-            SCREEN_HEIGHT / 2 - 150,
+            SCREEN_HEIGHT / 2 - 160,
             self.get_item_color(1),
             font_size=22,
             anchor_x="center",
         )
         arcade.draw_text(
+            "(Zusätzliche Items)",
+            SCREEN_WIDTH / 2,
+            SCREEN_HEIGHT / 2 - 180,
+            self.get_item_color(1),
+            font_size=15,
+            anchor_x="center",
+        )
+        arcade.draw_text(
             "Zurück",
             SCREEN_WIDTH / 2,
-            SCREEN_HEIGHT / 2 - 200,
+            SCREEN_HEIGHT / 2 - 220,
             self.get_item_color(2),
             font_size=22,
             anchor_x="center",
@@ -335,7 +351,7 @@ class ModeSelectionView(arcade.View):
 
     def draw_cursor(self):
         cursor_x = SCREEN_WIDTH / 2 - 100
-        cursor_y = SCREEN_HEIGHT / 2 - 80 - self.current_option * 50
+        cursor_y = SCREEN_HEIGHT / 2 - 80 - self.current_option * 60
         cursor_color = self.get_item_color(self.current_option)
         arcade.draw_triangle_filled(
             cursor_x, cursor_y, cursor_x - 10, cursor_y - 10, cursor_x + 10, cursor_y - 10, cursor_color
@@ -375,7 +391,7 @@ class ModeSelectionView(arcade.View):
     def on_mouse_motion(self, x, y, dx, dy):
         for i, _ in enumerate(self.menu_items):
             item_x = SCREEN_WIDTH / 2
-            item_y = SCREEN_HEIGHT / 2 - 100 - i * 40
+            item_y = SCREEN_HEIGHT / 2 - 100 - i * 50
             item_width = 200
             item_height = 30
             if (
@@ -451,7 +467,7 @@ class GameOverView(arcade.View):
         arcade.draw_text(
             str(self.score),
             SCREEN_WIDTH / 2 - 100,
-            SCREEN_HEIGHT / 2 - 85,
+            SCREEN_HEIGHT / 2 - 87,
             arcade.color.WHITE,
             font_size=30,
         )
@@ -465,7 +481,7 @@ class GameOverView(arcade.View):
         arcade.draw_text(
             str(self.eaten_apple),
             SCREEN_WIDTH // 2 + 130,
-            SCREEN_HEIGHT // 2 - 85,
+            SCREEN_HEIGHT // 2 - 87,
             arcade.color.WHITE,
             font_size=30)
         arcade.draw_text(
