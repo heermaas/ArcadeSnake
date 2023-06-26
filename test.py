@@ -661,7 +661,7 @@ class SaveScoreNameView(arcade.View):
             if len(self.player_name) < 8:
                 self.player_name += chr(key)
             else:
-                self.error_message = "Name must be at most 8 characters long."
+                self.error_message = "Name kann maximal 8 Zeichen lang sein!"
 
     def save_score_with_name(self):
         if not self.player_name:
