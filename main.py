@@ -580,17 +580,17 @@ class GameView(arcade.View):
 
                 if self.party_mode and random.randint(1, 4) == 2:
                     self.mushroom = ItemToEat(self.snake, "mushroom", self.previous_mushroom_position)
-                    mushroom_timer = threading.Timer(20.0, self.delete_item("mushroom"))
+                    mushroom_timer = threading.Timer(20.0, lambda: self.delete_item("mushroom"))
                     mushroom_timer.start()
 
                 if self.party_mode and random.randint(1, 8) == 2:
                     self.mirror = ItemToEat(self.snake, "mirror", self.previous_mushroom_position)
-                    mirror_timer = threading.Timer(20.0, self.delete_item("mirror"))
+                    mirror_timer = threading.Timer(20.0, lambda: self.delete_item("mirror"))
                     mirror_timer.start()
 
                 if self.party_mode and random.randint(1, 12) == 2:
                     self.diamond = ItemToEat(self.snake, "diamond", self.previous_mushroom_position)
-                    diamond_timer = threading.Timer(10.0, self.delete_item("diamond"))
+                    diamond_timer = threading.Timer(20.0, lambda: self.delete_item("diamond"))
                     diamond_timer.start()
 
                 if self.party_mode and self.mushroom is not None:
