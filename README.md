@@ -21,8 +21,11 @@ Das Snake-Spiel ist ein klassisches Arcade-Spiel, bei dem der Spieler eine Schla
 4. Installiere die erforderlichen Abhängigkeiten: `pip install -r requirements.txt`
 5. Starte das Spiel: `python snake_game.py`
 
-- Max Mustermann (max@example.com)
-- Erika Musterfrau (erika@example.com)
+## Entwickler
+- Adrian Birlin (birlinad@dhbw-loerrach.de)
+- Abdelrhman Hassan (hassanab@dhbw-loerrach.de)
+- Manuel Heer (heerm@dhbw-loerrach.de)
+- Christian Ambs (ambsc@dhbw-loerrach.de)
 
 ## Lizenz
 
