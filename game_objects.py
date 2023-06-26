@@ -91,7 +91,7 @@ class Snake:
         return False
 
     def draw(self):
-        # Draw the head
+        # Zeichne den Kopf
         head_x, head_y = self.body[0]
         segment_x, segment_y = self.body[1]
         tail_x, tail_y = self.body[-1]
@@ -110,13 +110,13 @@ class Snake:
             head_texture = self.head_right
         arcade.draw_texture_rectangle(self.x, self.y, SNAKE_SIZE, SNAKE_SIZE, head_texture)
 
-        # Draw the body segments
+        # Zeichne die Körperteile
         for index in range(1, len(self.body)):
             segment = self.body[index]
             segment_x, segment_y = segment
 
             if index == len(self.body) - 1:
-                # Last segment (tail)
+                # Letztes Körpterteil (Schwanz)
                 tail_relation_x = second_segment_x - tail_x
                 tail_relation_y = second_segment_y - tail_y
                 tail_texture = None
@@ -130,7 +130,7 @@ class Snake:
                     tail_texture = self.tail_up
                 arcade.draw_texture_rectangle(segment_x, segment_y, SNAKE_SIZE, SNAKE_SIZE, tail_texture)
             else:
-                # Body segment
+                # Restliche Körperteile
                 next_segment_x, next_segment_y = self.body[index + 1]
                 previous_segment_x, previous_segment_y = self.body[index - 1]
 
@@ -172,6 +172,7 @@ class ItemToEat:
         self.Item_to_eat = arcade.load_texture(f'images/{item_name}.png')
 
     def spawn(self):
+        # Generiert eine zufällige Position für das zu essende Element
         valid_positions = []
         for x in range(BLOCK_SIZE, SCREEN_WIDTH - BLOCK_SIZE, BLOCK_SIZE):
             for y in range(BLOCK_SIZE, SCREEN_HEIGHT - BLOCK_SIZE * 3, BLOCK_SIZE):
