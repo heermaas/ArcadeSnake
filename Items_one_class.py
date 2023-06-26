@@ -8,10 +8,7 @@ SCREEN_WIDTH = 800
 SCREEN_HEIGHT = 600
 BLOCK_SIZE = 40
 SNAKE_SIZE = BLOCK_SIZE
-Item_to_eat_SIZE = BLOCK_SIZE
-MUSHROOM_SIZE = BLOCK_SIZE
-MIRROR_SIZE = BLOCK_SIZE
-DIAMOND_SIZE = BLOCK_SIZE
+ITEM_TO_EAT_SIZE = BLOCK_SIZE
 SNAKE_LENGTH = 3
 GAME_TITLE = "Snake Game"
 CAPTION = "Navigiere, Wachse, Überlebe!"
@@ -897,6 +894,9 @@ class GameView(arcade.View):
         self.mirrored_control = False
         self.input_cooldown = False
         self.bgm = BGM(1)
+        self.sound_effect_chomp = BGM(3)
+        self.sound_effect_mirror = BGM(6)
+        self.sound_effect_diamond = BGM(7)
         self.bgm.play_music(volume=0.3, loop=True)
         self.party_mode = party_mode
         self.star = arcade.load_texture("images/star.png")
@@ -1031,26 +1031,28 @@ class GameView(arcade.View):
                     self.window.show_view(save_score_view)
 
                 try:
-                    if self.snake.eat_Item_to_eat(self.Item_to_eat):
+                    if self.snake.eat_item(self.Item_to_eat):
+                        self.sound_effect_chomp.play_music(volume=0.5, loop=False)
                         self.snake.score += 100
                         self.snake.apple_count += 1
                         self.previous_Item_to_eat_position = (self.Item_to_eat.x, self.Item_to_eat.y)
                         self.Item_to_eat = Item_To_Eat(self.snake, "Apple", self.previous_Item_to_eat_position)
                         if self.party_mode and random.randint(1, 4) == 2:
-                            self.mushroom = Mushroom(self.snake, self.previous_mushroom_position)
+
+                            self.mushroom = Item_To_Eat(self.snake, "mushroom", self.previous_mushroom_position)
                             mushroom_timer = threading.Timer(20, self.delete_mushroom)
                             mushroom_timer.start()
                         if self.party_mode and random.randint(1, 8) == 2:
-                            self.mirror = Mirror(self.snake, self.previous_mirror_position)
+                            self.mirror = Item_To_Eat(self.snake, "mirror", self.previous_mushroom_position)
                             mirror_timer = threading.Timer(20, self.delete_mirror)
                             mirror_timer.start()
                         if self.party_mode and random.randint(1, 12) == 2:
-                            self.diamond = Diamond(self.snake, self.previous_diamond_position)
+                            self.diamond = Item_To_Eat(self.snake, "diamond", self.previous_mushroom_position)
                             diamond_timer = threading.Timer(10, self.delete_diamond)
                             diamond_timer.start()
 
                     if self.party_mode and self.mushroom is not None:
-                        if self.snake.eat_mushroom(self.mushroom):
+                        if self.snake.eat_item(self.mushroom):
                             factor = 1 - (2.5 * self.move_border)
                             border_timer = threading.Timer(10, self.higher_border, args=[factor])
                             border_timer.start()
@@ -1059,7 +1061,8 @@ class GameView(arcade.View):
                             self.mushroom = None
 
                     if self.party_mode and self.mirror is not None:
-                        if self.snake.eat_mirror(self.mirror):
+                        if self.snake.eat_item(self.mirror):
+                            self.sound_effect_mirror.play_music(volume=0.5, loop=False)
                             if self.mirrored_control:
                                 self.mirrored_control = False
                             else:
@@ -1068,7 +1071,8 @@ class GameView(arcade.View):
                             self.mirror = None
 
                     if self.party_mode and self.diamond is not None:
-                        if self.snake.eat_diamond(self.diamond):
+                        if self.snake.eat_item(self.diamond):
+                            self.sound_effect_diamond.play_music(volume=0.5, loop=False)
                             self.snake.score += 500
                             self.previous_diamond_position = (self.diamond.x, self.diamond.y)
                             self.diamond = None
@@ -1249,10 +1253,7 @@ class Snake:
         self.score = 0
         self.is_snake_moving = False
         self.apple_count = 0
-        self.sound_effect_chomp = BGM(3)
         self.sound_effect_wall = BGM(4)
-        self.sound_effect_mirror = BGM(6)
-        self.sound_effect_diamond = BGM(7)
 
         self.head_up = arcade.load_texture("images/head_up.png")
         self.head_down = arcade.load_texture("images/head_down.png")
@@ -1309,46 +1310,13 @@ class Snake:
                 return True
         return False
 
-    def eat_Item_to_eat(self, snake):
+    def eat_item(self, snake):
         if (
                 self.x < snake.x + SNAKE_SIZE
-                and self.x + Item_to_eat_SIZE > snake.x
+                and self.x + ITEM_TO_EAT_SIZE > snake.x
                 and self.y < snake.y + SNAKE_SIZE
-                and self.y + Item_to_eat_SIZE > snake.y
+                and self.y + ITEM_TO_EAT_SIZE > snake.y
         ):
-            self.sound_effect_chomp.play_music(volume=0.5, loop=False)
-            return True
-        return False
-
-    def eat_mushroom(self, snake):
-        if (
-                self.x < snake.x + SNAKE_SIZE
-                and self.x + MUSHROOM_SIZE > snake.x
-                and self.y < snake.y + SNAKE_SIZE
-                and self.y + MUSHROOM_SIZE > snake.y
-        ):
-            return True
-        return False
-
-    def eat_mirror(self, snake):
-        if (
-                self.x < snake.x + SNAKE_SIZE
-                and self.x + MIRROR_SIZE > snake.x
-                and self.y < snake.y + SNAKE_SIZE
-                and self.y + MIRROR_SIZE > snake.y
-        ):
-            self.sound_effect_mirror.play_music(volume=0.5, loop=False)
-            return True
-        return False
-
-    def eat_diamond(self, snake):
-        if (
-                self.x < snake.x + SNAKE_SIZE
-                and self.x + DIAMOND_SIZE > snake.x
-                and self.y < snake.y + SNAKE_SIZE
-                and self.y + DIAMOND_SIZE > snake.y
-        ):
-            self.sound_effect_diamond.play_music(volume=0.5, loop=False)
             return True
         return False
 
@@ -1452,7 +1420,7 @@ class Item_To_Eat:
 
     def draw(self):
         arcade.draw_texture_rectangle(
-            self.x, self.y, Item_to_eat_SIZE, Item_to_eat_SIZE, self.Item_to_eat
+            self.x, self.y, ITEM_TO_EAT_SIZE, ITEM_TO_EAT_SIZE, self.Item_to_eat
         )
 def main():
     window = arcade.Window(SCREEN_WIDTH, SCREEN_HEIGHT, GAME_TITLE)
