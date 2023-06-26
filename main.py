@@ -1043,7 +1043,7 @@ class SaveScoreNameView(arcade.View):
 
     def save_score_with_name(self):
         if not self.player_name:
-            self.player_name = "Player"
+            self.player_name = "Spieler"
         with open("Hiscore.txt", "a") as file:
             file.write(f"{self.player_name},{self.score}\n")
 
