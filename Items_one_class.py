@@ -649,11 +649,18 @@ class PauseView(arcade.View):
     def __init__(self, game_view):
         super().__init__()
         self.game_view = game_view
+        self.hovered_item = None
         self.current_option = 0
+        self.menu_items = [
+            "Zurück",
+            "Hauptmenü",
+            "Aufgeben",
+        ]
         self.bgm = game_view.bgm
+        self.sound_effect_menu = BGM(5)
+        self.click_effect_menu = BGM(8)
         self.bgm.stop_audio()
         self.game_over_bgm = BGM(2)
-        self.sound_effect_menu = BGM(3)
 
     def on_show_view(self):
         arcade.set_background_color(arcade.color.BLACK)
@@ -703,7 +710,7 @@ class PauseView(arcade.View):
             "Zurück",
             SCREEN_WIDTH / 2,
             SCREEN_HEIGHT / 2 - 100,
-            arcade.color.WHITE,
+            self.get_item_color(0),
             font_size=22,
             anchor_x="center",
         )
@@ -711,7 +718,7 @@ class PauseView(arcade.View):
             "Hauptmenü",
             SCREEN_WIDTH / 2,
             SCREEN_HEIGHT / 2 - 150,
-            arcade.color.WHITE,
+            self.get_item_color(1),
             font_size=22,
             anchor_x="center",
         )
@@ -719,7 +726,7 @@ class PauseView(arcade.View):
             "Aufgeben",
             SCREEN_WIDTH / 2,
             SCREEN_HEIGHT / 2 - 200,
-            arcade.color.WHITE,
+            self.get_item_color(2),
             font_size=22,
             anchor_x="center",
         )
@@ -728,9 +735,16 @@ class PauseView(arcade.View):
     def draw_cursor(self):
         cursor_x = SCREEN_WIDTH / 2 - 100
         cursor_y = SCREEN_HEIGHT / 2 - 80 - self.current_option * 50
+        cursor_color = self.get_item_color(self.current_option)
         arcade.draw_triangle_filled(
-            cursor_x, cursor_y, cursor_x - 10, cursor_y - 10, cursor_x + 10, cursor_y - 10, arcade.color.WHITE
+            cursor_x, cursor_y, cursor_x - 10, cursor_y - 10, cursor_x + 10, cursor_y - 10, cursor_color
         )
+
+    def get_item_color(self, item_index):
+        if self.current_option == item_index or self.hovered_item == item_index:
+            return 96, 124, 252
+        else:
+            return arcade.color.WHITE
 
     def update_option(self, option):
         self.current_option = option
@@ -738,13 +752,16 @@ class PauseView(arcade.View):
     def on_key_press(self, key, modifiers):
         if key == arcade.key.UP or key == arcade.key.W:
             if self.current_option > 0:
+                self.sound_effect_menu.play_music(volume=0.1, loop=False)
                 self.current_option -= 1
         elif key == arcade.key.DOWN or key == arcade.key.S:
             if self.current_option < 2:
+                self.sound_effect_menu.play_music(volume=0.1, loop=False)
                 self.current_option += 1
         elif key == arcade.key.ENTER:
+            self.click_effect_menu.play_music(volume=0.1, loop=False)
             if self.current_option == 0:
-                self.bgm.play_music(volume=0.3, loop=True)
+                self.bgm.play_music(volume=0.1, loop=True)
                 self.game_view.paused = False
                 self.game_view.input_cooldown = False  # Reset input cooldown
                 self.window.show_view(self.game_view)
@@ -754,14 +771,40 @@ class PauseView(arcade.View):
             elif self.current_option == 2:
                 game_over_view = GameOverView(self.game_view.snake.score, self.game_view.party_mode, self.game_over_bgm,
                                               self.game_view.snake.apple_count)
-                self.game_over_bgm.play_music(volume=0.5, loop=True)
+                self.game_over_bgm.play_music(volume=0.1, loop=True)
                 self.window.show_view(game_over_view)
+
+        self.hovered_item = self.current_option
+
+    def on_mouse_motion(self, x, y, dx, dy):
+        for i, _ in enumerate(self.menu_items):
+            item_x = SCREEN_WIDTH / 2
+            item_y = SCREEN_HEIGHT / 2 - 100 - i * 40
+            item_width = 200
+            item_height = 30
+
+            # Adjust hitbox size for the second menu item
+            if i == 1:
+                item_height = 25  # Decrease the height of the hitbox for the second item
+
+            if (
+                    item_x - item_width / 2 < x < item_x + item_width / 2
+                    and item_y - item_height / 2 < y < item_y + item_height / 2
+            ):
+                if self.hovered_item != i:
+                    self.sound_effect_menu.play_music(volume=0.1, loop=False)
+                self.hovered_item = i
+                self.current_option = i
+                break
+        else:
+            self.hovered_item = None
 
     def on_mouse_press(self, x, y, button, modifiers):
         if (
                 SCREEN_WIDTH / 2 - 50 < x < SCREEN_WIDTH / 2 + 50
                 and SCREEN_HEIGHT / 2 - 130 < y < SCREEN_HEIGHT / 2 - 70
         ):
+            self.click_effect_menu.play_music(volume=0.1, loop=False)
             self.bgm.play_music(volume=0.3, loop=True)
             self.game_view.paused = False
             self.game_view.input_cooldown = False  # Reset input cooldown
@@ -770,14 +813,16 @@ class PauseView(arcade.View):
                 SCREEN_WIDTH / 2 - 80 < x < SCREEN_WIDTH / 2 + 80
                 and SCREEN_HEIGHT / 2 - 180 < y < SCREEN_HEIGHT / 2 - 120
         ):
+            self.click_effect_menu.play_music(volume=0.1, loop=False)
             start_view = StartView()
             self.window.show_view(start_view)
         elif (
                 SCREEN_WIDTH / 2 - 40 < x < SCREEN_WIDTH / 2 + 40
                 and SCREEN_HEIGHT / 2 - 230 < y < SCREEN_HEIGHT / 2 - 170
         ):
+            self.click_effect_menu.play_music(volume=0.1, loop=False)
             game_over_view = GameOverView(self.game_view.snake.score, self.game_view.party_mode, self.game_over_bgm, self.game_view.snake.apple_count)
-            self.game_over_bgm.play_music(volume=0.5, loop=True)
+            self.game_over_bgm.play_music(volume=0.1, loop=True)
             self.window.show_view(game_over_view)
 
 
