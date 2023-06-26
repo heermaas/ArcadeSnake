@@ -5,7 +5,7 @@ import time
 class BGM:
     def __init__(self, song_index):
         self.music_list = ["bgm/MainMenu2.mp3", "bgm/GameMusic2.mp3", "bgm/GameOver.mp3", "bgm/Chomp.mp3",
-                           "bgm/Death.mp3", "bgm/Switch.mp3", "bgm/mirror.mp3", "bgm/diamond.mp3", "bgm/Click.wav"]
+                           "bgm/Death.mp3", "bgm/Switch.mp3", "bgm/mirror.mp3", "bgm/diamond.mp3", "bgm/Click.wav", "EatMushroom.mp3"]
         self.current_song_index = song_index
         self.player = None
         self.music = None

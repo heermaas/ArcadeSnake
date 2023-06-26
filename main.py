@@ -5,6 +5,7 @@ import re
 import time
 import threading
 
+# Intitalisierung & Deklarierung der Konstanten
 SCREEN_WIDTH = 800
 SCREEN_HEIGHT = 600
 BLOCK_SIZE = 40
@@ -107,6 +108,7 @@ class StartView(arcade.View):
         arcade.draw_triangle_filled(
             cursor_x, cursor_y, cursor_x - 10, cursor_y + 10, cursor_x - 10, cursor_y - 10, cursor_color
         )
+
     def get_item_color(self, item_index):
         if self.current_option == item_index or self.hovered_item == item_index:
             return 96, 124, 252
