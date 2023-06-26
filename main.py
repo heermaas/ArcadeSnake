@@ -5,6 +5,7 @@ import re
 import time
 import threading
 
+# Deklarierung & Implementierung der Konstanten
 SCREEN_WIDTH = 800
 SCREEN_HEIGHT = 600
 BLOCK_SIZE = 40

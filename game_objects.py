@@ -1,6 +1,7 @@
 import arcade
 import random
 
+# Deklarierung & Implementierung der Konstanten
 SCREEN_WIDTH = 800
 SCREEN_HEIGHT = 600
 BLOCK_SIZE = 40
@@ -12,6 +13,7 @@ SCOREBOARD_HEIGHT = BLOCK_SIZE * 2
 
 class Snake:
     def __init__(self):
+        # Initialisierung der Schlange
         self.x = random.randint(2, (SCREEN_WIDTH - BLOCK_SIZE * 2) // BLOCK_SIZE) * BLOCK_SIZE + BLOCK_SIZE // 2
         self.y = random.randint(2, (
                 SCREEN_HEIGHT - BLOCK_SIZE * 2 - SCOREBOARD_HEIGHT) // BLOCK_SIZE) * BLOCK_SIZE + BLOCK_SIZE // 2
@@ -24,6 +26,7 @@ class Snake:
         self.is_snake_moving = False
         self.apple_count = 0
 
+        # Laden der Grafiken für den Schlangenkörper
         self.head_up = arcade.load_texture("images/head_up.png")
         self.head_down = arcade.load_texture("images/head_down.png")
         self.head_right = arcade.load_texture("images/head_right.png")
