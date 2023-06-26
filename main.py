@@ -1003,11 +1003,16 @@ class SaveScoreNameView(arcade.View):
             self.save_score_with_name()
             game_over_view = GameOverView(self.score, self.party_mode, self.bgm, self.apple_count)
             self.window.show_view(game_over_view)
-        elif re.match(r"^[a-zA-Z0-9]$", chr(key)):
-            if len(self.player_name) < 8:
-                self.player_name += chr(key)
-            else:
-                self.error_message = "Name kann maximal 8 Zeichen lang sein!"
+        else:
+            character = chr(key)
+            if modifiers & arcade.key.MOD_SHIFT:
+                character = character.upper()
+            if re.match(r"^[a-zA-Z0-9]$", character):
+                if len(self.player_name) < 8:
+                    self.player_name += character
+                else:
+                    self.error_message = "Name kann maximal 8 Zeichen lang sein!"
+
 
     def save_score_with_name(self):
         if not self.player_name:
