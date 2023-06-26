@@ -1,5 +1,6 @@
-import arcade
-import random
+from game_objects import *
+from background_music import *
+
 import re
 import time
 import threading
@@ -10,28 +11,10 @@ BLOCK_SIZE = 40
 SNAKE_SIZE = BLOCK_SIZE
 ITEM_TO_EAT_SIZE = BLOCK_SIZE
 SNAKE_LENGTH = 3
+SCOREBOARD_HEIGHT = BLOCK_SIZE * 2
 GAME_TITLE = "Snake Game"
 CAPTION = "Navigiere, Wachse, Überlebe!"
 SUB_HEADING = "Ein Projekt von Abdelrhman Hassan, Adrian Birlin, Christian Ambs & Manuel Heer"
-SCOREBOARD_HEIGHT = BLOCK_SIZE * 2
-
-
-class BGM:
-    def __init__(self, song_index):
-        self.music_list = ["bgm/MainMenu2.mp3", "bgm/GameMusic2.mp3", "bgm/GameOver.mp3", "bgm/Chomp.mp3",
-                           "bgm/Death.mp3", "bgm/Switch.mp3", "bgm/mirror.mp3", "bgm/diamond.mp3", "bgm/Click.wav"]
-        self.current_song_index = song_index
-        self.player = None
-        self.music = None
-
-    def play_music(self, volume, loop):
-        self.music = arcade.Sound(self.music_list[self.current_song_index], streaming=True)
-        self.player = self.music.play(volume=volume, loop=loop)
-        time.sleep(0.03)
-
-    def stop_audio(self):
-        if self.player:
-            self.player.pause()
 
 
 class StartView(arcade.View):
@@ -119,12 +102,11 @@ class StartView(arcade.View):
 
     def draw_cursor(self):
         cursor_x = SCREEN_WIDTH / 2 - 100
-        cursor_y = SCREEN_HEIGHT / 2 - 80 - self.current_option * 50
+        cursor_y = SCREEN_HEIGHT / 2 - 88 - self.current_option * 50
         cursor_color = self.get_item_color(self.current_option)
         arcade.draw_triangle_filled(
-            cursor_x, cursor_y, cursor_x - 10, cursor_y - 10, cursor_x + 10, cursor_y - 10, cursor_color
+            cursor_x, cursor_y, cursor_x - 10, cursor_y + 10, cursor_x - 10, cursor_y - 10, cursor_color
         )
-
     def get_item_color(self, item_index):
         if self.current_option == item_index or self.hovered_item == item_index:
             return 96, 124, 252
@@ -178,11 +160,11 @@ class StartView(arcade.View):
     def menu(self):
         self.click_effect_menu.play_music(volume=0.1, loop=False)
         if self.current_option == 0:
-            mode_selection_view = ModeSelectionView()
+            mode_selection_view = ModeSelectionView("GameView")
             self.window.show_view(mode_selection_view)
         elif self.current_option == 1:
-            high_scores_view = HighScoresView()
-            self.window.show_view(high_scores_view)
+            mode_selection_view = ModeSelectionView("HighScoreView")
+            self.window.show_view(mode_selection_view)
         elif self.current_option == 2:
             instruction_view = InstructionsView()
             self.window.show_view(instruction_view)
@@ -191,6 +173,165 @@ class StartView(arcade.View):
 
     def exit_game(self):
         self.window.close()
+
+
+class ModeSelectionView(arcade.View):
+    def __init__(self, next_view):
+        super().__init__()
+        self.current_option = 0
+        self.menu_items = [
+            "Normal",
+            "Party",
+            "Zurück",
+        ]
+        self.party_mode = False
+        self.sound_effect_menu = BGM(5)
+        self.click_effect_menu = BGM(8)
+        self.hovered_item = -1
+        self.next_view = next_view
+
+
+    def on_show(self):
+        arcade.set_background_color(arcade.color.AO)
+
+    def on_draw(self):
+        arcade.start_render()
+        arcade.draw_text(
+            "Wähle einen Modus",
+            SCREEN_WIDTH / 2,
+            SCREEN_HEIGHT / 2 + 50,
+            arcade.color.WHITE,
+            font_size=64,
+            anchor_x="center",
+        )
+        arcade.draw_text(
+            "Normal",
+            SCREEN_WIDTH / 2,
+            SCREEN_HEIGHT / 2 - 100,
+            self.get_item_color(0),
+            font_size=22,
+            anchor_x="center",
+        )
+        arcade.draw_text(
+            "(Klassiches Snake)",
+            SCREEN_WIDTH / 2,
+            SCREEN_HEIGHT / 2 - 120,
+            self.get_item_color(0),
+            font_size=15,
+            anchor_x="center",
+        )
+        arcade.draw_text(
+            "Party",
+            SCREEN_WIDTH / 2,
+            SCREEN_HEIGHT / 2 - 160,
+            self.get_item_color(1),
+            font_size=22,
+            anchor_x="center",
+        )
+        arcade.draw_text(
+            "(Zusätzliche Items)",
+            SCREEN_WIDTH / 2,
+            SCREEN_HEIGHT / 2 - 180,
+            self.get_item_color(1),
+            font_size=15,
+            anchor_x="center",
+        )
+        arcade.draw_text(
+            "Zurück",
+            SCREEN_WIDTH / 2,
+            SCREEN_HEIGHT / 2 - 220,
+            self.get_item_color(2),
+            font_size=22,
+            anchor_x="center",
+        )
+        self.draw_cursor()
+
+    def draw_cursor(self):
+        cursor_x = SCREEN_WIDTH / 2 - 100
+        cursor_y = SCREEN_HEIGHT / 2 - 88 - self.current_option * 50
+        cursor_color = self.get_item_color(self.current_option)
+        arcade.draw_triangle_filled(
+            cursor_x, cursor_y, cursor_x - 10, cursor_y + 10, cursor_x - 10, cursor_y - 10, cursor_color
+        )
+
+    def get_item_color(self, item_index):
+        if self.current_option == item_index or self.hovered_item == item_index:
+            return 96, 124, 252
+        else:
+            return arcade.color.WHITE
+
+    def update_option(self, option):
+        self.current_option = option
+
+    def on_key_press(self, key, modifiers):
+        if key == arcade.key.UP or key == arcade.key.W:
+            if self.current_option > 0:
+                self.sound_effect_menu.play_music(volume=0.1, loop=False)
+                self.current_option -= 1
+        elif key == arcade.key.DOWN or key == arcade.key.S:
+            if self.current_option < 2:
+                self.sound_effect_menu.play_music(volume=0.1, loop=False)
+                self.current_option += 1
+        elif key == arcade.key.ENTER:
+            self.click_effect_menu.play_music(volume=0.1, loop=False)
+            if self.current_option == 0:
+                if self.next_view == "GameView":
+                    game_view = GameView(party_mode=self.party_mode)
+                    self.window.show_view(game_view)
+                else:
+                    high_scores_view = HighScoresView(self.party_mode)
+                    self.window.show_view(high_scores_view)
+            elif self.current_option == 1:
+                self.party_mode = True
+                if self.next_view == "GameView":
+                    game_view = GameView(party_mode=self.party_mode)
+                    self.window.show_view(game_view)
+                else:
+                    high_scores_view = HighScoresView(self.party_mode)
+                    self.window.show_view(high_scores_view)
+            elif self.current_option == 2:
+                start_view = StartView()
+                self.window.show_view(start_view)
+
+    def on_mouse_motion(self, x, y, dx, dy):
+        for i, _ in enumerate(self.menu_items):
+            item_x = SCREEN_WIDTH / 2
+            item_y = SCREEN_HEIGHT / 2 - 100 - i * 50
+            item_width = 200
+            item_height = 30
+            if (
+                    item_x - item_width / 2 < x < item_x + item_width / 2
+                    and item_y - item_height / 2 < y < item_y + item_height / 2
+            ):
+                if self.hovered_item != i:
+                    self.sound_effect_menu.play_music(volume=0.1, loop=False)
+                self.hovered_item = i
+                self.current_option = i  # Update current_option as well
+                break
+        else:
+            self.hovered_item = None
+
+    def on_mouse_press(self, x, y, button, modifiers):
+        if self.hovered_item is not None:
+            self.click_effect_menu.play_music(volume=0.1, loop=False)
+            if self.hovered_item == 0:
+                if self.next_view == "GameView":
+                    game_view = GameView(party_mode=self.party_mode)
+                    self.window.show_view(game_view)
+                else:
+                    high_scores_view = HighScoresView(self.party_mode)
+                    self.window.show_view(high_scores_view)
+            elif self.hovered_item == 1:
+                self.party_mode = True
+                if self.next_view == "GameView":
+                    game_view = GameView(party_mode=self.party_mode)
+                    self.window.show_view(game_view)
+                else:
+                    high_scores_view = HighScoresView(self.party_mode)
+                    self.window.show_view(high_scores_view)
+            elif self.hovered_item == 2:
+                start_view = StartView()
+                self.window.show_view(start_view)
 
 
 class InstructionsView(arcade.View):
@@ -266,153 +407,86 @@ class InstructionsView(arcade.View):
         self.window.show_view(start_view)
 
 
-class ModeSelectionView(arcade.View):
-    def __init__(self):
+class HighScoresView(arcade.View):
+    def __init__(self, party_mode):
         super().__init__()
         self.current_option = 0
-        self.menu_items = [
-            "Normal",
-            "Party",
-            "Zurück",
-        ]
-        self.party_mode = False
-        self.sound_effect_menu = BGM(5)
-        self.click_effect_menu = BGM(8)
-        self.hovered_item = -1
+        self.scores = []
+        self.party_mode = party_mode
+        if self.party_mode:
+            self.game_mode = "Party"
+        else:
+            self.game_mode = "Normal"
 
-    def on_show(self):
+    def on_show_view(self):
         arcade.set_background_color(arcade.color.AO)
+        self.load_scores()
+
+    def load_scores(self):
+        try:
+            with open(f"{self.game_mode}_Hiscore.txt", "r") as file:
+                scores = file.readlines()
+                self.scores = [score.strip().split(",") for score in scores]
+                self.scores.sort(key=lambda x: int(x[1]), reverse=True)
+        except FileNotFoundError:
+            self.scores = []
 
     def on_draw(self):
         arcade.start_render()
         arcade.draw_text(
-            "Wähle einen Modus",
+            "Bestenliste",
             SCREEN_WIDTH / 2,
-            SCREEN_HEIGHT / 2 + 50,
+            SCREEN_HEIGHT / 2 + 100,
             arcade.color.WHITE,
-            font_size=64,
+            font_size=48,
             anchor_x="center",
         )
-        arcade.draw_text(
-            "Normal",
-            SCREEN_WIDTH / 2,
-            SCREEN_HEIGHT / 2 - 100,
-            self.get_item_color(0),
-            font_size=22,
-            anchor_x="center",
-        )
-        arcade.draw_text(
-            "(Klassiches Snake)",
-            SCREEN_WIDTH / 2,
-            SCREEN_HEIGHT / 2 - 120,
-            self.get_item_color(0),
-            font_size=15,
-            anchor_x="center",
-        )
-        arcade.draw_text(
-            "Party",
-            SCREEN_WIDTH / 2,
-            SCREEN_HEIGHT / 2 - 160,
-            self.get_item_color(1),
-            font_size=22,
-            anchor_x="center",
-        )
-        arcade.draw_text(
-            "(Zusätzliche Items)",
-            SCREEN_WIDTH / 2,
-            SCREEN_HEIGHT / 2 - 180,
-            self.get_item_color(1),
-            font_size=15,
-            anchor_x="center",
-        )
-        arcade.draw_text(
-            "Zurück",
-            SCREEN_WIDTH / 2,
-            SCREEN_HEIGHT / 2 - 220,
-            self.get_item_color(2),
-            font_size=22,
-            anchor_x="center",
-        )
-        self.draw_cursor()
-
-    def draw_cursor(self):
-        cursor_x = SCREEN_WIDTH / 2 - 100
-        cursor_y = SCREEN_HEIGHT / 2 - 80 - self.current_option * 60
-        cursor_color = self.get_item_color(self.current_option)
-        arcade.draw_triangle_filled(
-            cursor_x, cursor_y, cursor_x - 10, cursor_y - 10, cursor_x + 10, cursor_y - 10, cursor_color
-        )
-
-    def get_item_color(self, item_index):
-        if self.current_option == item_index or self.hovered_item == item_index:
-            return 96, 124, 252
+        if self.scores:
+            max_scores = min(5, len(self.scores))
+            for i in range(max_scores):
+                score = self.scores[i]
+                arcade.draw_text(
+                    f"{i + 1}. {score[0]} - {score[1]}",
+                    SCREEN_WIDTH / 2,
+                    SCREEN_HEIGHT / 2 + 50 - i * 50,
+                    arcade.color.WHITE,
+                    font_size=22,
+                    anchor_x="center",
+                )
         else:
-            return arcade.color.WHITE
-
-    def update_option(self, option):
-        self.current_option = option
+            arcade.draw_text(
+                "Noch keinen Highscore",
+                SCREEN_WIDTH / 2,
+                SCREEN_HEIGHT / 2 + 50,
+                arcade.color.WHITE,
+                font_size=22,
+                anchor_x="center",
+            )
+        arcade.draw_text(
+            "Drücke Enter oder klicke die Maus um zurückzukehren",
+            SCREEN_WIDTH / 2,
+            SCREEN_HEIGHT / 2 - 200,  # Adjust the vertical position here
+            arcade.color.WHITE,
+            font_size=18,
+            anchor_x="center",
+        )
 
     def on_key_press(self, key, modifiers):
-        if key == arcade.key.UP or key == arcade.key.W:
-            if self.current_option > 0:
-                self.sound_effect_menu.play_music(volume=0.1, loop=False)
-                self.current_option -= 1
-        elif key == arcade.key.DOWN or key == arcade.key.S:
-            if self.current_option < 2:
-                self.sound_effect_menu.play_music(volume=0.1, loop=False)
-                self.current_option += 1
-        elif key == arcade.key.ENTER:
-            self.click_effect_menu.play_music(volume=0.1, loop=False)
-            if self.current_option == 0:
-                game_view = GameView(party_mode=self.party_mode)
-                self.window.show_view(game_view)
-            elif self.current_option == 1:
-                self.party_mode = True
-                game_view = GameView(party_mode=self.party_mode)
-                self.window.show_view(game_view)
-            elif self.current_option == 2:
-                start_view = StartView()
-                self.window.show_view(start_view)
-
-    def on_mouse_motion(self, x, y, dx, dy):
-        for i, _ in enumerate(self.menu_items):
-            item_x = SCREEN_WIDTH / 2
-            item_y = SCREEN_HEIGHT / 2 - 100 - i * 50
-            item_width = 200
-            item_height = 30
-            if (
-                    item_x - item_width / 2 < x < item_x + item_width / 2
-                    and item_y - item_height / 2 < y < item_y + item_height / 2
-            ):
-                if self.hovered_item != i:
-                    self.sound_effect_menu.play_music(volume=0.1, loop=False)
-                self.hovered_item = i
-                self.current_option = i  # Update current_option as well
-                break
-        else:
-            self.hovered_item = None
+        if key == arcade.key.ENTER:
+            mode_selection_view = ModeSelectionView("HighScoreView")
+            self.window.show_view(mode_selection_view)
 
     def on_mouse_press(self, x, y, button, modifiers):
-        if self.hovered_item is not None:
-            self.click_effect_menu.play_music(volume=0.1, loop=False)
-            if self.hovered_item == 0:
-                game_view = GameView()
-                self.window.show_view(game_view)
-            elif self.hovered_item == 1:
-                self.party_mode = True
-                game_view = GameView()
-                self.window.show_view(game_view)
-            elif self.hovered_item == 2:
-                start_view = StartView()
-                self.window.show_view(start_view)
+        mode_selection_view = ModeSelectionView("HighScoreView")
+        self.window.show_view(mode_selection_view)
 
 
 class GameView(arcade.View):
     def __init__(self, party_mode=False):
         super().__init__()
         self.snake = Snake()
-        self.Item_to_eat = ItemToEat(self.snake, "Apple")
-        self.previous_Item_to_eat_position = (self.Item_to_eat.x, self.Item_to_eat.y)
+        self.apple = ItemToEat(self.snake, "Apple")
+        self.previous_Item_to_eat_position = (self.apple.x, self.apple.y)
         if party_mode:
             self.mushroom = ItemToEat(self.snake, "Mushroom")
             self.previous_mushroom_position = (self.mushroom.x, self.mushroom.y)
@@ -433,6 +507,7 @@ class GameView(arcade.View):
         self.sound_effect_apple = BGM(3)
         self.sound_effect_mirror = BGM(6)
         self.sound_effect_diamond = BGM(7)
+        self.sound_effect_mushroom = BGM(9)
         self.sound_effect_wall = BGM(4)
         self.bgm.play_music(volume=0.3, loop=True)
         self.party_mode = party_mode
@@ -452,7 +527,7 @@ class GameView(arcade.View):
 
     def draw_apple_count(self):
         # Set the font style, size, and color
-        arcade.draw_texture_rectangle(460, SCREEN_HEIGHT - SCOREBOARD_HEIGHT // 2, 50, 50, self.Item_to_eat.Item_to_eat)
+        arcade.draw_texture_rectangle(460, SCREEN_HEIGHT - SCOREBOARD_HEIGHT // 2, 50, 50, self.apple.Item_to_eat)
         arcade.draw_text(str(self.snake.apple_count), 490, SCREEN_HEIGHT - SCOREBOARD_HEIGHT // 2 - 20,
                          arcade.color.WHITE, font_size=36)
 
@@ -499,7 +574,7 @@ class GameView(arcade.View):
                     )
 
         self.snake.draw()
-        self.Item_to_eat.draw()
+        self.apple.draw()
         if self.party_mode and self.mushroom is not None:
             self.mushroom.draw()
         if self.party_mode and self.mirror is not None:
@@ -555,6 +630,19 @@ class GameView(arcade.View):
                     self.snake.is_snake_moving = True
                 self.input_cooldown = True
 
+    def party_mode_prep(self):
+        self.mushroom = ItemToEat(self.snake, "mushroom", self.previous_mushroom_position)
+        mushroom_timer = threading.Timer(20.0, lambda: self.delete_item("mushroom"))
+        mushroom_timer.start()
+
+        self.mirror = ItemToEat(self.snake, "mirror", self.previous_mushroom_position)
+        mirror_timer = threading.Timer(20.0, lambda: self.delete_item("mirror"))
+        mirror_timer.start()
+
+        self.diamond = ItemToEat(self.snake, "diamond", self.previous_mushroom_position)
+        diamond_timer = threading.Timer(20.0, lambda: self.delete_item("diamond"))
+        diamond_timer.start()
+
     def update(self, delta_time):
         if not self.paused and self.snake.is_snake_moving:
             self.movement_timer += delta_time
@@ -562,23 +650,24 @@ class GameView(arcade.View):
                 self.snake.is_snake_moving = True
                 self.snake.move()
 
-                if self.party_mode and random.randint(1, 4) == 2:
+                if self.party_mode and not self.mushroom and random.randint(1, 4) == 2:
                     self.mushroom = ItemToEat(self.snake, "mushroom", self.previous_mushroom_position)
-                    mushroom_timer = threading.Timer(20.0, lambda: self.delete_item("mushroom"))
+                    mushroom_timer = threading.Timer(random.uniform(3, 15), lambda: self.delete_item("mushroom"))
                     mushroom_timer.start()
 
-                if self.party_mode and random.randint(1, 8) == 2:
+                if self.party_mode and not self.mirror and random.randint(1, 8) == 2:
                     self.mirror = ItemToEat(self.snake, "mirror", self.previous_mushroom_position)
-                    mirror_timer = threading.Timer(20.0, lambda: self.delete_item("mirror"))
+                    mirror_timer = threading.Timer(random.uniform(3, 15), lambda: self.delete_item("mirror"))
                     mirror_timer.start()
 
-                if self.party_mode and random.randint(1, 12) == 2:
+                if self.party_mode and not self.diamond and random.randint(1, 12) == 2:
                     self.diamond = ItemToEat(self.snake, "diamond", self.previous_mushroom_position)
-                    diamond_timer = threading.Timer(20.0, lambda: self.delete_item("diamond"))
+                    diamond_timer = threading.Timer(random.uniform(2, 10), lambda: self.delete_item("diamond"))
                     diamond_timer.start()
 
                 if self.party_mode and self.mushroom is not None:
                     if self.snake.eat_item(self.mushroom):
+                        self.sound_effect_mushroom.play_music(volume=0.5, loop=False)
                         factor = 1 - (2.5 * self.move_border)
                         border_timer = threading.Timer(10, self.higher_border, args=[factor])
                         border_timer.start()
@@ -586,37 +675,38 @@ class GameView(arcade.View):
                         self.previous_mushroom_position = (self.mushroom.x, self.mushroom.y)
                         self.mushroom = None
 
-                if self.party_mode and self.mirror is not None:
-                    if self.snake.eat_item(self.mirror):
-                        self.sound_effect_mirror.play_music(volume=0.5, loop=False)
-                        if self.mirrored_control:
-                            self.mirrored_control = False
-                        else:
-                            self.mirrored_control = True
-                        self.previous_mirror_position = (self.mirror.x, self.mirror.y)
-                        self.mirror = None
-
-                if self.party_mode and self.diamond is not None:
-                    if self.snake.eat_item(self.diamond):
-                        self.sound_effect_diamond.play_music(volume=0.5, loop=False)
-                        self.snake.score += 500
-                        self.previous_diamond_position = (self.diamond.x, self.diamond.y)
-                        self.diamond = None
-
-                if self.snake.check_collision():
-                    self.sound_effect_wall.play_music(volume=0.5, loop=False)
-                    self.bgm.stop_audio()
-                    time.sleep(2)
-                    save_score_view = SaveScoreView(self.snake.score, self.party_mode, self.bgm, self.snake.apple_count)
-                    self.window.show_view(save_score_view)
-
                 try:
-                    if self.snake.eat_item(self.Item_to_eat):
+                    if self.party_mode and self.mirror is not None:
+                        if self.snake.eat_item(self.mirror):
+                            self.sound_effect_mirror.play_music(volume=0.5, loop=False)
+                            if self.mirrored_control:
+                                self.mirrored_control = False
+                            else:
+                                self.mirrored_control = True
+                            self.previous_mirror_position = (self.mirror.x, self.mirror.y)
+                            self.mirror = None
+
+                    if self.party_mode and self.diamond is not None:
+                        if self.snake.eat_item(self.diamond):
+                            self.sound_effect_diamond.play_music(volume=0.5, loop=False)
+                            self.snake.score += 500
+                            self.previous_diamond_position = (self.diamond.x, self.diamond.y)
+                            self.diamond = None
+
+                    if self.snake.check_collision():
+                        self.sound_effect_wall.play_music(volume=0.5, loop=False)
+                        self.bgm.stop_audio()
+                        time.sleep(2)
+                        save_score_view = SaveScoreView(self.snake.score, self.party_mode, self.bgm,
+                                                        self.snake.apple_count)
+                        self.window.show_view(save_score_view)
+
+                    if self.snake.eat_item(self.apple):
                         self.sound_effect_apple.play_music(volume=0.5, loop=False)
                         self.snake.score += 100
                         self.snake.apple_count += 1
-                        self.previous_Item_to_eat_position = (self.Item_to_eat.x, self.Item_to_eat.y)
-                        self.Item_to_eat = ItemToEat(self.snake, "Apple", self.previous_Item_to_eat_position)
+                        self.previous_Item_to_eat_position = (self.apple.x, self.apple.y)
+                        self.apple = ItemToEat(self.snake, "Apple", self.previous_Item_to_eat_position)
 
                 except NoValidItemToEatPositionError:
                     save_score_view = SaveScoreView(self.snake.score, self.bgm, self.snake.apple_count)
@@ -733,10 +823,10 @@ class PauseView(arcade.View):
 
     def draw_cursor(self):
         cursor_x = SCREEN_WIDTH / 2 - 100
-        cursor_y = SCREEN_HEIGHT / 2 - 80 - self.current_option * 50
+        cursor_y = SCREEN_HEIGHT / 2 - 88 - self.current_option * 50
         cursor_color = self.get_item_color(self.current_option)
         arcade.draw_triangle_filled(
-            cursor_x, cursor_y, cursor_x - 10, cursor_y - 10, cursor_x + 10, cursor_y - 10, cursor_color
+            cursor_x, cursor_y, cursor_x - 10, cursor_y + 10, cursor_x - 10, cursor_y - 10, cursor_color
         )
 
     def get_item_color(self, item_index):
@@ -760,7 +850,7 @@ class PauseView(arcade.View):
         elif key == arcade.key.ENTER:
             self.click_effect_menu.play_music(volume=0.1, loop=False)
             if self.current_option == 0:
-                self.bgm.play_music(volume=0.1, loop=True)
+                self.bgm.play_music(volume=0.3, loop=True)
                 self.game_view.paused = False
                 self.game_view.input_cooldown = False  # Reset input cooldown
                 self.window.show_view(self.game_view)
@@ -888,7 +978,7 @@ class SaveScoreView(arcade.View):
         cursor_y = SCREEN_HEIGHT / 2 - 180
         cursor_color = self.get_item_color(self.current_option)
         arcade.draw_triangle_filled(
-            cursor_x, cursor_y, cursor_x - 10, cursor_y - 10, cursor_x + 10, cursor_y - 10, cursor_color
+            cursor_x, cursor_y, cursor_x - 10, cursor_y + 10, cursor_x - 10, cursor_y - 10, cursor_color
         )
 
     def get_item_color(self, item_index):
@@ -961,9 +1051,13 @@ class SaveScoreNameView(arcade.View):
         self.score = score
         self.player_name = ""
         self.error_message = ""
-        self.party_mode = party_mode
         self.apple_count = apple_count
         self.bgm = bgm
+        self.party_mode = party_mode
+        self.game_mode = "Normal"
+        if party_mode:
+            self.game_mode = "Party"
+
 
     def on_show_view(self):
         arcade.set_background_color(arcade.color.BLACK)
@@ -1016,94 +1110,29 @@ class SaveScoreNameView(arcade.View):
         if key == arcade.key.BACKSPACE:
             self.player_name = self.player_name[:-1]
         elif key == arcade.key.ENTER:
-            self.save_score_with_name()
+            self.save_score()
             game_over_view = GameOverView(self.score, self.party_mode, self.bgm, self.apple_count)
             self.window.show_view(game_over_view)
-        elif re.match(r"^[a-zA-Z0-9]$", chr(key)):
-            if len(self.player_name) < 8:
-                self.player_name += chr(key)
-            else:
-                self.error_message = "Name kann maximal 8 Zeichen lang sein!"
+        else:
+            character = chr(key)
+            if modifiers & arcade.key.MOD_SHIFT:
+                character = character.upper()
+            if re.match(r"^[a-zA-Z0-9]$", character):
+                if len(self.player_name) < 8:
+                    self.player_name += character
+                else:
+                    self.error_message = "Name kann maximal 8 Zeichen lang sein!"
 
-    def save_score_with_name(self):
+    def save_score(self):
         if not self.player_name:
-            self.player_name = "Player"
-        with open("Hiscore.txt", "a") as file:
+            self.player_name = "Spieler"
+        with open(f"{self.game_mode}_Hiscore.txt", "a") as file:
             file.write(f"{self.player_name},{self.score}\n")
 
     def on_mouse_press(self, x, y, button, modifiers):
-        self.save_score_with_name()
+        self.save_score(self.game_mode)
         game_over_view = GameOverView(self.score, self.party_mode, self.bgm, self.apple_count)
         self.window.show_view(game_over_view)
-
-
-class HighScoresView(arcade.View):
-    def __init__(self):
-        super().__init__()
-        self.current_option = 0
-        self.scores = []
-
-    def on_show_view(self):
-        arcade.set_background_color(arcade.color.AO)
-        self.load_scores()
-
-    def load_scores(self):
-        try:
-            with open("Hiscore.txt", "r") as file:
-                scores = file.readlines()
-                self.scores = [score.strip().split(",") for score in scores]
-                self.scores.sort(key=lambda x: int(x[1]), reverse=True)
-        except FileNotFoundError:
-            self.scores = []
-
-    def on_draw(self):
-        arcade.start_render()
-        arcade.draw_text(
-            "Bestenliste",
-            SCREEN_WIDTH / 2,
-            SCREEN_HEIGHT / 2 + 100,
-            arcade.color.WHITE,
-            font_size=48,
-            anchor_x="center",
-        )
-        if self.scores:
-            max_scores = min(5, len(self.scores))
-            for i in range(max_scores):
-                score = self.scores[i]
-                arcade.draw_text(
-                    f"{i + 1}. {score[0]} - {score[1]}",
-                    SCREEN_WIDTH / 2,
-                    SCREEN_HEIGHT / 2 + 50 - i * 50,
-                    arcade.color.WHITE,
-                    font_size=22,
-                    anchor_x="center",
-                )
-        else:
-            arcade.draw_text(
-                "Noch keinen Highscore",
-                SCREEN_WIDTH / 2,
-                SCREEN_HEIGHT / 2 + 50,
-                arcade.color.WHITE,
-                font_size=22,
-                anchor_x="center",
-            )
-        arcade.draw_text(
-            "Drücke Enter oder klicke die Maus um zurückzukehren",
-            SCREEN_WIDTH / 2,
-            SCREEN_HEIGHT / 2 - 200,  # Adjust the vertical position here
-            arcade.color.WHITE,
-            font_size=18,
-            anchor_x="center",
-        )
-
-    def on_key_press(self, key, modifiers):
-        if key == arcade.key.ENTER:
-            start_view = StartView()
-            self.window.show_view(start_view)
-
-    def on_mouse_press(self, x, y, button, modifiers):
-        start_view = StartView()
-        self.window.show_view(start_view)
 
 
 class GameOverView(arcade.View):
@@ -1200,7 +1229,7 @@ class GameOverView(arcade.View):
         cursor_y = SCREEN_HEIGHT / 2 - 130 - self.current_option * 50
         cursor_color = self.get_item_color(self.current_option)
         arcade.draw_triangle_filled(
-            cursor_x, cursor_y, cursor_x - 10, cursor_y - 10, cursor_x + 10, cursor_y - 10, cursor_color
+            cursor_x, cursor_y, cursor_x - 10, cursor_y + 10, cursor_x - 10, cursor_y - 10, cursor_color
         )
 
     def get_item_color(self, item_index):
@@ -1276,187 +1305,6 @@ class GameOverView(arcade.View):
         ):
             self.click_effect_menu.play_music(volume=0.1, loop=False)
             self.window.close()  # Close the window to exit the game
-
-
-class Snake:
-    def __init__(self):
-        self.x = random.randint(2, (SCREEN_WIDTH - BLOCK_SIZE * 2) // BLOCK_SIZE) * BLOCK_SIZE + BLOCK_SIZE // 2
-        self.y = random.randint(2, (
-                SCREEN_HEIGHT - BLOCK_SIZE * 2 - SCOREBOARD_HEIGHT) // BLOCK_SIZE) * BLOCK_SIZE + BLOCK_SIZE // 2
-        self.direction = "right"
-        self.body = []
-        self.body.append((self.x, self.y))
-        self.body.append((self.x - BLOCK_SIZE, self.y))  # Add the second segment
-        self.body.append((self.x - 2 * BLOCK_SIZE, self.y))
-        self.score = 0
-        self.is_snake_moving = False
-        self.apple_count = 0
-
-        self.head_up = arcade.load_texture("images/head_up.png")
-        self.head_down = arcade.load_texture("images/head_down.png")
-        self.head_right = arcade.load_texture("images/head_right.png")
-        self.head_left = arcade.load_texture("images/head_left.png")
-
-        self.tail_up = arcade.load_texture("images/tail_up.png")
-        self.tail_down = arcade.load_texture("images/tail_down.png")
-        self.tail_right = arcade.load_texture("images/tail_right.png")
-        self.tail_left = arcade.load_texture("images/tail_left.png")
-
-        self.body_vertical = arcade.load_texture("images/body_vertical.png")
-        self.body_horizontal = arcade.load_texture("images/body_horizontal.png")
-
-        self.body_tr = arcade.load_texture("images/body_tr.png")
-        self.body_tl = arcade.load_texture("images/body_tl.png")
-        self.body_br = arcade.load_texture("images/body_br.png")
-        self.body_bl = arcade.load_texture("images/body_bl.png")
-
-    def move(self):
-        movements = {
-            "right": (BLOCK_SIZE, 0),
-            "left": (-BLOCK_SIZE, 0),
-            "up": (0, BLOCK_SIZE),
-            "down": (0, -BLOCK_SIZE),
-        }
-
-        move = movements.get(self.direction, (0, 0))
-        self.x += move[0]
-        self.y += move[1]
-
-    def change_direction(self, new_direction):
-        if new_direction == "right" and self.direction != "left":
-            self.direction = new_direction
-        elif new_direction == "left" and self.direction != "right":
-            self.direction = new_direction
-        elif new_direction == "up" and self.direction != "down":
-            self.direction = new_direction
-        elif new_direction == "down" and self.direction != "up":
-            self.direction = new_direction
-
-    def check_collision(self):
-        if (
-                self.x < 0
-                or self.x >= SCREEN_WIDTH
-                or self.y < 0
-                or self.y >= SCREEN_HEIGHT - SCOREBOARD_HEIGHT
-        ):
-            return True
-        for segment in self.body[1:]:
-            if self.x == segment[0] and self.y == segment[1]:
-                return True
-        return False
-
-    def eat_item(self, snake):
-        if (
-                self.x < snake.x + SNAKE_SIZE
-                and self.x + ITEM_TO_EAT_SIZE > snake.x
-                and self.y < snake.y + SNAKE_SIZE
-                and self.y + ITEM_TO_EAT_SIZE > snake.y
-        ):
-            return True
-        return False
-
-    def draw(self):
-        # Draw the head
-        head_x, head_y = self.body[0]
-        segment_x, segment_y = self.body[1]
-        tail_x, tail_y = self.body[-1]
-        second_segment_x, second_segment_y = self.body[-2]
-
-        head_relation_x = segment_x - head_x
-        head_relation_y = segment_y - head_y
-        head_texture = None
-        if head_relation_x == 0 and head_relation_y == BLOCK_SIZE:
-            head_texture = self.head_down
-        elif head_relation_x == 0 and head_relation_y == -BLOCK_SIZE:
-            head_texture = self.head_up
-        elif head_relation_x == BLOCK_SIZE and head_relation_y == 0:
-            head_texture = self.head_left
-        elif head_relation_x == -BLOCK_SIZE and head_relation_y == 0:
-            head_texture = self.head_right
-        arcade.draw_texture_rectangle(self.x, self.y, SNAKE_SIZE, SNAKE_SIZE, head_texture)
-
-        # Draw the body segments
-        for index in range(1, len(self.body)):
-            segment = self.body[index]
-            segment_x, segment_y = segment
-
-            if index == len(self.body) - 1:
-                # Last segment (tail)
-                tail_relation_x = second_segment_x - tail_x
-                tail_relation_y = second_segment_y - tail_y
-                tail_texture = None
-                if tail_relation_x == BLOCK_SIZE and tail_relation_y == 0:
-                    tail_texture = self.tail_left
-                elif tail_relation_x == -BLOCK_SIZE and tail_relation_y == 0:
-                    tail_texture = self.tail_right
-                elif tail_relation_x == 0 and tail_relation_y == BLOCK_SIZE:
-                    tail_texture = self.tail_down
-                elif tail_relation_x == 0 and tail_relation_y == -BLOCK_SIZE:
-                    tail_texture = self.tail_up
-                arcade.draw_texture_rectangle(segment_x, segment_y, SNAKE_SIZE, SNAKE_SIZE, tail_texture)
-            else:
-                # Body segment
-                next_segment_x, next_segment_y = self.body[index + 1]
-                previous_segment_x, previous_segment_y = self.body[index - 1]
-
-                if segment_x == next_segment_x == previous_segment_x:
-                    body_texture = self.body_vertical
-                elif segment_y == next_segment_y == previous_segment_y:
-                    body_texture = self.body_horizontal
-                else:
-                    if segment_x < previous_segment_x:
-                        if segment_y < next_segment_y:
-                            body_texture = self.body_tr
-                        else:
-                            body_texture = self.body_br
-                    elif segment_x > previous_segment_x:
-                        if segment_y < next_segment_y:
-                            body_texture = self.body_tl
-                        else:
-                            body_texture = self.body_bl
-                    else:
-                        if segment_y < previous_segment_y:
-                            if segment_x < next_segment_x:
-                                body_texture = self.body_tr
-                            else:
-                                body_texture = self.body_tl
-                        else:
-                            if segment_x < next_segment_x:
-                                body_texture = self.body_br
-                            else:
-                                body_texture = self.body_bl
-
-                arcade.draw_texture_rectangle(segment_x, segment_y, SNAKE_SIZE, SNAKE_SIZE, body_texture)
-
-
-class ItemToEat:
-    def __init__(self, snake, item_name="Apple", previous_position=None):
-        self.snake = snake
-        self.previous_position = previous_position
-        self.spawn()
-        self.Item_to_eat = arcade.load_texture(f'images/{item_name}.png')
-
-    def spawn(self):
-        valid_positions = []
-        for x in range(BLOCK_SIZE, SCREEN_WIDTH - BLOCK_SIZE, BLOCK_SIZE):
-            for y in range(BLOCK_SIZE, SCREEN_HEIGHT - BLOCK_SIZE * 3, BLOCK_SIZE):
-                position = (x + BLOCK_SIZE // 2, y + BLOCK_SIZE // 2)
-                if position not in self.snake.body and position != self.previous_position:
-                    valid_positions.append(position)
-
-        if valid_positions:
-            self.x, self.y = random.choice(valid_positions)
-        else:
-            raise NoValidItemToEatPositionError("No valid position for the Item.")
-
-    def draw(self):
-        arcade.draw_texture_rectangle(
-            self.x, self.y, ITEM_TO_EAT_SIZE, ITEM_TO_EAT_SIZE, self.Item_to_eat
-        )
-
-
-class NoValidItemToEatPositionError(Exception):
-    pass
 
 
 def main():
