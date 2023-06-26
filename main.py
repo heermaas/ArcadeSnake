@@ -469,8 +469,8 @@ class HighScoresView(arcade.View):
             self.window.show_view(start_view)
 
     def on_mouse_press(self, x, y, button, modifiers):
-        start_view = StartView()
-        self.window.show_view(start_view)
+        mode_selection_view = ModeSelectionView("HighScoreView")
+        self.window.show_view(mode_selection_view)
 
 
 class GameView(arcade.View):
