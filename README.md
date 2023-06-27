@@ -26,7 +26,7 @@ Das Snake-Spiel ist ein klassisches Arcade-Spiel, bei dem der Spieler eine Schla
 ## Alle Packages
 Eventuell fehlt eines dieser Packages
 Package           Version
------------------ ---------
+
 arcade            2.6.17
 attrs             23.1.0
 cffi              1.15.1
