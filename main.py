@@ -856,7 +856,8 @@ class GameView(arcade.View):
                         self.apple = ItemToEat(self.snake, "Apple", self.previous_Item_to_eat_position)
 
                 except NoValidItemToEatPositionError:
-                    save_score_view = SaveScoreView(self.snake.score, self.bgm, self.snake.apple_count, self.controller)
+                    save_score_view = SaveScoreView(self.snake.score, self.party_mode, self.bgm, self.snake.apple_count,
+                                                    self.controller)
                     self.window.show_view(save_score_view)
 
                 self.snake.body.insert(0, (self.snake.x, self.snake.y))
