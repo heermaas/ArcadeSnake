@@ -625,7 +625,7 @@ class GameView(arcade.View):
                                self.apple_position)
         self.previous_Item_to_eat_position = (self.apple.x, self.apple.y)
         if party_mode:
-            self.mushroom = ItemToEat(self.snake, "Mushroom", self.diamond_position, self.mushroom_position,
+            self.mushroom = ItemToEat(self.snake, "mushroom", self.diamond_position, self.mushroom_position,
                                       self.mirror_position, self.apple_position)
             self.previous_mushroom_position = (self.mushroom.x, self.mushroom.y)
             self.mushroom = None
@@ -873,19 +873,19 @@ class GameView(arcade.View):
                     if not self.mushroom and random.randint(1, 40) == 1:
                         self.mushroom = ItemToEat(self.snake, "mushroom", self.diamond_position, self.mushroom_position,
                                                   self.mirror_position, self.apple_position)
-                        mushroom_timer = threading.Timer(random.uniform(3, 12), lambda: self.delete_item("mushroom"))
+                        mushroom_timer = threading.Timer(random.uniform(6, 18), lambda: self.delete_item("mushroom"))
                         mushroom_timer.start()
 
                     if not self.mirror and random.randint(1, 80) == 1:
                         self.mirror = ItemToEat(self.snake, "mirror", self.diamond_position, self.mushroom_position,
                                                 self.mirror_position, self.apple_position)
-                        mirror_timer = threading.Timer(random.uniform(3, 12), lambda: self.delete_item("mirror"))
+                        mirror_timer = threading.Timer(random.uniform(6, 18), lambda: self.delete_item("mirror"))
                         mirror_timer.start()
 
                     if not self.diamond and random.randint(1, 150) == 1:
                         self.diamond = ItemToEat(self.snake, "diamond", self.diamond_position, self.mushroom_position,
                                                  self.mirror_position, self.apple_position)
-                        diamond_timer = threading.Timer(random.uniform(2, 10), lambda: self.delete_item("diamond"))
+                        diamond_timer = threading.Timer(random.uniform(3, 9), lambda: self.delete_item("diamond"))
                         diamond_timer.start()
 
                 if self.party_mode and self.mushroom is not None:
@@ -984,20 +984,21 @@ class PauseView(arcade.View):
 
     def on_draw(self):
         arcade.start_render()
-        # Draw the scoreboard area
+        # Zeichnen des Scoreboardbereichs (oben auf dem Spielbildschirm)
         arcade.draw_rectangle_filled(
             SCREEN_WIDTH // 2, SCREEN_HEIGHT - SCOREBOARD_HEIGHT // 2, SCREEN_WIDTH, SCOREBOARD_HEIGHT,
             arcade.color.AVOCADO)
 
-        # Draw the game area
+        # Zeichnen des Spielbereichs
         game_height = SCREEN_HEIGHT - SCOREBOARD_HEIGHT
         arcade.draw_rectangle_filled(
             SCREEN_WIDTH // 2, game_height // 2, SCREEN_WIDTH, game_height, arcade.color.GREEN
         )
 
-        # Draw the grid with alternating colors
+        # Zeichne das Feld mit wechselnden Farben
         for row in range(0, game_height, BLOCK_SIZE):
             for column in range(0, SCREEN_WIDTH, BLOCK_SIZE):
+                # helles Feld
                 if (row // BLOCK_SIZE + column // BLOCK_SIZE) % 2 == 0:
                     arcade.draw_rectangle_filled(
                         column + BLOCK_SIZE // 2,
@@ -1006,6 +1007,7 @@ class PauseView(arcade.View):
                         BLOCK_SIZE,
                         arcade.color.APPLE_GREEN
                     )
+                # dunkles Feld
                 else:
                     arcade.draw_rectangle_filled(
                         column + BLOCK_SIZE // 2,
@@ -1015,6 +1017,7 @@ class PauseView(arcade.View):
                         arcade.color.ANDROID_GREEN
                     )
         arcade.draw_rectangle_filled(SCREEN_WIDTH // 2, 260, 480, 440, (0, 0, 0, 50))
+        # Zeichnen des Auswahlmenüs
         arcade.draw_text(
             "Pausiert",
             SCREEN_WIDTH / 2,
@@ -1080,13 +1083,14 @@ class PauseView(arcade.View):
             if self.current_option == 0:
                 self.bgm.play_music(volume=0.3, loop=True)
                 self.game_view.paused = False
-                self.game_view.input_cooldown = False  # Reset input cooldown
+                self.game_view.input_cooldown = False  # Setze Input-Cooldown zurück
                 self.window.show_view(self.game_view)
             elif self.current_option == 1:
                 self.main_menu_bgm.play_music(volume=0.3, loop=True)
                 start_view = StartView(self.controller, self.main_menu_bgm)
                 self.window.show_view(start_view)
             elif self.current_option == 2:
+                # Öffne den GameOver-Bildschirm und gebe ihm Score,... mit
                 game_over_view = GameOverView(self.game_view.snake.score, self.game_view.party_mode, self.game_over_bgm,
                                               self.game_view.snake.apple_count, self.controller)
                 self.game_over_bgm.play_music(volume=0.1, loop=True)
@@ -1102,9 +1106,8 @@ class PauseView(arcade.View):
             item_width = 200
             item_height = 30
 
-            # Adjust hitbox size for the second menu item
             if i == 1:
-                item_height = 25  # Decrease the height of the hitbox for the second item
+                item_height = 25
 
             if (
                     item_x - item_width / 2 < x < item_x + item_width / 2
@@ -1186,7 +1189,7 @@ class SaveScoreView(arcade.View):
 
             @self.controller.event
             def on_button_press(_, button):
-                if button == "a":  # Assuming "A" button is similar to 'Enter' action
+                if button == "a":
                     self.click_effect_menu.play_music(volume=0.1, loop=False)
                     if self.current_option == 0:
                         save_name_view = SaveScoreNameView(self.score, self.party_mode, self.bgm, self.apple_count,
@@ -1196,7 +1199,7 @@ class SaveScoreView(arcade.View):
                         game_over_view = GameOverView(self.score, self.party_mode, self.bgm, self.apple_count,
                                                       self.controller)
                         self.window.show_view(game_over_view)
-                elif button == "b":  # Assuming "A" button is similar to 'Enter' action
+                elif button == "b":
                     pass
 
     def on_show_view(self):
@@ -1204,6 +1207,7 @@ class SaveScoreView(arcade.View):
 
     def on_draw(self):
         arcade.start_render()
+        # Zeichne Auswahlmenü (Abfrage: Soll der Score gespeichert werden?)
         arcade.draw_text(
             "Punktzahl speichern",
             SCREEN_WIDTH / 2,

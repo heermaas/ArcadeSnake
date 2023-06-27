@@ -23,7 +23,7 @@ class Snake:
         self.score = 0
         self.is_snake_moving = False
         self.apple_count = 0
-
+        # Laden der Grafiken für die Schlange
         self.head_up = arcade.load_texture("images/head_up.png")
         self.head_down = arcade.load_texture("images/head_down.png")
         self.head_right = arcade.load_texture("images/head_right.png")
@@ -93,7 +93,7 @@ class Snake:
         segment_x, segment_y = self.body[1]
         tail_x, tail_y = self.body[-1]
         second_segment_x, second_segment_y = self.body[-2]
-
+        # Zeichnen des Kopfes
         head_relation_x = segment_x - head_x
         head_relation_y = segment_y - head_y
         head_texture = None
@@ -107,13 +107,13 @@ class Snake:
             head_texture = self.head_right
         arcade.draw_texture_rectangle(self.x, self.y, SNAKE_SIZE, SNAKE_SIZE, head_texture)
 
-        # Draw the body segments
+        # Zeichnen der Körpersegmente
         for index in range(1, len(self.body)):
             segment = self.body[index]
             segment_x, segment_y = segment
 
             if index == len(self.body) - 1:
-                # Last segment (tail)
+                # Letztes Körperteil (tail)
                 tail_relation_x = second_segment_x - tail_x
                 tail_relation_y = second_segment_y - tail_y
                 tail_texture = None
@@ -127,7 +127,7 @@ class Snake:
                     tail_texture = self.tail_up
                 arcade.draw_texture_rectangle(segment_x, segment_y, SNAKE_SIZE, SNAKE_SIZE, tail_texture)
             else:
-                # Body segment
+                # Restlichen Körperteile
                 next_segment_x, next_segment_y = self.body[index + 1]
                 previous_segment_x, previous_segment_y = self.body[index - 1]
 
@@ -162,7 +162,8 @@ class Snake:
 
 
 class ItemToEat:
-    def __init__(self, snake, item_name="Apple", diamond_position=None, mushroom_position=None, mirror_position=None, apple_position=None, previous_position=None):
+    def __init__(self, snake, item_name="Apple", diamond_position=None, mushroom_position=None, mirror_position=None,
+                 apple_position=None, previous_position=None):
         self.snake = snake
         self.previous_position = previous_position
         self.current_positions = {
