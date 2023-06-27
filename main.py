@@ -1211,7 +1211,7 @@ class SaveScoreView(arcade.View):
 
     def draw_cursor(self):
         cursor_x = SCREEN_WIDTH / 2 - 120 if self.current_option == 0 else SCREEN_WIDTH / 2 + 80
-        cursor_y = SCREEN_HEIGHT / 2 - 180
+        cursor_y = SCREEN_HEIGHT / 2 - 187
         cursor_color = self.get_item_color(self.current_option)
         arcade.draw_triangle_filled(
             cursor_x, cursor_y, cursor_x - 10, cursor_y + 10, cursor_x - 10, cursor_y - 10, cursor_color
