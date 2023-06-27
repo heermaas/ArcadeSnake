@@ -23,7 +23,8 @@ Das Snake-Spiel ist ein klassisches Arcade-Spiel, bei dem der Spieler eine Schla
 6. Starte das Spiel in: main.py
 
 ## Alle Packages
-Eventuell fehlt eines dieser Packages, wenn eine Fehlem sollte einfach installieren
+Eventuell startet das Programm nicht falls eines dieser Packages nicht vorhanden ist, bitte dann installieren:
+
 ![image](https://github.com/heermaas/ArcadeSnake/assets/124162752/e444fdaa-d5b3-4ed7-8cef-579b6d031352)
 
 
