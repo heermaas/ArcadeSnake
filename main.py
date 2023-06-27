@@ -352,6 +352,7 @@ class ModeSelectionView(arcade.View):
         self.click_effect_menu.play_music(volume=0.1, loop=False)
         if self.current_option == 0:
             if self.next_view == "GameView":
+                self.bgm.stop_audio()
                 game_view = GameView(self.controller, party_mode=self.party_mode)
                 self.window.show_view(game_view)
             else:
@@ -360,6 +361,7 @@ class ModeSelectionView(arcade.View):
         elif self.current_option == 1:
             self.party_mode = True
             if self.next_view == "GameView":
+                self.bgm.stop_audio()
                 game_view = GameView(self.controller, party_mode=self.party_mode)
                 self.window.show_view(game_view)
             else:
