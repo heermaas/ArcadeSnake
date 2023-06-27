@@ -625,7 +625,7 @@ class GameView(arcade.View):
                                self.apple_position)
         self.previous_Item_to_eat_position = (self.apple.x, self.apple.y)
         if party_mode:
-            self.mushroom = ItemToEat(self.snake, "Mushroom", self.diamond_position, self.mushroom_position,
+            self.mushroom = ItemToEat(self.snake, "mushroom", self.diamond_position, self.mushroom_position,
                                       self.mirror_position, self.apple_position)
             self.previous_mushroom_position = (self.mushroom.x, self.mushroom.y)
             self.mushroom = None
