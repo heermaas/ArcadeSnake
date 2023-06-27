@@ -37,7 +37,7 @@ class StartView(arcade.View):
 
         if self.controller:
             @self.controller.event
-            def on_dpad_motion(controller, dpleft, dpright, dpup, dpdown):
+            def on_dpad_motion(the_controller, dpleft, dpright, dpup, dpdown):
                 if dpup:
                     if self.current_option > 0:
                         self.sound_effect_menu.play_music(volume=0.1, loop=False)
@@ -298,7 +298,7 @@ class ModeSelectionView(arcade.View):
 
     def draw_cursor(self):
         cursor_x = SCREEN_WIDTH / 2 - 100
-        cursor_y = SCREEN_HEIGHT / 2 - 88 - self.current_option * 50
+        cursor_y = SCREEN_HEIGHT / 2 - 110 - self.current_option * 50
         cursor_color = self.get_item_color(self.current_option)
         arcade.draw_triangle_filled(
             cursor_x, cursor_y, cursor_x - 10, cursor_y + 10, cursor_x - 10, cursor_y - 10, cursor_color
@@ -515,7 +515,7 @@ class HighScoresView(arcade.View):
     def on_draw(self):
         arcade.start_render()
         arcade.draw_text(
-            "Bestenliste",
+            f"Bestenliste {self.game_mode}",
             SCREEN_WIDTH / 2,
             SCREEN_HEIGHT / 2 + 100,
             arcade.color.WHITE,
