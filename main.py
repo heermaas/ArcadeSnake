@@ -376,6 +376,9 @@ class InstructionsView(arcade.View):
         self.current_option = 0
         self.arrow_keys = arcade.load_texture("images/ArrowKeys.png")
         self.wasd_keys = arcade.load_texture("images/WASDKeys.png")
+        self.mushroom = arcade.load_texture("images/mushroom.png")
+        self.mirror = arcade.load_texture("images/mirror.png")
+        self.diamond = arcade.load_texture("images/diamond.png")
         self.sound_effect_menu = BGM(3)
         self.click_effect_menu = BGM(8)
         self.controller = controller
@@ -418,22 +421,22 @@ class InstructionsView(arcade.View):
         )
         arcade.draw_texture_rectangle(
             SCREEN_WIDTH // 2 + 200,
-            SCREEN_HEIGHT // 2 + 50,
-            self.wasd_keys.width // 2,
-            self.wasd_keys.height // 2,
+            SCREEN_HEIGHT // 2 + 70,
+            self.wasd_keys.width // 2.4,
+            self.wasd_keys.height // 2.4,
             self.wasd_keys,
         )
         arcade.draw_texture_rectangle(
             SCREEN_WIDTH // 2 - 200,
-            SCREEN_HEIGHT // 2 + 45,
-            self.arrow_keys.width // 2,
-            self.arrow_keys.height // 2,
+            SCREEN_HEIGHT // 2 + 65,
+            self.arrow_keys.width // 2.4,
+            self.arrow_keys.height // 2.4,
             self.arrow_keys,
         )
         arcade.draw_text(
             "Benutze die Pfeilasten oder WASD um die Schlange zu bewegen.",
             SCREEN_WIDTH / 2,
-            SCREEN_HEIGHT / 2 - 100,
+            SCREEN_HEIGHT / 2 - 60,
             arcade.color.WHITE,
             font_size=18,
             anchor_x="center",
@@ -441,7 +444,52 @@ class InstructionsView(arcade.View):
         arcade.draw_text(
             "Sammel so viele Äpfel wie es geht und berühre nicht die Wand oder dich selber!",
             SCREEN_WIDTH / 2,
-            SCREEN_HEIGHT / 2 - 150,
+            SCREEN_HEIGHT / 2 - 100,
+            arcade.color.WHITE,
+            font_size=15,
+            anchor_x="center",
+        )
+        arcade.draw_texture_rectangle(
+            SCREEN_WIDTH // 2 - 250,
+            SCREEN_HEIGHT // 2 - 170,
+            self.mushroom.width // 7,
+            self.mushroom.height // 7,
+            self.mushroom,
+        )
+        arcade.draw_text(
+            "Macht dich schneller!",
+            SCREEN_WIDTH / 2 - 250,
+            SCREEN_HEIGHT / 2 - 235,
+            arcade.color.WHITE,
+            font_size=15,
+            anchor_x="center",
+        )
+        arcade.draw_texture_rectangle(
+            SCREEN_WIDTH // 2 - 10,
+            SCREEN_HEIGHT // 2 - 170,
+            self.mirror.width // 8,
+            self.mirror.height // 8,
+            self.mirror,
+        )
+        arcade.draw_text(
+            "Spiegelt die Steuerung!",
+            SCREEN_WIDTH / 2 - 10,
+            SCREEN_HEIGHT / 2 - 235,
+            arcade.color.WHITE,
+            font_size=15,
+            anchor_x="center",
+        )
+        arcade.draw_texture_rectangle(
+            SCREEN_WIDTH // 2 + 250,
+            SCREEN_HEIGHT // 2 - 165,
+            self.diamond.width // 2.5,
+            self.diamond.height // 2.5,
+            self.diamond,
+        )
+        arcade.draw_text(
+            "Erhalte 500 Extrapunkte!",
+            SCREEN_WIDTH / 2 + 250,
+            SCREEN_HEIGHT / 2 - 235,
             arcade.color.WHITE,
             font_size=15,
             anchor_x="center",
@@ -449,7 +497,7 @@ class InstructionsView(arcade.View):
         arcade.draw_text(
             "Drücke Enter oder klicke die Maus um zurückzukehren",
             SCREEN_WIDTH / 2,
-            SCREEN_HEIGHT / 2 - 230,
+            SCREEN_HEIGHT / 2 - 280,
             arcade.color.WHITE,
             font_size=18,
             anchor_x="center",
