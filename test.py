@@ -236,6 +236,7 @@ class ModeSelectionView(arcade.View):
                     elif self.current_option == 1:
                         self.party_mode = True
                         if self.next_view == "GameView":
+                            self.bgm.stop_audio()
                             game_view = GameView(self.controller, party_mode=self.party_mode)
                             self.window.show_view(game_view)
                         else:
@@ -1254,13 +1255,9 @@ class SaveScoreNameView(arcade.View):
             @self.controller.event
             def on_dpad_motion(controller, dpleft, dpright, dpup, dpdown):
                 if dpup:
-                    if self.current_option > 0:
-                        self.sound_effect_menu.play_music(volume=0.1, loop=False)
-                        self.current_option -= 1
+                    pass
                 elif dpdown:
-                    if self.current_option < 2:
-                        self.sound_effect_menu.play_music(volume=0.1, loop=False)
-                        self.current_option += 1
+                    pass
                 elif dpleft:
                     pass
                 elif dpright:
@@ -1270,18 +1267,8 @@ class SaveScoreNameView(arcade.View):
             @self.controller.event
             def on_button_press(controller, button):
                 if button == "a":  # Assuming "A" button is similar to 'Enter' action
-                    self.click_effect_menu.play_music(volume=0.1, loop=False)
-                    if self.current_option == 0:
-                        game_view = GameView(self.controller, party_mode=self.party_mode)
-                        self.window.show_view(game_view)
-                    elif self.current_option == 1:
-                        start_view = StartView(self.controller)
-                        self.window.show_view(start_view)
-                    elif self.current_option == 2:
-                        self.window.close()
-
-            def on_button_press(controller, button):
-                if button == "b":  # Assuming "A" button is similar to 'Enter' action
+                    pass
+                elif button == "b":  # Assuming "A" button is similar to 'Enter' action
                     pass
 
     def on_show_view(self):
