@@ -12,6 +12,7 @@ Das Snake-Spiel ist ein klassisches Arcade-Spiel, bei dem der Spieler eine Schla
 - Einfache Steuerung: Die Schlange kann mit den Pfeiltasten oder den WASD-Tasten gesteuert werden.
 - Punktezähler: Das Spiel zählt die gefressenen Äpfel und zeigt den aktuellen Punktestand an.
 - Highscore-Liste: Die besten Spielergebnisse werden in einer Highscore-Liste gespeichert und können eingesehen werden.
+- Zwei verschiedene Spielmodi: Normal(Klassisches Snake) & Party(Mehrere Items)
 
 ## Installation
 
