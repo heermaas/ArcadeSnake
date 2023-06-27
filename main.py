@@ -33,7 +33,7 @@ class StartView(arcade.View):
         self.bgm = bgm
         self.sound_effect_menu = BGM(5)
         self.click_effect_menu = BGM(8)
-        self.controller = controller
+        self.controller = controller   # Determiniert ob ein Gamepad benutzt wird
 
         if self.controller:
             @self.controller.event
@@ -54,9 +54,9 @@ class StartView(arcade.View):
 
             @self.controller.event
             def on_button_press(_, button):
-                if button == "a":  # Assuming "A" button is similar to 'Enter' action
+                if button == "a":  # unter anahme a ist äquivalent
                     self.menu()
-                elif button == "b":  # Assuming "A" button is similar to 'Enter' action
+                elif button == "b":
                     pass
 
     def on_show_view(self):
@@ -124,7 +124,7 @@ class StartView(arcade.View):
 
     def draw_cursor(self):
         cursor_x = SCREEN_WIDTH / 2 - 100
-        cursor_y = SCREEN_HEIGHT / 2 - 88 - self.current_option * 50
+        cursor_y = SCREEN_HEIGHT / 2 - 88 - self.current_option * 50 #positioniert cursor so das er beim ersten menuelement startet
         cursor_color = self.get_item_color(self.current_option)
         arcade.draw_triangle_filled(
             cursor_x, cursor_y, cursor_x - 10, cursor_y + 10, cursor_x - 10, cursor_y - 10, cursor_color
@@ -160,9 +160,9 @@ class StartView(arcade.View):
             item_width = 200
             item_height = 30
 
-            # Adjust hitbox size for the second menu item
+
             if i == 1:
-                item_height = 25  # Decrease the height of the hitbox for the second item
+                item_height = 25  # Verkleinert die Hitbox des zweiten Menuemlements
 
             if (
                     item_x - item_width / 2 < x < item_x + item_width / 2
@@ -234,7 +234,7 @@ class ModeSelectionView(arcade.View):
 
             @self.controller.event
             def on_button_press(_, button):
-                if button == "a":  # Assuming "A" button is similar to 'Enter' action
+                if button == "a":
                     self.menu()
                 elif button == "b":
                     self.click_effect_menu.play_music(volume=0.1, loop=False)
@@ -352,7 +352,7 @@ class ModeSelectionView(arcade.View):
         self.click_effect_menu.play_music(volume=0.1, loop=False)
         if self.current_option == 0:
             if self.next_view == "GameView":
-                self.bgm.stop_audio()
+                self.bgm.stop_audio()  # Sorgt dafür das nach Menuwechsel nicht zwei Tracks auf einmal gespielt werden
                 game_view = GameView(self.controller, party_mode=self.party_mode)
                 self.window.show_view(game_view)
             else:
@@ -543,7 +543,7 @@ class HighScoresView(arcade.View):
 
             @self.controller.event
             def on_button_press(_, button):
-                if button == "a":  # Assuming "A" button is similar to 'Enter' action
+                if button == "a":
                     mode_selection_view = ModeSelectionView("HighScoreView", self.controller)
                     self.window.show_view(mode_selection_view)
                 elif button == "b":
@@ -557,7 +557,7 @@ class HighScoresView(arcade.View):
         try:
             with open(f"{self.game_mode}_Hiscore.txt", "r") as file:
                 scores = file.readlines()
-                self.scores = [score.strip().split(",") for score in scores]
+                self.scores = [score.strip().split(",") for score in scores]    # Trenne Scores nach dem Komma in Namen und Zahl
                 self.scores.sort(key=lambda x: int(x[1]), reverse=True)
         except FileNotFoundError:
             self.scores = []
@@ -573,7 +573,7 @@ class HighScoresView(arcade.View):
             anchor_x="center",
         )
         if self.scores:
-            max_scores = min(5, len(self.scores))
+            max_scores = min(5, len(self.scores))  #Anzahl anzuzeigender Scores
             for i in range(max_scores):
                 score = self.scores[i]
                 arcade.draw_text(
@@ -596,7 +596,7 @@ class HighScoresView(arcade.View):
         arcade.draw_text(
             "Drücke Enter oder klicke die Maus um zurückzukehren",
             SCREEN_WIDTH / 2,
-            SCREEN_HEIGHT / 2 - 200,  # Adjust the vertical position here
+            SCREEN_HEIGHT / 2 - 200,
             arcade.color.WHITE,
             font_size=18,
             anchor_x="center",
@@ -835,6 +835,7 @@ class GameView(arcade.View):
                     else:
                         pass
 
+    # gibt Kordinaten als Position zurueck
     def get_position(self, item_name):
         if item_name == "mushroom":
             if self.mushroom:
@@ -860,7 +861,7 @@ class GameView(arcade.View):
     def update(self, delta_time):
         if not self.paused and self.snake.is_snake_moving:
             self.movement_timer += delta_time
-            if self.movement_timer >= self.move_border:
+            if self.movement_timer >= self.move_border: # Definiert Zeitabstäende in denen sich die Segmente bewegen
                 self.apple_position = self.get_position("apple")
                 self.snake.is_snake_moving = True
                 self.snake.move()
@@ -870,10 +871,10 @@ class GameView(arcade.View):
                     self.mirror_position = self.get_position("mirror")
                     self.diamond_position = self.get_position("diamond")
 
-                    if not self.mushroom and random.randint(1, 40) == 1:
+                    if not self.mushroom and random.randint(1, 40) == 1:    # Definiert mit welcher Wahrscheinlichkeit ein neuer Pilz erscheint (1/40)
                         self.mushroom = ItemToEat(self.snake, "mushroom", self.diamond_position, self.mushroom_position,
                                                   self.mirror_position, self.apple_position)
-                        mushroom_timer = threading.Timer(random.uniform(6, 18), lambda: self.delete_item("mushroom"))
+                        mushroom_timer = threading.Timer(random.uniform(6, 18), lambda: self.delete_item("mushroom"))  # Definiert Zeitspanne für welche der Pilz auf dem Feld ist (6-18Sekunden)
                         mushroom_timer.start()
 
                     if not self.mirror and random.randint(1, 80) == 1:
@@ -891,7 +892,7 @@ class GameView(arcade.View):
                 if self.party_mode and self.mushroom is not None:
                     if self.snake.eat_item(self.mushroom):
                         self.sound_effect_mushroom.play_music(volume=0.5, loop=False)
-                        factor = 1 - (2.5 * self.move_border)
+                        factor = 1 - (2.5 * self.move_border)     # Erhöht die Bewegungsrate der Schlange
                         border_timer = threading.Timer(10, self.higher_border, args=[factor])
                         border_timer.start()
                         self.move_border *= factor
@@ -905,18 +906,18 @@ class GameView(arcade.View):
                             if self.mirrored_control:
                                 self.mirrored_control = False
                             else:
-                                self.mirrored_control = True
+                                self.mirrored_control = True  # Invertiert die Bewegung
                             self.previous_mirror_position = (self.mirror.x, self.mirror.y)
                             self.mirror = None
 
                     if self.party_mode and self.diamond is not None:
                         if self.snake.eat_item(self.diamond):
                             self.sound_effect_diamond.play_music(volume=0.5, loop=False)
-                            self.snake.score += 500
+                            self.snake.score += 500   # Erhöht Score um 500 und verlängert die Schlange somit um 5 Elemente
                             self.previous_diamond_position = (self.diamond.x, self.diamond.y)
                             self.diamond = None
 
-                    if self.snake.check_collision():
+                    if self.snake.check_collision():   # Falls der Spieler verliert
                         self.sound_effect_wall.play_music(volume=0.5, loop=False)
                         self.bgm.stop_audio()
                         time.sleep(2)
