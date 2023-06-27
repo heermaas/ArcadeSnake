@@ -46,12 +46,18 @@ class StartView(arcade.View):
                     if self.current_option < len(self.menu_items) - 1:
                         self.sound_effect_menu.play_music(volume=0.1, loop=False)
                         self.current_option += 1
+                elif dpleft:
+                    pass
+                elif dpright:
+                    pass
                 self.hovered_item = self.current_option
 
             @self.controller.event
             def on_button_press(controller, button):
                 if button == "a":  # Assuming "A" button is similar to 'Enter' action
                     self.menu()
+                elif button == "b":  # Assuming "A" button is similar to 'Enter' action
+                    pass
 
     def on_show_view(self):
         arcade.set_background_color(arcade.color.AO)
@@ -220,31 +226,20 @@ class ModeSelectionView(arcade.View):
                     if self.current_option < len(self.menu_items) - 1:
                         self.sound_effect_menu.play_music(volume=0.1, loop=False)
                         self.current_option += 1
+                elif dpleft:
+                    pass
+                elif dpright:
+                    pass
+                self.hovered_item = self.current_option
 
             @self.controller.event
             def on_button_press(controller, button):
                 if button == "a":  # Assuming "A" button is similar to 'Enter' action
+                    self.menu()
+                elif button == "b":
                     self.click_effect_menu.play_music(volume=0.1, loop=False)
-                    if self.current_option == 0:
-                        if self.next_view == "GameView":
-                            self.bgm.stop_audio()
-                            game_view = GameView(self.controller, party_mode=self.party_mode)
-                            self.window.show_view(game_view)
-                        else:
-                            high_scores_view = HighScoresView(self.controller, self.party_mode)
-                            self.window.show_view(high_scores_view)
-                    elif self.current_option == 1:
-                        self.party_mode = True
-                        if self.next_view == "GameView":
-                            self.bgm.stop_audio()
-                            game_view = GameView(self.controller, party_mode=self.party_mode)
-                            self.window.show_view(game_view)
-                        else:
-                            high_scores_view = HighScoresView(self.controller, self.party_mode)
-                            self.window.show_view(high_scores_view)
-                    elif self.current_option == 2:
-                        start_view = StartView(self.controller)
-                        self.window.show_view(start_view)
+                    start_view = StartView(self.controller)
+                    self.window.show_view(start_view)
 
     def on_show(self):
         arcade.set_background_color(arcade.color.AO)
@@ -328,26 +323,8 @@ class ModeSelectionView(arcade.View):
                 self.sound_effect_menu.play_music(volume=0.1, loop=False)
                 self.current_option += 1
         elif key == arcade.key.ENTER:
-            self.click_effect_menu.play_music(volume=0.1, loop=False)
-            if self.current_option == 0:
-                if self.next_view == "GameView":
-                    self.bgm.stop_audio()
-                    game_view = GameView(self.controller, party_mode=self.party_mode)
-                    self.window.show_view(game_view)
-                else:
-                    high_scores_view = HighScoresView(self.controller, self.party_mode)
-                    self.window.show_view(high_scores_view)
-            elif self.current_option == 1:
-                self.party_mode = True
-                if self.next_view == "GameView":
-                    game_view = GameView(self.controller, party_mode=self.party_mode)
-                    self.window.show_view(game_view)
-                else:
-                    high_scores_view = HighScoresView(self.controller, self.party_mode)
-                    self.window.show_view(high_scores_view)
-            elif self.current_option == 2:
-                start_view = StartView(self.controller)
-                self.window.show_view(start_view)
+            if self.hovered_item is not None:
+                self.menu()
 
     def on_mouse_motion(self, x, y, dx, dy):
         for i, _ in enumerate(self.menu_items):
@@ -369,26 +346,21 @@ class ModeSelectionView(arcade.View):
 
     def on_mouse_press(self, x, y, button, modifiers):
         if self.hovered_item is not None:
-            self.click_effect_menu.play_music(volume=0.1, loop=False)
-            if self.hovered_item == 0:
-                if self.next_view == "GameView":
-                    self.bgm.stop_audio()
-                    game_view = GameView(self.controller, party_mode=self.party_mode)
-                    self.window.show_view(game_view)
-                else:
-                    high_scores_view = HighScoresView(self.controller, self.party_mode)
-                    self.window.show_view(high_scores_view)
-            elif self.hovered_item == 1:
-                self.party_mode = True
-                if self.next_view == "GameView":
-                    game_view = GameView(self.controller, party_mode=self.party_mode)
-                    self.window.show_view(game_view)
-                else:
-                    high_scores_view = HighScoresView(self.controller, self.party_mode)
-                    self.window.show_view(high_scores_view)
-            elif self.hovered_item == 2:
-                start_view = StartView(self.controller)
-                self.window.show_view(start_view)
+            self.menu()
+
+    def menu(self):
+        self.click_effect_menu.play_music(volume=0.1, loop=False)
+        if self.current_option == 0 or 1:
+            if self.next_view == "GameView":
+                self.bgm.stop_audio()
+                game_view = GameView(self.controller, party_mode=self.party_mode)
+                self.window.show_view(game_view)
+            else:
+                high_scores_view = HighScoresView(self.controller, self.party_mode)
+                self.window.show_view(high_scores_view)
+        elif self.current_option == 2:
+            start_view = StartView(self.controller)
+            self.window.show_view(start_view)
 
 
 class InstructionsView(arcade.View):
@@ -408,10 +380,18 @@ class InstructionsView(arcade.View):
                     pass
                 elif dpdown:
                     pass
+                elif dpleft:
+                    pass
+                elif dpright:
+                    pass
 
             @self.controller.event
             def on_button_press(controller, button):
                 if button == "a":  # Assuming "A" button is similar to 'Enter' action
+                    self.click_effect_menu.play_music(volume=0.1, loop=False)
+                    start_view = StartView(self.controller)
+                    self.window.show_view(start_view)
+                elif button == "b":
                     self.click_effect_menu.play_music(volume=0.1, loop=False)
                     start_view = StartView(self.controller)
                     self.window.show_view(start_view)
@@ -499,12 +479,18 @@ class HighScoresView(arcade.View):
                     pass
                 elif dpdown:
                     pass
+                elif dpleft:
+                    pass
+                elif dpright:
+                    pass
 
             @self.controller.event
             def on_button_press(controller, button):
                 if button == "a":  # Assuming "A" button is similar to 'Enter' action
                     mode_selection_view = ModeSelectionView("HighScoreView", self.controller)
                     self.window.show_view(mode_selection_view)
+                elif button == "b":
+                    pass
 
     def on_show_view(self):
         arcade.set_background_color(arcade.color.AO)
@@ -620,7 +606,10 @@ class GameView(arcade.View):
                             if pause_view.current_option < 2:
                                 self.sound_effect_menu.play_music(volume=0.1, loop=False)
                                 pause_view.update_option(pause_view.current_option + 1)
-
+                        if dpleft:
+                            pass
+                        if dpright:
+                            pass
                         self.hovered_item = self.current_option
                 else:
                     if not self.input_cooldown:
@@ -1121,8 +1110,7 @@ class SaveScoreView(arcade.View):
                         game_over_view = GameOverView(self.score, self.party_mode, self.bgm, self.apple_count,
                                                       self.controller)
                         self.window.show_view(game_over_view)
-            def on_button_press(controller, button):
-                if button == "b":  # Assuming "A" button is similar to 'Enter' action
+                elif button == "b":  # Assuming "A" button is similar to 'Enter' action
                     pass
 
     def on_show_view(self):
@@ -1262,7 +1250,6 @@ class SaveScoreNameView(arcade.View):
                     pass
                 elif dpright:
                     pass
-                self.hovered_item = self.current_option
 
             @self.controller.event
             def on_button_press(controller, button):
@@ -1342,7 +1329,7 @@ class SaveScoreNameView(arcade.View):
             file.write(f"{self.player_name},{self.score}\n")
 
     def on_mouse_press(self, x, y, button, modifiers):
-        self.save_score(self.game_mode)
+        self.save_score()
         game_over_view = GameOverView(self.score, self.party_mode, self.bgm, self.apple_count, self.controller)
         self.window.show_view(game_over_view)
 
@@ -1399,9 +1386,7 @@ class GameOverView(arcade.View):
                         self.window.show_view(start_view)
                     elif self.current_option == 2:
                         self.window.close()
-
-            def on_button_press(controller, button):
-                if button == "b":  # Assuming "A" button is similar to 'Enter' action
+                elif button == "b":  # Assuming "A" button is similar to 'Enter' action
                     pass
 
     def on_show_view(self):
