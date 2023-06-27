@@ -1,7 +1,7 @@
 # Arcade Snake
 Willkommen zu unserem auf pythonbasierendem Snake Game, welches mit der Gamelibrary "Arcade" entwickelt wurde. Wir haben dieses Spiel im Rahmen der Vorlesung "Programmiersprachen" für unsere Prüfungsleistung programmiert.
 
-![snakegame_mainmenu](https://github.com/heermaas/PygameSnake/assets/124090560/93150b4e-c4dd-442d-a8c3-c591696fa522)
+![image](https://github.com/heermaas/ArcadeSnake/assets/124162752/8755d022-7a9e-4149-b3aa-797386da11ef)
 
 ## Spielbeschreibung
 
@@ -26,7 +26,8 @@ Das Snake-Spiel ist ein klassisches Arcade-Spiel, bei dem der Spieler eine Schla
 ## Alle Packages
 Eventuell startet das Programm nicht falls eines dieser Packages nicht vorhanden ist, bitte dann installieren:
 
-![image](https://github.com/heermaas/ArcadeSnake/assets/124162752/e444fdaa-d5b3-4ed7-8cef-579b6d031352)
+![image](https://github.com/heermaas/ArcadeSnake/assets/124162752/1ed1a10e-efbc-4722-a33a-885b8849de78)
+
 
 
 ## Entwickler
