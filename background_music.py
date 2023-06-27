@@ -1,5 +1,6 @@
-import arcade
 import time
+
+import arcade
 
 
 class BGM:

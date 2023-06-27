@@ -579,7 +579,7 @@ class HighScoresView(arcade.View):
 
     def load_scores(self):
         try:
-            with open(f"{self.game_mode}_Hiscore.txt", "r") as file:
+            with open(f"highscores/{self.game_mode}_Hiscore.txt", "r") as file:
                 scores = file.readlines()
                 self.scores = [score.strip().split(",") for score in scores]
                 self.scores.sort(key=lambda x: int(x[1]), reverse=True)
@@ -1018,7 +1018,7 @@ class PauseView(arcade.View):
 
     def on_draw(self):
         arcade.start_render()
-        # Hier wird die "scoreboard area" vom Spielfeld getrennt
+        # Draw the scoreboard area
         arcade.draw_rectangle_filled(
             SCREEN_WIDTH // 2, SCREEN_HEIGHT - SCOREBOARD_HEIGHT // 2, SCREEN_WIDTH, SCOREBOARD_HEIGHT,
             arcade.color.AVOCADO)
@@ -1440,7 +1440,7 @@ class SaveScoreNameView(arcade.View):
     def save_score(self):
         if not self.player_name:
             self.player_name = "Spieler"
-        with open(f"{self.game_mode}_Hiscore.txt", "a") as file:
+        with open(f"highscores/{self.game_mode}_Hiscore.txt", "a") as file:
             file.write(f"{self.player_name},{self.score}\n")
 
     def on_mouse_press(self, x, y, button, modifiers):

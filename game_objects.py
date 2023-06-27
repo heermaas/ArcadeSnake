@@ -1,6 +1,8 @@
-from main import SCREEN_WIDTH, SCREEN_HEIGHT, BLOCK_SIZE, SNAKE_SIZE, ITEM_TO_EAT_SIZE, SCOREBOARD_HEIGHT
-import arcade
 import random
+
+import arcade
+
+from main import SCREEN_WIDTH, SCREEN_HEIGHT, BLOCK_SIZE, SNAKE_SIZE, ITEM_TO_EAT_SIZE, SCOREBOARD_HEIGHT
 
 
 class Snake:
