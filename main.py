@@ -37,7 +37,7 @@ class StartView(arcade.View):
 
         if self.controller:
             @self.controller.event
-            def on_dpad_motion(the_controller, dpleft, dpright, dpup, dpdown):
+            def on_dpad_motion(_, dpleft, dpright, dpup, dpdown):
                 if dpup:
                     if self.current_option > 0:
                         self.sound_effect_menu.play_music(volume=0.1, loop=False)
@@ -53,7 +53,7 @@ class StartView(arcade.View):
                 self.hovered_item = self.current_option
 
             @self.controller.event
-            def on_button_press(controller, button):
+            def on_button_press(_, button):
                 if button == "a":  # Assuming "A" button is similar to 'Enter' action
                     self.menu()
                 elif button == "b":  # Assuming "A" button is similar to 'Enter' action
@@ -217,7 +217,7 @@ class ModeSelectionView(arcade.View):
 
         if self.controller:
             @self.controller.event
-            def on_dpad_motion(controller, dpleft, dpright, dpup, dpdown):
+            def on_dpad_motion(_, dpleft, dpright, dpup, dpdown):
                 if dpup:
                     if self.current_option > 0:
                         self.sound_effect_menu.play_music(volume=0.1, loop=False)
@@ -233,7 +233,7 @@ class ModeSelectionView(arcade.View):
                 self.hovered_item = self.current_option
 
             @self.controller.event
-            def on_button_press(controller, button):
+            def on_button_press(_, button):
                 if button == "a":  # Assuming "A" button is similar to 'Enter' action
                     self.menu()
                 elif button == "b":
@@ -385,7 +385,7 @@ class InstructionsView(arcade.View):
 
         if self.controller:
             @self.controller.event
-            def on_dpad_motion(controller, dpleft, dpright, dpup, dpdown):
+            def on_dpad_motion(_, dpleft, dpright, dpup, dpdown):
                 if dpup:
                     pass
                 elif dpdown:
@@ -396,7 +396,7 @@ class InstructionsView(arcade.View):
                     pass
 
             @self.controller.event
-            def on_button_press(controller, button):
+            def on_button_press(_, button):
                 if button == "a":  # Assuming "A" button is similar to 'Enter' action
                     self.click_effect_menu.play_music(volume=0.1, loop=False)
                     start_view = StartView(self.controller)
@@ -529,7 +529,7 @@ class HighScoresView(arcade.View):
 
         if self.controller:
             @self.controller.event
-            def on_dpad_motion(controller, dpleft, dpright, dpup, dpdown):
+            def on_dpad_motion(_, dpleft, dpright, dpup, dpdown):
                 if dpup:
                     pass
                 elif dpdown:
@@ -540,7 +540,7 @@ class HighScoresView(arcade.View):
                     pass
 
             @self.controller.event
-            def on_button_press(controller, button):
+            def on_button_press(_, button):
                 if button == "a":  # Assuming "A" button is similar to 'Enter' action
                     mode_selection_view = ModeSelectionView("HighScoreView", self.controller)
                     self.window.show_view(mode_selection_view)
@@ -649,7 +649,7 @@ class GameView(arcade.View):
 
         if self.controller:
             @self.controller.event
-            def on_dpad_motion(controller, dpleft, dpright, dpup, dpdown):
+            def on_dpad_motion(_, dpleft, dpright, dpup, dpdown):
                 if self.paused:
                     pause_view = self.window.current_view
                     if isinstance(pause_view, PauseView):
@@ -695,9 +695,8 @@ class GameView(arcade.View):
                                 self.snake.change_direction("right")
                                 self.snake.is_snake_moving = True
 
-
             @self.controller.event
-            def on_button_press(controller, button):
+            def on_button_press(_, button):
                 if self.paused:
                     pause_view = self.window.current_view
                     if isinstance(pause_view, PauseView):
@@ -1140,7 +1139,7 @@ class SaveScoreView(arcade.View):
 
         if self.controller:
             @self.controller.event
-            def on_dpad_motion(controller, dpleft, dpright, dpup, dpdown):
+            def on_dpad_motion(_, dpleft, dpright, dpup, dpdown):
                 if dpup:
                     pass
                 elif dpdown:
@@ -1156,7 +1155,7 @@ class SaveScoreView(arcade.View):
                 self.hovered_item = self.current_option
 
             @self.controller.event
-            def on_button_press(controller, button):
+            def on_button_press(_, button):
                 if button == "a":  # Assuming "A" button is similar to 'Enter' action
                     self.click_effect_menu.play_music(volume=0.1, loop=False)
                     if self.current_option == 0:
@@ -1298,7 +1297,7 @@ class SaveScoreNameView(arcade.View):
 
         if self.controller:
             @self.controller.event
-            def on_dpad_motion(controller, dpleft, dpright, dpup, dpdown):
+            def on_dpad_motion(_, dpleft, dpright, dpup, dpdown):
                 if dpup:
                     pass
                 elif dpdown:
@@ -1309,7 +1308,7 @@ class SaveScoreNameView(arcade.View):
                     pass
 
             @self.controller.event
-            def on_button_press(controller, button):
+            def on_button_press(_, button):
                 if button == "a":  # Assuming "A" button is similar to 'Enter' action
                     pass
                 elif button == "b":  # Assuming "A" button is similar to 'Enter' action
@@ -1415,7 +1414,7 @@ class GameOverView(arcade.View):
 
         if self.controller:
             @self.controller.event
-            def on_dpad_motion(controller, dpleft, dpright, dpup, dpdown):
+            def on_dpad_motion(_, dpleft, dpright, dpup, dpdown):
                 if dpup:
                     if self.current_option > 0:
                         self.sound_effect_menu.play_music(volume=0.1, loop=False)
@@ -1431,7 +1430,7 @@ class GameOverView(arcade.View):
                 self.hovered_item = self.current_option
 
             @self.controller.event
-            def on_button_press(controller, button):
+            def on_button_press(_, button):
                 if button == "a":  # Assuming "A" button is similar to 'Enter' action
                     self.click_effect_menu.play_music(volume=0.1, loop=False)
                     if self.current_option == 0:
