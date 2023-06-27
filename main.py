@@ -28,25 +28,38 @@ class StartView(arcade.View):
             "Bestenliste",
             "Beenden",
         ]
+        # Die hovered_item Variable wird verwendet, um die Option zu speichern, die der Benutzer mit der
+        # Maus ausgewählt hat.
         self.hovered_item = None
+        # Die current_option Variable wird verwendet, um die Option zu speichern, die der Benutzer mit den
+        # Pfeiltasten ausgewählt hat.
         self.current_option = 0
         self.bgm = bgm
         self.sound_effect_menu = BGM(5)
         self.click_effect_menu = BGM(8)
+        # Der Controller wird verwendet, um die Eingaben des Benutzers zu verarbeiten die der
+        # Benutzer mit dem Controller gemacht hat.
         self.controller = controller
 
         if self.controller:
+            # Die on_update Methode wird aufgerufen, wenn der Benutzer mit dem Controller eine Eingabe macht.
             @self.controller.event
             def on_dpad_motion(_, dpleft, dpright, dpup, dpdown):
                 if dpup:
+                    # Wenn der Benutzer die Pfeiltaste nach oben drückt, wird die
+                    # Option um 1 verringert also nach oben "verschoben".
                     if self.current_option > 0:
                         self.sound_effect_menu.play_music(volume=0.1, loop=False)
                         self.current_option -= 1
                 elif dpdown:
+                    # Hier das Gegenteil von oben.
                     if self.current_option < len(self.menu_items) - 1:
                         self.sound_effect_menu.play_music(volume=0.1, loop=False)
                         self.current_option += 1
                 elif dpleft:
+                    # Hier wird nichts aufgerufen aus dem einfachen Grund das diese Funktion und ähnliche
+                    # Funktionen sich gegenseitig "überschreiben".
+                    # Das heißt wenn hier nicht pass stehen würde, führt das eventuell zu unvorhersehbaren Folgen.
                     pass
                 elif dpright:
                     pass
@@ -54,20 +67,26 @@ class StartView(arcade.View):
 
             @self.controller.event
             def on_button_press(_, button):
-                if button == "a":  # Unter Annahme a ist äquivalent
+                if button == "a":
                     self.menu()
-                elif button == "b":  # Assuming "A" button is similar to 'Enter' action
+                elif button == "b":
                     pass
 
+    # Die on_show_view Methode wird aufgerufen, wenn der Bildschirm (View) aufgerufen wird.
+    # Es ist eine Methode von arcade.View.
     def on_show_view(self):
         arcade.set_background_color(arcade.color.AO)
 
+    # Die on_draw Methode wird aufgerufen, um die Objekte z.B. auch der Hintergrund gezeichnet wird.
+    # Es ist eine Methode von arcade.View.
     def on_draw(self):
         arcade.start_render()
         arcade.draw_text(
             GAME_TITLE,
+            # Hier wird die Position des Textes festgelegt.
             SCREEN_WIDTH / 2,
             SCREEN_HEIGHT / 2 + 50,
+            # Hier wird die Grösse des Textes festgelegt.
             font_size=64,
             anchor_x="center",
         )
@@ -75,6 +94,7 @@ class StartView(arcade.View):
             CAPTION,
             SCREEN_WIDTH / 2,
             SCREEN_HEIGHT / 2 + 10,
+            # Hier wird die Farbe des Textes festgelegt.
             arcade.color.WHITE,
             font_size=20,
             anchor_x="center",
@@ -91,7 +111,7 @@ class StartView(arcade.View):
             "Spiel starten",
             SCREEN_WIDTH / 2,
             SCREEN_HEIGHT / 2 - 100,
-            self.get_item_color(0),  # Color of the second menu item
+            self.get_item_color(0),
             font_size=22,
             anchor_x="center",
         )
@@ -99,7 +119,7 @@ class StartView(arcade.View):
             "Bestenliste",
             SCREEN_WIDTH / 2,
             SCREEN_HEIGHT / 2 - 150,
-            self.get_item_color(1),  # Color of the third menu item
+            self.get_item_color(1),
             font_size=22,
             anchor_x="center",
         )
@@ -122,6 +142,8 @@ class StartView(arcade.View):
         )
         self.draw_cursor()
 
+    # Diese Methode zeichnet ein Dreieck, welches als Cursor dient. durch self.current_option wird die Position des
+    # Dreiecks festgelegt.
     def draw_cursor(self):
         cursor_x = SCREEN_WIDTH / 2 - 100
         cursor_y = SCREEN_HEIGHT / 2 - 88 - self.current_option * 50
@@ -136,9 +158,7 @@ class StartView(arcade.View):
         else:
             return arcade.color.WHITE
 
-    def update_option(self, option):
-        self.current_option = option
-
+    # Diese Methode wird aufgerufen, wenn der Benutzer eine Eingabe mit der Tastatur macht.
     def on_key_press(self, key, modifiers):
         if key == arcade.key.UP or key == arcade.key.W:
             if self.current_option > 0:
@@ -153,6 +173,7 @@ class StartView(arcade.View):
 
         self.hovered_item = self.current_option
 
+    # Markiert den Text der in der Hitbox steht beim drüberfahren mit der Maus.
     def on_mouse_motion(self, x, y, dx, dy):
         for i, _ in enumerate(self.menu_items):
             item_x = SCREEN_WIDTH / 2
@@ -160,9 +181,8 @@ class StartView(arcade.View):
             item_width = 200
             item_height = 30
 
-            # Adjust hitbox size for the second menu item
             if i == 1:
-                item_height = 25  # Decrease the height of the hitbox for the second item
+                item_height = 25
 
             if (
                     item_x - item_width / 2 < x < item_x + item_width / 2
@@ -176,30 +196,32 @@ class StartView(arcade.View):
         else:
             self.hovered_item = None
 
+    # Bei einem Mausklick wird das Menü aufgerufen.
     def on_mouse_press(self, x, y, button, modifiers):
         if self.hovered_item is not None:
             self.menu()
 
+    # Eine Hilfsfunktion die das Menü steuert. Je nachdem welches
+    # Item ausgewählt wurde egal ob von Maus,Tastatur oder Controller, wird eine andere View aufgerufen.
     def menu(self):
         self.click_effect_menu.play_music(volume=0.1, loop=False)
         if self.current_option == 0:
             mode_selection_view = ModeSelectionView("GameView", self.controller, self.bgm)
             self.window.show_view(mode_selection_view)
         elif self.current_option == 1:
-            mode_selection_view = ModeSelectionView("HighScoreView", self.controller)
+            mode_selection_view = ModeSelectionView("HighScoreView", self.controller, self.bgm)
             self.window.show_view(mode_selection_view)
         elif self.current_option == 2:
-            instruction_view = InstructionsView(self.controller)
+            instruction_view = InstructionsView(self.controller, self.bgm)
             self.window.show_view(instruction_view)
         elif self.current_option == 3:
-            self.exit_game()
-
-    def exit_game(self):
-        self.window.close()
+            self.window.close()
 
 
+# Diese Klasse ist für die Auswahl des Spielmodus zuständig.
+# Zeigt je nach Parameter "next_view" eine andere View an.
 class ModeSelectionView(arcade.View):
-    def __init__(self, next_view, controller, bgm=None):
+    def __init__(self, next_view, controller, bgm):
         super().__init__()
         self.current_option = 0
         self.menu_items = [
@@ -212,7 +234,7 @@ class ModeSelectionView(arcade.View):
         self.click_effect_menu = BGM(8)
         self.hovered_item = -1
         self.next_view = next_view
-        self.bgm = bgm
+        self.main_menu_bgm = bgm
         self.controller = controller
 
         if self.controller:
@@ -234,11 +256,11 @@ class ModeSelectionView(arcade.View):
 
             @self.controller.event
             def on_button_press(_, button):
-                if button == "a":  # Assuming "A" button is similar to 'Enter' action
+                if button == "a":
                     self.menu()
                 elif button == "b":
                     self.click_effect_menu.play_music(volume=0.1, loop=False)
-                    start_view = StartView(self.controller)
+                    start_view = StartView(self.controller, self.main_menu_bgm)
                     self.window.show_view(start_view)
 
     def on_show(self):
@@ -310,9 +332,6 @@ class ModeSelectionView(arcade.View):
         else:
             return arcade.color.WHITE
 
-    def update_option(self, option):
-        self.current_option = option
-
     def on_key_press(self, key, modifiers):
         if key == arcade.key.UP or key == arcade.key.W:
             if self.current_option > 0:
@@ -339,7 +358,7 @@ class ModeSelectionView(arcade.View):
                 if self.hovered_item != i:
                     self.sound_effect_menu.play_music(volume=0.1, loop=False)
                 self.hovered_item = i
-                self.current_option = i  # Update current_option as well
+                self.current_option = i
                 break
         else:
             self.hovered_item = None
@@ -352,30 +371,33 @@ class ModeSelectionView(arcade.View):
         self.click_effect_menu.play_music(volume=0.1, loop=False)
         if self.current_option == 0:
             if self.next_view == "GameView":
-                self.bgm.stop_audio()  # Sorgt dafür das nach Menuwechsel nicht zwei Tracks auf einmal gespielt werden
+                self.main_menu_bgm.stop_audio()
                 game_view = GameView(self.controller, party_mode=self.party_mode)
                 self.window.show_view(game_view)
             else:
-                high_scores_view = HighScoresView(self.controller, self.party_mode)
+                high_scores_view = HighScoresView(self.controller, self.party_mode, self.main_menu_bgm)
                 self.window.show_view(high_scores_view)
         elif self.current_option == 1:
             self.party_mode = True
             if self.next_view == "GameView":
-                self.bgm.stop_audio()
+                self.main_menu_bgm.stop_audio()
                 game_view = GameView(self.controller, party_mode=self.party_mode)
                 self.window.show_view(game_view)
             else:
-                high_scores_view = HighScoresView(self.controller, self.party_mode)
+                high_scores_view = HighScoresView(self.controller, self.party_mode, self.main_menu_bgm)
                 self.window.show_view(high_scores_view)
         elif self.current_option == 2:
-            start_view = StartView(self.controller)
+            start_view = StartView(self.controller, self.main_menu_bgm)
             self.window.show_view(start_view)
 
 
+# Zeigt die Anleitung an.
 class InstructionsView(arcade.View):
-    def __init__(self, controller):
+    def __init__(self, controller, bgm):
         super().__init__()
         self.current_option = 0
+        # So ladet man Bilder in arcade. Theoretisch wäre ein Aufruf nötig, ist aber nicht so überschaubar.
+        # Und man müsste alle Bilder zu einer Bild Datei zusammenfügen.
         self.arrow_keys = arcade.load_texture("images/ArrowKeys.png")
         self.wasd_keys = arcade.load_texture("images/WASDKeys.png")
         self.mushroom = arcade.load_texture("images/mushroom.png")
@@ -384,6 +406,7 @@ class InstructionsView(arcade.View):
         self.sound_effect_menu = BGM(3)
         self.click_effect_menu = BGM(8)
         self.controller = controller
+        self.main_menu_bgm = bgm
 
         if self.controller:
             @self.controller.event
@@ -401,11 +424,11 @@ class InstructionsView(arcade.View):
             def on_button_press(_, button):
                 if button == "a":  # Assuming "A" button is similar to 'Enter' action
                     self.click_effect_menu.play_music(volume=0.1, loop=False)
-                    start_view = StartView(self.controller)
+                    start_view = StartView(self.controller, self.main_menu_bgm)
                     self.window.show_view(start_view)
                 elif button == "b":
                     self.click_effect_menu.play_music(volume=0.1, loop=False)
-                    start_view = StartView(self.controller)
+                    start_view = StartView(self.controller, self.main_menu_bgm)
                     self.window.show_view(start_view)
 
     def on_show_view(self):
@@ -506,19 +529,21 @@ class InstructionsView(arcade.View):
         )
 
     def on_key_press(self, key, modifiers):
-        if key == arcade.key.ENTER:
+        if key == arcade.key.ENTER or key == arcade.key.ESCAPE or key == arcade.key.RETURN:
             self.click_effect_menu.play_music(volume=0.1, loop=False)
-            start_view = StartView(self.controller)
+            start_view = StartView(self.controller, self.main_menu_bgm)
             self.window.show_view(start_view)
 
     def on_mouse_press(self, x, y, button, modifiers):
         self.click_effect_menu.play_music(volume=0.1, loop=False)
-        start_view = StartView(self.controller)
+        start_view = StartView(self.controller, self.main_menu_bgm)
         self.window.show_view(start_view)
 
 
+# Zeigt je nach Parameter die Highscores an
+# Die Highscores werden aus einer der beiden Hiscores txt.Datei gelesen
 class HighScoresView(arcade.View):
-    def __init__(self, controller, party_mode):
+    def __init__(self, controller, party_mode, bgm):
         super().__init__()
         self.current_option = 0
         self.scores = []
@@ -528,6 +553,7 @@ class HighScoresView(arcade.View):
         else:
             self.game_mode = "Normal"
         self.controller = controller
+        self.main_menu_bgm = bgm
 
         if self.controller:
             @self.controller.event
@@ -543,11 +569,9 @@ class HighScoresView(arcade.View):
 
             @self.controller.event
             def on_button_press(_, button):
-                if button == "a":
-                    mode_selection_view = ModeSelectionView("HighScoreView", self.controller)
+                if button in ["a", "b"]:
+                    mode_selection_view = ModeSelectionView("HighScoreView", self.controller, self.main_menu_bgm)
                     self.window.show_view(mode_selection_view)
-                elif button == "b":
-                    pass
 
     def on_show_view(self):
         arcade.set_background_color(arcade.color.AO)
@@ -604,14 +628,16 @@ class HighScoresView(arcade.View):
 
     def on_key_press(self, key, modifiers):
         if key == arcade.key.ENTER:
-            mode_selection_view = ModeSelectionView("HighScoreView", self.controller)
+            mode_selection_view = ModeSelectionView("HighScoreView", self.controller, self.main_menu_bgm)
             self.window.show_view(mode_selection_view)
 
     def on_mouse_press(self, x, y, button, modifiers):
-        mode_selection_view = ModeSelectionView("HighScoreView", self.controller)
+        mode_selection_view = ModeSelectionView("HighScoreView", self.controller, self.main_menu_bgm)
         self.window.show_view(mode_selection_view)
 
 
+# In GameView wird das Spiel gestartet entweder im Party oder im Normale Modus.
+# Die Schlange und die Items werden erstellt.
 class GameView(arcade.View):
     def __init__(self, controller, party_mode=False):
         super().__init__()
@@ -643,7 +669,6 @@ class GameView(arcade.View):
         self.movement_timer = 0
         self.move_border = 0.15
         self.mirrored_control = False
-        self.input_cooldown = False
         self.main_menu_bgm = BGM(0)
         self.bgm = BGM(1)
         self.sound_effect_apple = BGM(3)
@@ -662,6 +687,7 @@ class GameView(arcade.View):
             @self.controller.event
             def on_dpad_motion(_, dpleft, dpright, dpup, dpdown):
                 if self.paused:
+                    # Das Pausenmenü wird hier in GameView gesteuert.
                     pause_view = self.window.current_view
                     if isinstance(pause_view, PauseView):
                         if dpup:
@@ -678,37 +704,38 @@ class GameView(arcade.View):
                             pass
                         self.hovered_item = self.current_option
                 else:
-                    if not self.input_cooldown:
-                        if self.mirrored_control:
-                            if dpup:
-                                self.snake.change_direction("down")
-                                self.snake.is_snake_moving = True
-                            elif dpdown:
-                                self.snake.change_direction("up")
-                                self.snake.is_snake_moving = True
-                            elif dpleft:
-                                self.snake.change_direction("right")
-                                self.snake.is_snake_moving = True
-                            elif dpright:
-                                self.snake.change_direction("left")
-                                self.snake.is_snake_moving = True
-                        else:
-                            if dpup:
-                                self.snake.change_direction("up")
-                                self.snake.is_snake_moving = True
-                            elif dpdown:
-                                self.snake.change_direction("down")
-                                self.snake.is_snake_moving = True
-                            elif dpleft:
-                                self.snake.change_direction("left")
-                                self.snake.is_snake_moving = True
-                            elif dpright:
-                                self.snake.change_direction("right")
-                                self.snake.is_snake_moving = True
+                    # Falls das Spiel nicht pausiert ist, wird die Schlange gesteuert.
+                    if self.mirrored_control:
+                        if dpup:
+                            self.snake.change_direction("down")
+                            self.snake.is_snake_moving = True
+                        elif dpdown:
+                            self.snake.change_direction("up")
+                            self.snake.is_snake_moving = True
+                        elif dpleft:
+                            self.snake.change_direction("right")
+                            self.snake.is_snake_moving = True
+                        elif dpright:
+                            self.snake.change_direction("left")
+                            self.snake.is_snake_moving = True
+                    else:
+                        if dpup:
+                            self.snake.change_direction("up")
+                            self.snake.is_snake_moving = True
+                        elif dpdown:
+                            self.snake.change_direction("down")
+                            self.snake.is_snake_moving = True
+                        elif dpleft:
+                            self.snake.change_direction("left")
+                            self.snake.is_snake_moving = True
+                        elif dpright:
+                            self.snake.change_direction("right")
+                            self.snake.is_snake_moving = True
 
             @self.controller.event
             def on_button_press(_, button):
                 if self.paused:
+                    # Wie Oben. Die Wahleingabe in Pausenmenü wird hier in GameView gesteuert.
                     pause_view = self.window.current_view
                     if isinstance(pause_view, PauseView):
                         if button == "a":
@@ -728,20 +755,16 @@ class GameView(arcade.View):
                                 self.game_over_bgm.play_music(volume=0.1, loop=True)
                                 self.window.show_view(game_over_view)
                 else:
-                    if not self.input_cooldown:
-                        if button == "b":
-                            self.sound_effect_menu.play_music(volume=0.1, loop=False)
-                            self.paused = True
-                            pause_view = PauseView(self)
-                            self.window.show_view(pause_view)
-                        elif button == "a":
-                            pass
-
-    def on_show_view(self):
-        arcade.set_background_color(arcade.color.BLACK)
+                    # Das Pausenmenü wird geöffnet.
+                    if button == "b":
+                        self.sound_effect_menu.play_music(volume=0.1, loop=False)
+                        self.paused = True
+                        pause_view = PauseView(self)
+                        self.window.show_view(pause_view)
+                    elif button == "a":
+                        pass
 
     def draw_apple_count(self):
-        # Set the font style, size, and color
         arcade.draw_texture_rectangle(460, SCREEN_HEIGHT - SCOREBOARD_HEIGHT // 2, 50, 50, self.apple.Item_to_eat)
         arcade.draw_text(str(self.snake.apple_count), 490, SCREEN_HEIGHT - SCOREBOARD_HEIGHT // 2 - 20,
                          arcade.color.WHITE, font_size=36)
@@ -754,20 +777,20 @@ class GameView(arcade.View):
     def on_draw(self):
         arcade.start_render()
 
-        # Draw the scoreboard area
+        # Hier wird das Scoreboard gezeichnet.
         arcade.draw_rectangle_filled(
             SCREEN_WIDTH // 2, SCREEN_HEIGHT - SCOREBOARD_HEIGHT // 2, SCREEN_WIDTH, SCOREBOARD_HEIGHT,
             arcade.color.AVOCADO)
         self.draw_score_count()
         self.draw_apple_count()
 
-        # Draw the game area
+        # Hier wird das Speilfeld eingeteilt
         game_height = SCREEN_HEIGHT - SCOREBOARD_HEIGHT
         arcade.draw_rectangle_filled(
             SCREEN_WIDTH // 2, game_height // 2, SCREEN_WIDTH, game_height, arcade.color.GREEN
         )
 
-        # Draw the grid with alternating colors
+        # Hier wird daas Grid gezeichnet.
         for row in range(0, game_height, BLOCK_SIZE):
             for column in range(0, SCREEN_WIDTH, BLOCK_SIZE):
                 if (row // BLOCK_SIZE + column // BLOCK_SIZE) % 2 == 0:
@@ -789,119 +812,122 @@ class GameView(arcade.View):
 
         self.snake.draw()
         self.apple.draw()
-        if self.party_mode and self.mushroom is not None:
-            self.mushroom.draw()
-        if self.party_mode and self.mirror is not None:
-            self.mirror.draw()
-        if self.party_mode and self.diamond is not None:
-            self.diamond.draw()
+        if self.party_mode:
+            for item in [self.mushroom, self.mirror, self.diamond]:
+                if item is not None:
+                    item.draw()
 
     def on_key_press(self, key, modifiers):
         if self.paused:
-            # Handle pause logic
+            # Falls das Spiel pausiert ist, ignoriert GameView die Eingabe.
+            # PauseView steuert die Eingabe im Pausenmenü wenn kein Controller benutzt wird.
             pass
         else:
-            if not self.input_cooldown:
-                if key == arcade.key.ESCAPE or key == arcade.key.RETURN:
-                    self.paused = True
-                    pause_view = PauseView(self)
-                    self.window.show_view(pause_view)
+            if key == arcade.key.ESCAPE or key == arcade.key.RETURN:
+                self.paused = True
+                pause_view = PauseView(self)
+                self.window.show_view(pause_view)
+            else:
+                if self.mirrored_control:
+                    directions = {
+                        arcade.key.RIGHT: "left",
+                        arcade.key.D: "left",
+                        arcade.key.LEFT: "right",
+                        arcade.key.A: "right",
+                        arcade.key.UP: "down",
+                        arcade.key.W: "down",
+                        arcade.key.DOWN: "up",
+                        arcade.key.S: "up",
+                    }
                 else:
-                    if self.mirrored_control:
-                        directions = {
-                            arcade.key.RIGHT: "left",
-                            arcade.key.D: "left",
-                            arcade.key.LEFT: "right",
-                            arcade.key.A: "right",
-                            arcade.key.UP: "down",
-                            arcade.key.W: "down",
-                            arcade.key.DOWN: "up",
-                            arcade.key.S: "up",
-                        }
-                    else:
-                        directions = {
-                            arcade.key.RIGHT: "right",
-                            arcade.key.D: "right",
-                            arcade.key.LEFT: "left",
-                            arcade.key.A: "left",
-                            arcade.key.UP: "up",
-                            arcade.key.W: "up",
-                            arcade.key.DOWN: "down",
-                            arcade.key.S: "down",
-                        }
-                    if key in directions:
-                        self.snake.change_direction(directions[key])
-                        self.snake.is_snake_moving = True
-                    else:
-                        pass
+                    directions = {
+                        arcade.key.RIGHT: "right",
+                        arcade.key.D: "right",
+                        arcade.key.LEFT: "left",
+                        arcade.key.A: "left",
+                        arcade.key.UP: "up",
+                        arcade.key.W: "up",
+                        arcade.key.DOWN: "down",
+                        arcade.key.S: "down",
+                    }
+                if key in directions:
+                    self.snake.change_direction(directions[key])
+                    self.snake.is_snake_moving = True
+                else:
+                    pass
 
+    # Hier wird die Position der Items (Apple, Mushroom, Mirror, Diamond) abgefragt.
     def get_position(self, item_name):
-        if item_name == "mushroom":
-            if self.mushroom:
-                return self.mushroom.x, self.mushroom.y
-            else:
-                return None
-        elif item_name == "mirror":
-            if self.mirror:
-                return self.mirror.x, self.mirror.y
-            else:
-                return None
-        elif item_name == "diamond":
-            if self.diamond:
-                return self.diamond.x, self.diamond.y
-            else:
-                return None
-        elif item_name == "apple":
-            if self.apple:
-                return self.apple.x, self.apple.y
-            else:
-                return None
+        item = getattr(self, item_name, None)
+        if item:
+            return item.x, item.y
+        return None
 
     def update(self, delta_time):
+        # Überprüft, ob das Spiel pausiert ist oder die Schlange sich nicht bewegt. Wenn nicht, wird die Zeit erhöht.
         if not self.paused and self.snake.is_snake_moving:
             self.movement_timer += delta_time
+
+            # Wenn die Bewegungszeit den Bewegungsgrenzwert erreicht oder übersteigt, werden mehrere Aktionen ausgeführt
             if self.movement_timer >= self.move_border:
+                # Die Position des Apfels wird aktualisiert
                 self.apple_position = self.get_position("apple")
+                # Die Schlange wird auf Bewegung gesetzt
                 self.snake.is_snake_moving = True
+                # Die Schlange bewegt sich
                 self.snake.move()
 
+                # Wenn sich das Spiel im Party-Modus befindet, werden zusätzliche Elemente hinzugefügt
                 if self.party_mode:
+                    # Die Positionen von Pilz, Spiegel und Diamant werden aktualisiert
                     self.mushroom_position = self.get_position("mushroom")
                     self.mirror_position = self.get_position("mirror")
                     self.diamond_position = self.get_position("diamond")
 
-                    if not self.mushroom and random.randint(1, 40) == 1:
+                    # Wenn es keinen Pilz gibt und die Zufallszahl 1 (von 20) ist, wird ein Pilz erstellt
+                    if not self.mushroom and random.randint(1, 20) == 1:
+                        # Ein Pilz wird erstellt und nach einer züfallig bestimmter Zeit gelöscht
                         self.mushroom = ItemToEat(self.snake, "mushroom", self.diamond_position, self.mushroom_position,
                                                   self.mirror_position, self.apple_position)
-                        mushroom_timer = threading.Timer(random.uniform(6, 18), lambda: self.delete_item("mushroom"))
+                        mushroom_timer = threading.Timer(random.uniform(2, 6), lambda: self.delete_item("mushroom"))
                         mushroom_timer.start()
 
-                    if not self.mirror and random.randint(1, 80) == 1:
+                    # Ähnliche Aktionen wie für den Pilz werden auch für Spiegel und Diamant ausgeführt
+                    if not self.mirror and random.randint(1, 30) == 1:
                         self.mirror = ItemToEat(self.snake, "mirror", self.diamond_position, self.mushroom_position,
                                                 self.mirror_position, self.apple_position)
-                        mirror_timer = threading.Timer(random.uniform(6, 18), lambda: self.delete_item("mirror"))
+                        mirror_timer = threading.Timer(random.uniform(2, 7), lambda: self.delete_item("mirror"))
                         mirror_timer.start()
 
-                    if not self.diamond and random.randint(1, 150) == 1:
+                    if not self.diamond and random.randint(1, 80) == 1:
                         self.diamond = ItemToEat(self.snake, "diamond", self.diamond_position, self.mushroom_position,
                                                  self.mirror_position, self.apple_position)
-                        diamond_timer = threading.Timer(random.uniform(3, 9), lambda: self.delete_item("diamond"))
+                        diamond_timer = threading.Timer(random.uniform(2, 10), lambda: self.delete_item("diamond"))
                         diamond_timer.start()
 
+                # Wenn sich das Spiel im Party-Modus befindet und es einen Pilz gibt, werden zusätzliche Aktionen ausgeführt
                 if self.party_mode and self.mushroom is not None:
+                    # Überprüft, ob die Schlange den Pilz frisst, wenn ja, dann wird eine Reihe von Aktionen ausgeführt
                     if self.snake.eat_item(self.mushroom):
+                        # Spielt Pilzsoundeffekt
                         self.sound_effect_mushroom.play_music(volume=0.5, loop=False)
+                        # Setzt den Grenzwert für die Bewegung höher
                         factor = 1 - (2.5 * self.move_border)
                         border_timer = threading.Timer(10, self.higher_border, args=[factor])
                         border_timer.start()
+                        # Ändert den Bewegungsgrenzwert
                         self.move_border *= factor
+                        # Speichert die vorherige Position des Pilzes
                         self.previous_mushroom_position = (self.mushroom.x, self.mushroom.y)
+                        # Löscht den Pilz
                         self.mushroom = None
 
+                # Der folgende Codeblock überprüft, ob verschiedene Elemente gefressen werden und führt die entsprechenden Aktionen aus
                 try:
                     if self.party_mode and self.mirror is not None:
                         if self.snake.eat_item(self.mirror):
                             self.sound_effect_mirror.play_music(volume=0.5, loop=False)
+                            # Spiegel steuert die Schlange um
                             if self.mirrored_control:
                                 self.mirrored_control = False
                             else:
@@ -912,10 +938,12 @@ class GameView(arcade.View):
                     if self.party_mode and self.diamond is not None:
                         if self.snake.eat_item(self.diamond):
                             self.sound_effect_diamond.play_music(volume=0.5, loop=False)
+                            # Fügt Punkte zur Schlange hinzu, wenn sie einen Diamanten frisst
                             self.snake.score += 500
                             self.previous_diamond_position = (self.diamond.x, self.diamond.y)
                             self.diamond = None
 
+                    # Überprüft auf Kollisionen mit sich selbst oder der Wand
                     if self.snake.check_collision():
                         self.sound_effect_wall.play_music(volume=0.5, loop=False)
                         self.bgm.stop_audio()
@@ -924,25 +952,29 @@ class GameView(arcade.View):
                                                         self.snake.apple_count, self.controller)
                         self.window.show_view(save_score_view)
 
+                    # Überprüft, ob die Schlange einen Apfel frisst und führt entsprechende Aktionen aus
                     if self.snake.eat_item(self.apple):
                         self.sound_effect_apple.play_music(volume=0.5, loop=False)
+                        # Fügt Punkte und Apfelzählung zur Schlange hinzu
                         self.snake.score += 100
                         self.snake.apple_count += 1
                         self.previous_Item_to_eat_position = (self.apple.x, self.apple.y)
                         self.apple = ItemToEat(self.snake, "apple", self.diamond_position, self.mushroom_position,
                                                self.mirror_position, self.apple_position)
 
+                # Behandelt den Fall, wenn es keine gültige Position für ein zu fressendes Element gibt
                 except NoValidItemToEatPositionError:
                     save_score_view = SaveScoreView(self.snake.score, self.party_mode, self.bgm, self.snake.apple_count,
                                                     self.controller)
                     self.window.show_view(save_score_view)
 
+                # Fügt den Kopf der Schlange in die Körperliste hinzu und entfernt das letzte Element, wenn es zu lang ist
                 self.snake.body.insert(0, (self.snake.x, self.snake.y))
                 if len(self.snake.body) > self.snake.apple_count + SNAKE_LENGTH:
                     self.snake.body.pop()
 
+                # Setzt den Bewegungstimer zurück
                 self.movement_timer = 0
-                self.input_cooldown = False
 
     def higher_border(self, factor):
         self.move_border /= factor
@@ -977,7 +1009,6 @@ class PauseView(arcade.View):
         self.game_over_bgm = BGM(2)
         self.main_menu_bgm = BGM(0)
         self.controller = game_view.controller
-
 
     def on_show_view(self):
         arcade.set_background_color(arcade.color.BLACK)
@@ -1063,9 +1094,6 @@ class PauseView(arcade.View):
         else:
             return arcade.color.WHITE
 
-    def update_option(self, option):
-        self.current_option = option
-
     def on_key_press(self, key, modifiers):
         if key == arcade.key.UP or key == arcade.key.W:
             if self.current_option > 0:
@@ -1093,7 +1121,6 @@ class PauseView(arcade.View):
                 self.window.show_view(game_over_view)
 
         self.hovered_item = self.current_option
-
 
     def on_mouse_motion(self, x, y, dx, dy):
         for i, _ in enumerate(self.menu_items):
@@ -1252,9 +1279,6 @@ class SaveScoreView(arcade.View):
         else:
             return arcade.color.WHITE
 
-    def update_option(self, option):
-        self.current_option = option
-
     def on_key_press(self, key, modifiers):
         if key == arcade.key.LEFT or key == arcade.key.A:
             if self.current_option != 0:
@@ -1339,9 +1363,9 @@ class SaveScoreNameView(arcade.View):
 
             @self.controller.event
             def on_button_press(_, button):
-                if button == "a":  # Assuming "A" button is similar to 'Enter' action
+                if button == "a":
                     pass
-                elif button == "b":  # Assuming "A" button is similar to 'Enter' action
+                elif button == "b":
                     pass
 
     def on_show_view(self):
@@ -1472,7 +1496,7 @@ class GameOverView(arcade.View):
                         self.window.show_view(start_view)
                     elif self.current_option == 2:
                         self.window.close()
-                elif button == "b":  # Assuming "A" button is similar to 'Enter' action
+                elif button == "b":
                     pass
 
     def on_show_view(self):
@@ -1558,9 +1582,6 @@ class GameOverView(arcade.View):
         else:
             return arcade.color.WHITE
 
-    def update_option(self, option):
-        self.current_option = option
-
     def on_key_press(self, key, modifiers):
         if key == arcade.key.UP or key == arcade.key.W:
             if self.current_option > 0:
@@ -1631,13 +1652,17 @@ class GameOverView(arcade.View):
 
 def main():
     window = arcade.Window(SCREEN_WIDTH, SCREEN_HEIGHT, GAME_TITLE)
+    # Mit Hilfe der library "pyglet" wenn ein Controller initializiert falls einer angeschlossen sein sollte
+    # Nur XBOX (xinput) getestest
     controller_man = pyglet.input.ControllerManager()
     controllers = controller_man.get_controllers()
     controller = controllers[0] if controllers else None
-
     if controller:
         controller.open()
+    # Erstellt ein Objekt der Klasse BGM. Sie bekommt eine Zahl als index.
+    # Hier 0, also der erste Song im Array wird hier in bgm geschrieben.
     bgm = BGM(0)
+    # Spielt, mit Hilfe der in BGM vorhandenen Funktion den Song der in bgm.
     bgm.play_music(volume=0.3, loop=True)
     start_view = StartView(controller, bgm)
     window.show_view(start_view)
