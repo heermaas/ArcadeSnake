@@ -905,7 +905,8 @@ class GameView(arcade.View):
                         diamond_timer = threading.Timer(random.uniform(2, 10), lambda: self.delete_item("diamond"))
                         diamond_timer.start()
 
-                # Wenn sich das Spiel im Party-Modus befindet und es einen Pilz gibt, werden zusätzliche Aktionen ausgeführt
+                # Wenn sich das Spiel im Party-Modus befindet und es einen Pilz gibt, werden zusätzliche
+                # Aktionen ausgeführt
                 if self.party_mode and self.mushroom is not None:
                     # Überprüft, ob die Schlange den Pilz frisst, wenn ja, dann wird eine Reihe von Aktionen ausgeführt
                     if self.snake.eat_item(self.mushroom):
@@ -922,7 +923,8 @@ class GameView(arcade.View):
                         # Löscht den Pilz
                         self.mushroom = None
 
-                # Der folgende Codeblock überprüft, ob verschiedene Elemente gefressen werden und führt die entsprechenden Aktionen aus
+                # Der folgende Codeblock überprüft, ob verschiedene Items gegessen werden und führt die entsprechenden
+                # Aktionen aus
                 try:
                     if self.party_mode and self.mirror is not None:
                         if self.snake.eat_item(self.mirror):
@@ -968,7 +970,8 @@ class GameView(arcade.View):
                                                     self.controller)
                     self.window.show_view(save_score_view)
 
-                # Fügt den Kopf der Schlange in die Körperliste hinzu und entfernt das letzte Element, wenn es zu lang ist
+                # Fügt den Kopf der Schlange in die Körperliste hinzu und entfernt das letzte
+                # Element, wenn es zu lang ist
                 self.snake.body.insert(0, (self.snake.x, self.snake.y))
                 if len(self.snake.body) > self.snake.apple_count + SNAKE_LENGTH:
                     self.snake.body.pop()
@@ -1015,18 +1018,17 @@ class PauseView(arcade.View):
 
     def on_draw(self):
         arcade.start_render()
-        # Draw the scoreboard area
+        # Hier wird die "scoreboard area" vom Spielfeld getrennt
         arcade.draw_rectangle_filled(
             SCREEN_WIDTH // 2, SCREEN_HEIGHT - SCOREBOARD_HEIGHT // 2, SCREEN_WIDTH, SCOREBOARD_HEIGHT,
             arcade.color.AVOCADO)
 
-        # Draw the game area
         game_height = SCREEN_HEIGHT - SCOREBOARD_HEIGHT
         arcade.draw_rectangle_filled(
             SCREEN_WIDTH // 2, game_height // 2, SCREEN_WIDTH, game_height, arcade.color.GREEN
         )
 
-        # Draw the grid with alternating colors
+        # Hier wird das Grid im Spielfeld erstellt 
         for row in range(0, game_height, BLOCK_SIZE):
             for column in range(0, SCREEN_WIDTH, BLOCK_SIZE):
                 if (row // BLOCK_SIZE + column // BLOCK_SIZE) % 2 == 0:
