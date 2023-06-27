@@ -8,7 +8,7 @@ import pyglet.input
 
 SCREEN_WIDTH = 800
 SCREEN_HEIGHT = 600
-BLOCK_SIZE = 40
+BLOCK_SIZE = 80
 SNAKE_SIZE = BLOCK_SIZE
 ITEM_TO_EAT_SIZE = BLOCK_SIZE
 SNAKE_LENGTH = 3
@@ -614,19 +614,28 @@ class GameView(arcade.View):
     def __init__(self, controller, party_mode=False):
         super().__init__()
         self.controller = controller
+        self.mushroom_position = None
+        self.mirror_position = None
+        self.diamond_position = None
+        self.apple_position = None
         self.snake = Snake()
-        self.apple = ItemToEat(self.snake, "Apple")
+        self.apple = ItemToEat(self.snake, "Apple", self.diamond_position, self.mushroom_position, self.mirror_position,
+                               self.apple_position)
         self.previous_Item_to_eat_position = (self.apple.x, self.apple.y)
         if party_mode:
-            self.mushroom = ItemToEat(self.snake, "Mushroom")
+            self.mushroom = ItemToEat(self.snake, "Mushroom", self.diamond_position, self.mushroom_position,
+                                      self.mirror_position, self.apple_position)
             self.previous_mushroom_position = (self.mushroom.x, self.mushroom.y)
             self.mushroom = None
-            self.mirror = ItemToEat(self.snake, "mirror")
+            self.mirror = ItemToEat(self.snake, "mirror", self.diamond_position, self.mushroom_position,
+                                    self.mirror_position, self.apple_position)
             self.previous_mirror_position = (self.mirror.x, self.mirror.y)
             self.mirror = None
-            self.diamond = ItemToEat(self.snake, "diamond")
+            self.diamond = ItemToEat(self.snake, "diamond", self.diamond_position, self.mushroom_position,
+                                     self.mirror_position, self.apple_position)
             self.previous_diamond_position = (self.diamond.x, self.diamond.y)
             self.diamond = None
+
         self.paused = False
         self.current_option = 0
         self.movement_timer = 0
@@ -824,40 +833,58 @@ class GameView(arcade.View):
                     else:
                         pass
 
-    def party_mode_prep(self):
-        self.mushroom = ItemToEat(self.snake, "mushroom", self.previous_mushroom_position)
-        mushroom_timer = threading.Timer(20.0, lambda: self.delete_item("mushroom"))
-        mushroom_timer.start()
-
-        self.mirror = ItemToEat(self.snake, "mirror", self.previous_mushroom_position)
-        mirror_timer = threading.Timer(20.0, lambda: self.delete_item("mirror"))
-        mirror_timer.start()
-
-        self.diamond = ItemToEat(self.snake, "diamond", self.previous_mushroom_position)
-        diamond_timer = threading.Timer(20.0, lambda: self.delete_item("diamond"))
-        diamond_timer.start()
+    def get_position(self, item_name):
+        if item_name == "mushroom":
+            if self.mushroom:
+                return self.mushroom.x, self.mushroom.y
+            else:
+                return None
+        elif item_name == "mirror":
+            if self.mirror:
+                return self.mirror.x, self.mirror.y
+            else:
+                return None
+        elif item_name == "diamond":
+            if self.diamond:
+                return self.diamond.x, self.diamond.y
+            else:
+                return None
+        elif item_name == "apple":
+            if self.apple:
+                return self.apple.x, self.apple.y
+            else:
+                return None
 
     def update(self, delta_time):
         if not self.paused and self.snake.is_snake_moving:
             self.movement_timer += delta_time
             if self.movement_timer >= self.move_border:
+                self.apple_position = self.get_position("apple")
                 self.snake.is_snake_moving = True
                 self.snake.move()
 
-                if self.party_mode and not self.mushroom and random.randint(1, 70) == 1:
-                    self.mushroom = ItemToEat(self.snake, "mushroom", self.previous_mushroom_position)
-                    mushroom_timer = threading.Timer(random.uniform(3, 15), lambda: self.delete_item("mushroom"))
-                    mushroom_timer.start()
+                if self.party_mode:
+                    self.mushroom_position = self.get_position("mushroom")
+                    self.mirror_position = self.get_position("mirror")
+                    self.diamond_position = self.get_position("diamond")
 
-                if self.party_mode and not self.mirror and random.randint(1, 50) == 1:
-                    self.mirror = ItemToEat(self.snake, "mirror", self.previous_mushroom_position)
-                    mirror_timer = threading.Timer(random.uniform(3, 15), lambda: self.delete_item("mirror"))
-                    mirror_timer.start()
+                    if not self.mushroom and random.randint(1, 70) == 1:
+                        self.mushroom = ItemToEat(self.snake, "mushroom", self.diamond_position, self.mushroom_position,
+                                                  self.mirror_position, self.apple_position)
+                        mushroom_timer = threading.Timer(random.uniform(3, 15), lambda: self.delete_item("mushroom"))
+                        mushroom_timer.start()
 
-                if self.party_mode and not self.diamond and random.randint(1, 150) == 1:
-                    self.diamond = ItemToEat(self.snake, "diamond", self.previous_mushroom_position)
-                    diamond_timer = threading.Timer(random.uniform(2, 10), lambda: self.delete_item("diamond"))
-                    diamond_timer.start()
+                    if not self.mirror and random.randint(1, 50) == 1:
+                        self.mirror = ItemToEat(self.snake, "mirror", self.diamond_position, self.mushroom_position,
+                                                self.mirror_position, self.apple_position)
+                        mirror_timer = threading.Timer(random.uniform(3, 15), lambda: self.delete_item("mirror"))
+                        mirror_timer.start()
+
+                    if not self.diamond and random.randint(1, 150) == 1:
+                        self.diamond = ItemToEat(self.snake, "diamond", self.diamond_position, self.mushroom_position,
+                                                 self.mirror_position, self.apple_position)
+                        diamond_timer = threading.Timer(random.uniform(2, 10), lambda: self.delete_item("diamond"))
+                        diamond_timer.start()
 
                 if self.party_mode and self.mushroom is not None:
                     if self.snake.eat_item(self.mushroom):
@@ -900,7 +927,8 @@ class GameView(arcade.View):
                         self.snake.score += 100
                         self.snake.apple_count += 1
                         self.previous_Item_to_eat_position = (self.apple.x, self.apple.y)
-                        self.apple = ItemToEat(self.snake, "Apple", self.previous_Item_to_eat_position)
+                        self.apple = ItemToEat(self.snake, "Apple", self.diamond_position, self.mushroom_position,
+                                               self.mirror_position, self.apple_position)
 
                 except NoValidItemToEatPositionError:
                     save_score_view = SaveScoreView(self.snake.score, self.party_mode, self.bgm, self.snake.apple_count,
