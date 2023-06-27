@@ -4,8 +4,8 @@ from background_music import *
 import re
 import time
 import threading
+import pyglet.input
 
-# Deklaration & Initialisierung der Konstanten
 SCREEN_WIDTH = 800
 SCREEN_HEIGHT = 600
 BLOCK_SIZE = 40
@@ -18,9 +18,8 @@ CAPTION = "Navigiere, Wachse, Überlebe!"
 SUB_HEADING = "Ein Projekt von Abdelrhman Hassan, Adrian Birlin, Christian Ambs & Manuel Heer"
 
 
-# Übersicht über die verschiedenen Menüs/Screens
 class StartView(arcade.View):
-    def __init__(self):
+    def __init__(self, controller, bgm=None):
         super().__init__()
         self.current_option = 0
         self.menu_items = [
@@ -31,16 +30,37 @@ class StartView(arcade.View):
         ]
         self.hovered_item = None
         self.current_option = 0
-        self.bgm = BGM(0)
+        self.bgm = bgm
         self.sound_effect_menu = BGM(5)
         self.click_effect_menu = BGM(8)
-        self.bgm.play_music(volume=0.3, loop=True)
+        self.controller = controller
+
+        if self.controller:
+            @self.controller.event
+            def on_dpad_motion(controller, dpleft, dpright, dpup, dpdown):
+                if dpup:
+                    if self.current_option > 0:
+                        self.sound_effect_menu.play_music(volume=0.1, loop=False)
+                        self.current_option -= 1
+                elif dpdown:
+                    if self.current_option < len(self.menu_items) - 1:
+                        self.sound_effect_menu.play_music(volume=0.1, loop=False)
+                        self.current_option += 1
+                elif dpleft:
+                    pass
+                elif dpright:
+                    pass
+                self.hovered_item = self.current_option
+
+            @self.controller.event
+            def on_button_press(controller, button):
+                if button == "a":  # Assuming "A" button is similar to 'Enter' action
+                    self.menu()
+                elif button == "b":  # Assuming "A" button is similar to 'Enter' action
+                    pass
 
     def on_show_view(self):
         arcade.set_background_color(arcade.color.AO)
-
-    def on_hide_view(self):
-        self.bgm.stop_audio()
 
     def on_draw(self):
         arcade.start_render()
@@ -109,6 +129,7 @@ class StartView(arcade.View):
         arcade.draw_triangle_filled(
             cursor_x, cursor_y, cursor_x - 10, cursor_y + 10, cursor_x - 10, cursor_y - 10, cursor_color
         )
+
     def get_item_color(self, item_index):
         if self.current_option == item_index or self.hovered_item == item_index:
             return 96, 124, 252
@@ -162,13 +183,13 @@ class StartView(arcade.View):
     def menu(self):
         self.click_effect_menu.play_music(volume=0.1, loop=False)
         if self.current_option == 0:
-            mode_selection_view = ModeSelectionView("GameView")
+            mode_selection_view = ModeSelectionView("GameView", self.controller, self.bgm)
             self.window.show_view(mode_selection_view)
         elif self.current_option == 1:
-            mode_selection_view = ModeSelectionView("HighScoreView")
+            mode_selection_view = ModeSelectionView("HighScoreView", self.controller)
             self.window.show_view(mode_selection_view)
         elif self.current_option == 2:
-            instruction_view = InstructionsView()
+            instruction_view = InstructionsView(self.controller)
             self.window.show_view(instruction_view)
         elif self.current_option == 3:
             self.exit_game()
@@ -178,7 +199,7 @@ class StartView(arcade.View):
 
 
 class ModeSelectionView(arcade.View):
-    def __init__(self, next_view):
+    def __init__(self, next_view, controller, bgm=None):
         super().__init__()
         self.current_option = 0
         self.menu_items = [
@@ -191,7 +212,34 @@ class ModeSelectionView(arcade.View):
         self.click_effect_menu = BGM(8)
         self.hovered_item = -1
         self.next_view = next_view
+        self.bgm = bgm
+        self.controller = controller
 
+        if self.controller:
+            @self.controller.event
+            def on_dpad_motion(controller, dpleft, dpright, dpup, dpdown):
+                if dpup:
+                    if self.current_option > 0:
+                        self.sound_effect_menu.play_music(volume=0.1, loop=False)
+                        self.current_option -= 1
+                elif dpdown:
+                    if self.current_option < len(self.menu_items) - 1:
+                        self.sound_effect_menu.play_music(volume=0.1, loop=False)
+                        self.current_option += 1
+                elif dpleft:
+                    pass
+                elif dpright:
+                    pass
+                self.hovered_item = self.current_option
+
+            @self.controller.event
+            def on_button_press(controller, button):
+                if button == "a":  # Assuming "A" button is similar to 'Enter' action
+                    self.menu()
+                elif button == "b":
+                    self.click_effect_menu.play_music(volume=0.1, loop=False)
+                    start_view = StartView(self.controller)
+                    self.window.show_view(start_view)
 
     def on_show(self):
         arcade.set_background_color(arcade.color.AO)
@@ -275,25 +323,8 @@ class ModeSelectionView(arcade.View):
                 self.sound_effect_menu.play_music(volume=0.1, loop=False)
                 self.current_option += 1
         elif key == arcade.key.ENTER:
-            self.click_effect_menu.play_music(volume=0.1, loop=False)
-            if self.current_option == 0:
-                if self.next_view == "GameView":
-                    game_view = GameView(party_mode=self.party_mode)
-                    self.window.show_view(game_view)
-                else:
-                    high_scores_view = HighScoresView(self.party_mode)
-                    self.window.show_view(high_scores_view)
-            elif self.current_option == 1:
-                self.party_mode = True
-                if self.next_view == "GameView":
-                    game_view = GameView(party_mode=self.party_mode)
-                    self.window.show_view(game_view)
-                else:
-                    high_scores_view = HighScoresView(self.party_mode)
-                    self.window.show_view(high_scores_view)
-            elif self.current_option == 2:
-                start_view = StartView()
-                self.window.show_view(start_view)
+            if self.hovered_item is not None:
+                self.menu()
 
     def on_mouse_motion(self, x, y, dx, dy):
         for i, _ in enumerate(self.menu_items):
@@ -315,35 +346,62 @@ class ModeSelectionView(arcade.View):
 
     def on_mouse_press(self, x, y, button, modifiers):
         if self.hovered_item is not None:
-            self.click_effect_menu.play_music(volume=0.1, loop=False)
-            if self.hovered_item == 0:
-                if self.next_view == "GameView":
-                    game_view = GameView(party_mode=self.party_mode)
-                    self.window.show_view(game_view)
-                else:
-                    high_scores_view = HighScoresView(self.party_mode)
-                    self.window.show_view(high_scores_view)
-            elif self.hovered_item == 1:
-                self.party_mode = True
-                if self.next_view == "GameView":
-                    game_view = GameView(party_mode=self.party_mode)
-                    self.window.show_view(game_view)
-                else:
-                    high_scores_view = HighScoresView(self.party_mode)
-                    self.window.show_view(high_scores_view)
-            elif self.hovered_item == 2:
-                start_view = StartView()
-                self.window.show_view(start_view)
+            self.menu()
+
+    def menu(self):
+        self.click_effect_menu.play_music(volume=0.1, loop=False)
+        if self.current_option == 0:
+            if self.next_view == "GameView":
+                game_view = GameView(self.controller, party_mode=self.party_mode)
+                self.window.show_view(game_view)
+            else:
+                high_scores_view = HighScoresView(self.controller, self.party_mode)
+                self.window.show_view(high_scores_view)
+        elif self.current_option == 1:
+            self.party_mode = True
+            if self.next_view == "GameView":
+                game_view = GameView(self.controller, party_mode=self.party_mode)
+                self.window.show_view(game_view)
+            else:
+                high_scores_view = HighScoresView(self.controller, self.party_mode)
+                self.window.show_view(high_scores_view)
+        elif self.current_option == 2:
+            start_view = StartView(self.controller)
+            self.window.show_view(start_view)
 
 
 class InstructionsView(arcade.View):
-    def __init__(self):
+    def __init__(self, controller):
         super().__init__()
         self.current_option = 0
         self.arrow_keys = arcade.load_texture("images/ArrowKeys.png")
         self.wasd_keys = arcade.load_texture("images/WASDKeys.png")
         self.sound_effect_menu = BGM(3)
         self.click_effect_menu = BGM(8)
+        self.controller = controller
+
+        if self.controller:
+            @self.controller.event
+            def on_dpad_motion(controller, dpleft, dpright, dpup, dpdown):
+                if dpup:
+                    pass
+                elif dpdown:
+                    pass
+                elif dpleft:
+                    pass
+                elif dpright:
+                    pass
+
+            @self.controller.event
+            def on_button_press(controller, button):
+                if button == "a":  # Assuming "A" button is similar to 'Enter' action
+                    self.click_effect_menu.play_music(volume=0.1, loop=False)
+                    start_view = StartView(self.controller)
+                    self.window.show_view(start_view)
+                elif button == "b":
+                    self.click_effect_menu.play_music(volume=0.1, loop=False)
+                    start_view = StartView(self.controller)
+                    self.window.show_view(start_view)
 
     def on_show_view(self):
         arcade.set_background_color(arcade.color.AO)
@@ -400,17 +458,17 @@ class InstructionsView(arcade.View):
     def on_key_press(self, key, modifiers):
         if key == arcade.key.ENTER:
             self.click_effect_menu.play_music(volume=0.1, loop=False)
-            start_view = StartView()
+            start_view = StartView(self.controller)
             self.window.show_view(start_view)
 
     def on_mouse_press(self, x, y, button, modifiers):
         self.click_effect_menu.play_music(volume=0.1, loop=False)
-        start_view = StartView()
+        start_view = StartView(self.controller)
         self.window.show_view(start_view)
 
 
 class HighScoresView(arcade.View):
-    def __init__(self, party_mode):
+    def __init__(self, controller, party_mode):
         super().__init__()
         self.current_option = 0
         self.scores = []
@@ -419,6 +477,27 @@ class HighScoresView(arcade.View):
             self.game_mode = "Party"
         else:
             self.game_mode = "Normal"
+        self.controller = controller
+
+        if self.controller:
+            @self.controller.event
+            def on_dpad_motion(controller, dpleft, dpright, dpup, dpdown):
+                if dpup:
+                    pass
+                elif dpdown:
+                    pass
+                elif dpleft:
+                    pass
+                elif dpright:
+                    pass
+
+            @self.controller.event
+            def on_button_press(controller, button):
+                if button == "a":  # Assuming "A" button is similar to 'Enter' action
+                    mode_selection_view = ModeSelectionView("HighScoreView", self.controller)
+                    self.window.show_view(mode_selection_view)
+                elif button == "b":
+                    pass
 
     def on_show_view(self):
         arcade.set_background_color(arcade.color.AO)
@@ -475,20 +554,21 @@ class HighScoresView(arcade.View):
 
     def on_key_press(self, key, modifiers):
         if key == arcade.key.ENTER:
-            mode_selection_view = ModeSelectionView("HighScoreView")
+            mode_selection_view = ModeSelectionView("HighScoreView", self.controller)
             self.window.show_view(mode_selection_view)
 
     def on_mouse_press(self, x, y, button, modifiers):
-        mode_selection_view = ModeSelectionView("HighScoreView")
+        mode_selection_view = ModeSelectionView("HighScoreView", self.controller)
         self.window.show_view(mode_selection_view)
 
 
 class GameView(arcade.View):
-    def __init__(self, party_mode=False):
+    def __init__(self, controller, party_mode=False):
         super().__init__()
+        self.controller = controller
         self.snake = Snake()
-        self.Item_to_eat = ItemToEat(self.snake, "Apple")
-        self.previous_Item_to_eat_position = (self.Item_to_eat.x, self.Item_to_eat.y)
+        self.apple = ItemToEat(self.snake, "Apple")
+        self.previous_Item_to_eat_position = (self.apple.x, self.apple.y)
         if party_mode:
             self.mushroom = ItemToEat(self.snake, "Mushroom")
             self.previous_mushroom_position = (self.mushroom.x, self.mushroom.y)
@@ -505,31 +585,106 @@ class GameView(arcade.View):
         self.move_border = 0.15
         self.mirrored_control = False
         self.input_cooldown = False
+        self.main_menu_bgm = BGM(0)
         self.bgm = BGM(1)
         self.sound_effect_apple = BGM(3)
         self.sound_effect_mirror = BGM(6)
         self.sound_effect_diamond = BGM(7)
         self.sound_effect_mushroom = BGM(9)
         self.sound_effect_wall = BGM(4)
+        self.sound_effect_menu = BGM(5)
+        self.click_effect_menu = BGM(8)
+        self.game_over_bgm = BGM(2)
         self.bgm.play_music(volume=0.3, loop=True)
         self.party_mode = party_mode
         self.star = arcade.load_texture("images/star.png")
-        self.total_time = 0.0
-        self.timer_text = arcade.Text(
-            text="00:00:00",
-            start_x=SCREEN_WIDTH // 2,
-            start_y=SCREEN_HEIGHT // 2 - 50,
-            color=arcade.color.WHITE,
-            font_size=100,
-            anchor_x="center",
-        )
+
+        if self.controller:
+            @self.controller.event
+            def on_dpad_motion(controller, dpleft, dpright, dpup, dpdown):
+                if self.paused:
+                    pause_view = self.window.current_view
+                    if isinstance(pause_view, PauseView):
+                        if dpup:
+                            if pause_view.current_option > 0:
+                                self.sound_effect_menu.play_music(volume=0.1, loop=False)
+                                pause_view.update_option(pause_view.current_option - 1)
+                        if dpdown:
+                            if pause_view.current_option < 2:
+                                self.sound_effect_menu.play_music(volume=0.1, loop=False)
+                                pause_view.update_option(pause_view.current_option + 1)
+                        if dpleft:
+                            pass
+                        if dpright:
+                            pass
+                        self.hovered_item = self.current_option
+                else:
+                    if not self.input_cooldown:
+                        if self.mirrored_control:
+                            if dpup:
+                                self.snake.change_direction("down")
+                                self.snake.is_snake_moving = True
+                            elif dpdown:
+                                self.snake.change_direction("up")
+                                self.snake.is_snake_moving = True
+                            elif dpleft:
+                                self.snake.change_direction("right")
+                                self.snake.is_snake_moving = True
+                            elif dpright:
+                                self.snake.change_direction("left")
+                                self.snake.is_snake_moving = True
+                        else:
+                            if dpup:
+                                self.snake.change_direction("up")
+                                self.snake.is_snake_moving = True
+                            elif dpdown:
+                                self.snake.change_direction("down")
+                                self.snake.is_snake_moving = True
+                            elif dpleft:
+                                self.snake.change_direction("left")
+                                self.snake.is_snake_moving = True
+                            elif dpright:
+                                self.snake.change_direction("right")
+                                self.snake.is_snake_moving = True
+
+
+            @self.controller.event
+            def on_button_press(controller, button):
+                if self.paused:
+                    pause_view = self.window.current_view
+                    if isinstance(pause_view, PauseView):
+                        if button == "a":
+                            self.sound_effect_menu.play_music(volume=0.1, loop=False)
+                            if pause_view.current_option == 0:
+                                self.paused = False
+                                self.bgm.play_music(volume=0.3, loop=True)
+                                self.window.show_view(self)
+                            elif pause_view.current_option == 1:
+                                self.main_menu_bgm.play_music(volume=0.3, loop=True)
+                                start_view = StartView(self.controller, self.main_menu_bgm)
+                                self.window.show_view(start_view)
+                            elif pause_view.current_option == 2:
+                                game_over_view = GameOverView(self.snake.score, self.party_mode,
+                                                              self.game_over_bgm,
+                                                              self.snake.apple_count, self.controller)
+                                self.game_over_bgm.play_music(volume=0.1, loop=True)
+                                self.window.show_view(game_over_view)
+                else:
+                    if not self.input_cooldown:
+                        if button == "b":
+                            self.sound_effect_menu.play_music(volume=0.1, loop=False)
+                            self.paused = True
+                            pause_view = PauseView(self)
+                            self.window.show_view(pause_view)
+                        elif button == "a":
+                            pass
 
     def on_show_view(self):
         arcade.set_background_color(arcade.color.BLACK)
 
     def draw_apple_count(self):
         # Set the font style, size, and color
-        arcade.draw_texture_rectangle(460, SCREEN_HEIGHT - SCOREBOARD_HEIGHT // 2, 50, 50, self.Item_to_eat.Item_to_eat)
+        arcade.draw_texture_rectangle(460, SCREEN_HEIGHT - SCOREBOARD_HEIGHT // 2, 50, 50, self.apple.Item_to_eat)
         arcade.draw_text(str(self.snake.apple_count), 490, SCREEN_HEIGHT - SCOREBOARD_HEIGHT // 2 - 20,
                          arcade.color.WHITE, font_size=36)
 
@@ -547,7 +702,6 @@ class GameView(arcade.View):
             arcade.color.AVOCADO)
         self.draw_score_count()
         self.draw_apple_count()
-        self.timer_text.draw()
 
         # Draw the game area
         game_height = SCREEN_HEIGHT - SCOREBOARD_HEIGHT
@@ -576,7 +730,7 @@ class GameView(arcade.View):
                     )
 
         self.snake.draw()
-        self.Item_to_eat.draw()
+        self.apple.draw()
         if self.party_mode and self.mushroom is not None:
             self.mushroom.draw()
         if self.party_mode and self.mirror is not None:
@@ -586,25 +740,13 @@ class GameView(arcade.View):
 
     def on_key_press(self, key, modifiers):
         if self.paused:
-            pause_view = self.window.current_view
-            if isinstance(pause_view, PauseView):  # Check if current view is PauseView
-                if key == arcade.key.UP or key == arcade.key.W:
-                    pause_view.update_option(pause_view.current_option - 1)
-                elif key == arcade.key.DOWN or key == arcade.key.S:
-                    pause_view.update_option(pause_view.current_option + 1)
-                elif key == arcade.key.ENTER:
-                    if pause_view.current_option == 0:
-                        self.paused = False
-                        self.window.show_view(self)
-                    elif pause_view.current_option == 1:
-                        start_view = StartView()
-                        self.window.show_view(start_view)
+            # Handle pause logic
+            pass
         else:
             if not self.input_cooldown:
                 if key == arcade.key.ESCAPE or key == arcade.key.RETURN:
-                    self.paused = True
-                    pause_view = PauseView(self)
-                    self.window.show_view(pause_view)
+                    # Handle ESCAPE/RETURN logic
+                    pass
                 else:
                     if self.mirrored_control:
                         directions = {
@@ -628,9 +770,24 @@ class GameView(arcade.View):
                             arcade.key.DOWN: "down",
                             arcade.key.S: "down",
                         }
-                    self.snake.change_direction(directions[key])
-                    self.snake.is_snake_moving = True
-                self.input_cooldown = True
+                    if key in directions:
+                        self.snake.change_direction(directions[key])
+                        self.snake.is_snake_moving = True
+                    else:
+                        pass
+
+    def party_mode_prep(self):
+        self.mushroom = ItemToEat(self.snake, "mushroom", self.previous_mushroom_position)
+        mushroom_timer = threading.Timer(20.0, lambda: self.delete_item("mushroom"))
+        mushroom_timer.start()
+
+        self.mirror = ItemToEat(self.snake, "mirror", self.previous_mushroom_position)
+        mirror_timer = threading.Timer(20.0, lambda: self.delete_item("mirror"))
+        mirror_timer.start()
+
+        self.diamond = ItemToEat(self.snake, "diamond", self.previous_mushroom_position)
+        diamond_timer = threading.Timer(20.0, lambda: self.delete_item("diamond"))
+        diamond_timer.start()
 
     def update(self, delta_time):
         if not self.paused and self.snake.is_snake_moving:
@@ -639,19 +796,19 @@ class GameView(arcade.View):
                 self.snake.is_snake_moving = True
                 self.snake.move()
 
-                if self.party_mode and random.randint(1, 4) == 2:
+                if self.party_mode and not self.mushroom and random.randint(1, 4) == 2:
                     self.mushroom = ItemToEat(self.snake, "mushroom", self.previous_mushroom_position)
-                    mushroom_timer = threading.Timer(20.0, lambda: self.delete_item("mushroom"))
+                    mushroom_timer = threading.Timer(random.uniform(3, 15), lambda: self.delete_item("mushroom"))
                     mushroom_timer.start()
 
-                if self.party_mode and random.randint(1, 8) == 2:
+                if self.party_mode and not self.mirror and random.randint(1, 8) == 2:
                     self.mirror = ItemToEat(self.snake, "mirror", self.previous_mushroom_position)
-                    mirror_timer = threading.Timer(20.0, lambda: self.delete_item("mirror"))
+                    mirror_timer = threading.Timer(random.uniform(3, 15), lambda: self.delete_item("mirror"))
                     mirror_timer.start()
 
-                if self.party_mode and random.randint(1, 12) == 2:
+                if self.party_mode and not self.diamond and random.randint(1, 12) == 2:
                     self.diamond = ItemToEat(self.snake, "diamond", self.previous_mushroom_position)
-                    diamond_timer = threading.Timer(20.0, lambda: self.delete_item("diamond"))
+                    diamond_timer = threading.Timer(random.uniform(2, 10), lambda: self.delete_item("diamond"))
                     diamond_timer.start()
 
                 if self.party_mode and self.mushroom is not None:
@@ -664,40 +821,41 @@ class GameView(arcade.View):
                         self.previous_mushroom_position = (self.mushroom.x, self.mushroom.y)
                         self.mushroom = None
 
-                if self.party_mode and self.mirror is not None:
-                    if self.snake.eat_item(self.mirror):
-                        self.sound_effect_mirror.play_music(volume=0.5, loop=False)
-                        if self.mirrored_control:
-                            self.mirrored_control = False
-                        else:
-                            self.mirrored_control = True
-                        self.previous_mirror_position = (self.mirror.x, self.mirror.y)
-                        self.mirror = None
-
-                if self.party_mode and self.diamond is not None:
-                    if self.snake.eat_item(self.diamond):
-                        self.sound_effect_diamond.play_music(volume=0.5, loop=False)
-                        self.snake.score += 500
-                        self.previous_diamond_position = (self.diamond.x, self.diamond.y)
-                        self.diamond = None
-
-                if self.snake.check_collision():
-                    self.sound_effect_wall.play_music(volume=0.5, loop=False)
-                    self.bgm.stop_audio()
-                    time.sleep(2)
-                    save_score_view = SaveScoreView(self.snake.score, self.party_mode, self.bgm, self.snake.apple_count)
-                    self.window.show_view(save_score_view)
-
                 try:
-                    if self.snake.eat_item(self.Item_to_eat):
+                    if self.party_mode and self.mirror is not None:
+                        if self.snake.eat_item(self.mirror):
+                            self.sound_effect_mirror.play_music(volume=0.5, loop=False)
+                            if self.mirrored_control:
+                                self.mirrored_control = False
+                            else:
+                                self.mirrored_control = True
+                            self.previous_mirror_position = (self.mirror.x, self.mirror.y)
+                            self.mirror = None
+
+                    if self.party_mode and self.diamond is not None:
+                        if self.snake.eat_item(self.diamond):
+                            self.sound_effect_diamond.play_music(volume=0.5, loop=False)
+                            self.snake.score += 500
+                            self.previous_diamond_position = (self.diamond.x, self.diamond.y)
+                            self.diamond = None
+
+                    if self.snake.check_collision():
+                        self.sound_effect_wall.play_music(volume=0.5, loop=False)
+                        self.bgm.stop_audio()
+                        time.sleep(2)
+                        save_score_view = SaveScoreView(self.snake.score, self.party_mode, self.bgm,
+                                                        self.snake.apple_count, self.controller)
+                        self.window.show_view(save_score_view)
+
+                    if self.snake.eat_item(self.apple):
                         self.sound_effect_apple.play_music(volume=0.5, loop=False)
                         self.snake.score += 100
                         self.snake.apple_count += 1
-                        self.previous_Item_to_eat_position = (self.Item_to_eat.x, self.Item_to_eat.y)
-                        self.Item_to_eat = ItemToEat(self.snake, "Apple", self.previous_Item_to_eat_position)
+                        self.previous_Item_to_eat_position = (self.apple.x, self.apple.y)
+                        self.apple = ItemToEat(self.snake, "Apple", self.previous_Item_to_eat_position)
 
                 except NoValidItemToEatPositionError:
-                    save_score_view = SaveScoreView(self.snake.score, self.bgm, self.snake.apple_count)
+                    save_score_view = SaveScoreView(self.snake.score, self.bgm, self.snake.apple_count, self.controller)
                     self.window.show_view(save_score_view)
 
                 self.snake.body.insert(0, (self.snake.x, self.snake.y))
@@ -738,6 +896,9 @@ class PauseView(arcade.View):
         self.click_effect_menu = BGM(8)
         self.bgm.stop_audio()
         self.game_over_bgm = BGM(2)
+        self.main_menu_bgm = BGM(0)
+        self.controller = game_view.controller
+
 
     def on_show_view(self):
         arcade.set_background_color(arcade.color.BLACK)
@@ -843,15 +1004,17 @@ class PauseView(arcade.View):
                 self.game_view.input_cooldown = False  # Reset input cooldown
                 self.window.show_view(self.game_view)
             elif self.current_option == 1:
-                start_view = StartView()
+                self.main_menu_bgm.play_music(volume=0.3, loop=True)
+                start_view = StartView(self.controller, self.main_menu_bgm)
                 self.window.show_view(start_view)
             elif self.current_option == 2:
                 game_over_view = GameOverView(self.game_view.snake.score, self.game_view.party_mode, self.game_over_bgm,
-                                              self.game_view.snake.apple_count)
+                                              self.game_view.snake.apple_count, self.controller)
                 self.game_over_bgm.play_music(volume=0.1, loop=True)
                 self.window.show_view(game_over_view)
 
         self.hovered_item = self.current_option
+
 
     def on_mouse_motion(self, x, y, dx, dy):
         for i, _ in enumerate(self.menu_items):
@@ -891,20 +1054,22 @@ class PauseView(arcade.View):
                 and SCREEN_HEIGHT / 2 - 180 < y < SCREEN_HEIGHT / 2 - 120
         ):
             self.click_effect_menu.play_music(volume=0.1, loop=False)
-            start_view = StartView()
+            self.main_menu_bgm.play_music(volume=0.3, loop=True)
+            start_view = StartView(self.controller, self.main_menu_bgm)
             self.window.show_view(start_view)
         elif (
                 SCREEN_WIDTH / 2 - 40 < x < SCREEN_WIDTH / 2 + 40
                 and SCREEN_HEIGHT / 2 - 230 < y < SCREEN_HEIGHT / 2 - 170
         ):
             self.click_effect_menu.play_music(volume=0.1, loop=False)
-            game_over_view = GameOverView(self.game_view.snake.score, self.game_view.party_mode, self.game_over_bgm, self.game_view.snake.apple_count)
+            game_over_view = GameOverView(self.game_view.snake.score, self.game_view.party_mode, self.game_over_bgm,
+                                          self.game_view.snake.apple_count, self.controller)
             self.game_over_bgm.play_music(volume=0.1, loop=True)
             self.window.show_view(game_over_view)
 
 
 class SaveScoreView(arcade.View):
-    def __init__(self, score, party_mode, game_view_bgm, apple_count):
+    def __init__(self, score, party_mode, game_view_bgm, apple_count, controller):
         super().__init__()
         self.score = score
         self.current_option = 0
@@ -921,6 +1086,39 @@ class SaveScoreView(arcade.View):
         self.game_bgm = game_view_bgm
         self.game_bgm.stop_audio()
         self.click_effect_menu = BGM(8)
+        self.controller = controller
+
+        if self.controller:
+            @self.controller.event
+            def on_dpad_motion(controller, dpleft, dpright, dpup, dpdown):
+                if dpup:
+                    pass
+                elif dpdown:
+                    pass
+                elif dpleft:
+                    if self.current_option != 0:
+                        self.current_option = 0
+                        self.sound_effect_menu.play_music(volume=0.1, loop=False)
+                elif dpright:
+                    if self.current_option != 1:
+                        self.current_option = 1
+                        self.sound_effect_menu.play_music(volume=0.1, loop=False)
+                self.hovered_item = self.current_option
+
+            @self.controller.event
+            def on_button_press(controller, button):
+                if button == "a":  # Assuming "A" button is similar to 'Enter' action
+                    self.click_effect_menu.play_music(volume=0.1, loop=False)
+                    if self.current_option == 0:
+                        save_name_view = SaveScoreNameView(self.score, self.party_mode, self.bgm, self.apple_count,
+                                                           self.controller)
+                        self.window.show_view(save_name_view)
+                    else:
+                        game_over_view = GameOverView(self.score, self.party_mode, self.bgm, self.apple_count,
+                                                      self.controller)
+                        self.window.show_view(game_over_view)
+                elif button == "b":  # Assuming "A" button is similar to 'Enter' action
+                    pass
 
     def on_show_view(self):
         arcade.set_background_color(arcade.color.BLACK)
@@ -990,10 +1188,11 @@ class SaveScoreView(arcade.View):
         elif key == arcade.key.ENTER:
             self.click_effect_menu.play_music(volume=0.1, loop=False)
             if self.current_option == 0:
-                save_name_view = SaveScoreNameView(self.score, self.party_mode, self.bgm, self.apple_count)
+                save_name_view = SaveScoreNameView(self.score, self.party_mode, self.bgm, self.apple_count,
+                                                   self.controller)
                 self.window.show_view(save_name_view)
             else:
-                game_over_view = GameOverView(self.score, self.party_mode, self.bgm, self.apple_count)
+                game_over_view = GameOverView(self.score, self.party_mode, self.bgm, self.apple_count, self.controller)
                 self.window.show_view(game_over_view)
 
         self.hovered_item = self.current_option
@@ -1022,19 +1221,19 @@ class SaveScoreView(arcade.View):
                 and SCREEN_HEIGHT / 2 - 200 < y < SCREEN_HEIGHT / 2 - 170
         ):
             self.click_effect_menu.play_music(volume=0.1, loop=False)
-            save_name_view = SaveScoreNameView(self.score, self.party_mode, self.bgm, self.apple_count)
+            save_name_view = SaveScoreNameView(self.score, self.party_mode, self.bgm, self.apple_count, self.controller)
             self.window.show_view(save_name_view)
         elif (
                 SCREEN_WIDTH / 2 + 80 < x < SCREEN_WIDTH / 2 + 130
                 and SCREEN_HEIGHT / 2 - 200 < y < SCREEN_HEIGHT / 2 - 170
         ):
             self.click_effect_menu.play_music(volume=0.1, loop=False)
-            game_over_view = GameOverView(self.score, self.party_mode, self.bgm, self.apple_count)
+            game_over_view = GameOverView(self.score, self.party_mode, self.bgm, self.apple_count, self.controller)
             self.window.show_view(game_over_view)
 
 
 class SaveScoreNameView(arcade.View):
-    def __init__(self, score, party_mode, bgm, apple_count):
+    def __init__(self, score, party_mode, bgm, apple_count, controller):
         super().__init__()
         self.score = score
         self.player_name = ""
@@ -1045,7 +1244,26 @@ class SaveScoreNameView(arcade.View):
         self.game_mode = "Normal"
         if party_mode:
             self.game_mode = "Party"
+        self.controller = controller
 
+        if self.controller:
+            @self.controller.event
+            def on_dpad_motion(controller, dpleft, dpright, dpup, dpdown):
+                if dpup:
+                    pass
+                elif dpdown:
+                    pass
+                elif dpleft:
+                    pass
+                elif dpright:
+                    pass
+
+            @self.controller.event
+            def on_button_press(controller, button):
+                if button == "a":  # Assuming "A" button is similar to 'Enter' action
+                    pass
+                elif button == "b":  # Assuming "A" button is similar to 'Enter' action
+                    pass
 
     def on_show_view(self):
         arcade.set_background_color(arcade.color.BLACK)
@@ -1099,7 +1317,7 @@ class SaveScoreNameView(arcade.View):
             self.player_name = self.player_name[:-1]
         elif key == arcade.key.ENTER:
             self.save_score()
-            game_over_view = GameOverView(self.score, self.party_mode, self.bgm, self.apple_count)
+            game_over_view = GameOverView(self.score, self.party_mode, self.bgm, self.apple_count, self.controller)
             self.window.show_view(game_over_view)
         else:
             character = chr(key)
@@ -1118,13 +1336,13 @@ class SaveScoreNameView(arcade.View):
             file.write(f"{self.player_name},{self.score}\n")
 
     def on_mouse_press(self, x, y, button, modifiers):
-        self.save_score(self.game_mode)
-        game_over_view = GameOverView(self.score, self.party_mode, self.bgm, self.apple_count)
+        self.save_score()
+        game_over_view = GameOverView(self.score, self.party_mode, self.bgm, self.apple_count, self.controller)
         self.window.show_view(game_over_view)
 
 
 class GameOverView(arcade.View):
-    def __init__(self, score, party_mode, bgm, apple_count):
+    def __init__(self, score, party_mode, bgm, apple_count, controller):
         super().__init__()
         self.snake = Snake()
         self.Item_to_eat = ItemToEat(self.snake)
@@ -1139,9 +1357,44 @@ class GameOverView(arcade.View):
         self.current_option = 0
         self.party_mode = party_mode
         self.bgm = bgm
+        self.main_menu_bgm = BGM(0)
         self.sound_effect_menu = BGM(5)
         self.click_effect_menu = BGM(8)
         self.star = arcade.load_texture("images/star.png")
+        self.controller = controller
+
+        if self.controller:
+            @self.controller.event
+            def on_dpad_motion(controller, dpleft, dpright, dpup, dpdown):
+                if dpup:
+                    if self.current_option > 0:
+                        self.sound_effect_menu.play_music(volume=0.1, loop=False)
+                        self.current_option -= 1
+                elif dpdown:
+                    if self.current_option < 2:
+                        self.sound_effect_menu.play_music(volume=0.1, loop=False)
+                        self.current_option += 1
+                elif dpleft:
+                    pass
+                elif dpright:
+                    pass
+                self.hovered_item = self.current_option
+
+            @self.controller.event
+            def on_button_press(controller, button):
+                if button == "a":  # Assuming "A" button is similar to 'Enter' action
+                    self.click_effect_menu.play_music(volume=0.1, loop=False)
+                    if self.current_option == 0:
+                        game_view = GameView(self.controller, party_mode=self.party_mode)
+                        self.window.show_view(game_view)
+                    elif self.current_option == 1:
+                        self.main_menu_bgm.play_music(volume=0.3, loop=True)
+                        start_view = StartView(self.controller, self.main_menu_bgm)
+                        self.window.show_view(start_view)
+                    elif self.current_option == 2:
+                        self.window.close()
+                elif button == "b":  # Assuming "A" button is similar to 'Enter' action
+                    pass
 
     def on_show_view(self):
         arcade.set_background_color(arcade.color.BLACK)
@@ -1241,10 +1494,11 @@ class GameOverView(arcade.View):
         elif key == arcade.key.ENTER:
             self.click_effect_menu.play_music(volume=0.1, loop=False)
             if self.current_option == 0:
-                game_view = GameView(party_mode=self.party_mode)
+                game_view = GameView(self.controller, party_mode=self.party_mode)
                 self.window.show_view(game_view)
             elif self.current_option == 1:
-                start_view = StartView()
+                self.main_menu_bgm.play_music(volume=0.3, loop=True)
+                start_view = StartView(self.controller, self.main_menu_bgm)
                 self.window.show_view(start_view)
             elif self.current_option == 2:
                 self.window.close()  # Close the window to exit the game
@@ -1278,14 +1532,15 @@ class GameOverView(arcade.View):
                 and SCREEN_HEIGHT / 2 - 180 < y < SCREEN_HEIGHT / 2 - 120
         ):
             self.click_effect_menu.play_music(volume=0.1, loop=False)
-            game_view = GameView(party_mode=self.party_mode)
+            game_view = GameView(self.controller, party_mode=self.party_mode)
             self.window.show_view(game_view)
         elif (
                 SCREEN_WIDTH / 2 - 80 < x < SCREEN_WIDTH / 2 + 80
                 and SCREEN_HEIGHT / 2 - 230 < y < SCREEN_HEIGHT / 2 - 170
         ):
             self.click_effect_menu.play_music(volume=0.1, loop=False)
-            start_view = StartView()
+            self.main_menu_bgm.play_music(volume=0.3, loop=True)
+            start_view = StartView(self.controller, self.main_menu_bgm)
             self.window.show_view(start_view)
         elif (
                 SCREEN_WIDTH / 2 - 40 < x < SCREEN_WIDTH / 2 + 40
@@ -1295,10 +1550,17 @@ class GameOverView(arcade.View):
             self.window.close()  # Close the window to exit the game
 
 
-# Hier wird das Spiel gestartet
 def main():
     window = arcade.Window(SCREEN_WIDTH, SCREEN_HEIGHT, GAME_TITLE)
-    start_view = StartView()
+    controller_man = pyglet.input.ControllerManager()
+    controllers = controller_man.get_controllers()
+    controller = controllers[0] if controllers else None
+
+    if controller:
+        controller.open()
+    bgm = BGM(0)
+    bgm.play_music(volume=0.3, loop=True)
+    start_view = StartView(controller, bgm)
     window.show_view(start_view)
     arcade.run()
 
