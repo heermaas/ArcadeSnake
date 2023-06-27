@@ -797,17 +797,17 @@ class GameView(arcade.View):
                 self.snake.is_snake_moving = True
                 self.snake.move()
 
-                if self.party_mode and not self.mushroom and random.randint(1, 4) == 2:
+                if self.party_mode and not self.mushroom and random.randint(1, 70) == 1:
                     self.mushroom = ItemToEat(self.snake, "mushroom", self.previous_mushroom_position)
                     mushroom_timer = threading.Timer(random.uniform(3, 15), lambda: self.delete_item("mushroom"))
                     mushroom_timer.start()
 
-                if self.party_mode and not self.mirror and random.randint(1, 8) == 2:
+                if self.party_mode and not self.mirror and random.randint(1, 50) == 1:
                     self.mirror = ItemToEat(self.snake, "mirror", self.previous_mushroom_position)
                     mirror_timer = threading.Timer(random.uniform(3, 15), lambda: self.delete_item("mirror"))
                     mirror_timer.start()
 
-                if self.party_mode and not self.diamond and random.randint(1, 12) == 2:
+                if self.party_mode and not self.diamond and random.randint(1, 150) == 1:
                     self.diamond = ItemToEat(self.snake, "diamond", self.previous_mushroom_position)
                     diamond_timer = threading.Timer(random.uniform(2, 10), lambda: self.delete_item("diamond"))
                     diamond_timer.start()
@@ -861,7 +861,7 @@ class GameView(arcade.View):
                     self.window.show_view(save_score_view)
 
                 self.snake.body.insert(0, (self.snake.x, self.snake.y))
-                if len(self.snake.body) > self.snake.score // 100 + SNAKE_LENGTH:
+                if len(self.snake.body) > self.snake.apple_count + SNAKE_LENGTH:
                     self.snake.body.pop()
 
                 self.movement_timer = 0
@@ -1469,7 +1469,7 @@ class GameOverView(arcade.View):
 
     def draw_cursor(self):
         cursor_x = SCREEN_WIDTH / 2 - 100
-        cursor_y = SCREEN_HEIGHT / 2 - 130 - self.current_option * 50
+        cursor_y = SCREEN_HEIGHT / 2 - 140 - self.current_option * 50
         cursor_color = self.get_item_color(self.current_option)
         arcade.draw_triangle_filled(
             cursor_x, cursor_y, cursor_x - 10, cursor_y + 10, cursor_x - 10, cursor_y - 10, cursor_color
