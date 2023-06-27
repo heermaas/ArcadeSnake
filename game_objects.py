@@ -3,7 +3,7 @@ import random
 
 SCREEN_WIDTH = 800
 SCREEN_HEIGHT = 600
-BLOCK_SIZE = 80
+BLOCK_SIZE = 40
 SNAKE_SIZE = BLOCK_SIZE
 ITEM_TO_EAT_SIZE = BLOCK_SIZE
 SNAKE_LENGTH = 3
@@ -162,14 +162,15 @@ class Snake:
 
 
 class ItemToEat:
-    def __init__(self, snake, item_name="Apple", diamond_position=None, mushroom_position=None, mirror_position=None,
-                    apple_position=None, previous_position=None):
+    def __init__(self, snake, item_name="Apple", diamond_position=None, mushroom_position=None, mirror_position=None, apple_position=None, previous_position=None):
         self.snake = snake
         self.previous_position = previous_position
-        self.current_diamond_position = diamond_position
-        self.current_mushroom_position = mushroom_position
-        self.current_mirror_position = mirror_position
-        self.current_apple_position = apple_position
+        self.current_positions = {
+            "diamond": diamond_position,
+            "mushroom": mushroom_position,
+            "mirror": mirror_position,
+            "apple": apple_position
+        }
         self.spawn()
         self.Item_to_eat = arcade.load_texture(f'images/{item_name}.png')
 
@@ -178,18 +179,14 @@ class ItemToEat:
         for x in range(BLOCK_SIZE, SCREEN_WIDTH - BLOCK_SIZE, BLOCK_SIZE):
             for y in range(BLOCK_SIZE, SCREEN_HEIGHT - BLOCK_SIZE * 3, BLOCK_SIZE):
                 position = (x + BLOCK_SIZE // 2, y + BLOCK_SIZE // 2)
-                if position not in self.snake.body and position != self.previous_position:
-                    if position != self.current_diamond_position:
-                        if position != self.current_mushroom_position:
-                            if position != self.current_mirror_position:
-                                if position != self.current_apple_position:
-                                    valid_positions.append(position)
+                if position not in self.snake.body and position != self.previous_position \
+                        and not any(position == p for p in self.current_positions.values() if p is not None):
+                    valid_positions.append(position)
 
         if valid_positions:
             self.x, self.y = random.choice(valid_positions)
         else:
             raise NoValidItemToEatPositionError("No valid position for the Item.")
-
 
     def draw(self):
         arcade.draw_texture_rectangle(
