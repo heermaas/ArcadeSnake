@@ -19,26 +19,14 @@ Das Snake-Spiel ist ein klassisches Arcade-Spiel, bei dem der Spieler eine Schla
 2. Klonen dieses Repositories in die Entwicklungsumgebung deiner Wahl (Pycharm, VSC): `git clone https://github.com/dein-benutzername/snake-game.git`
 4. Stelle sicher, dass alle erfoderlichen Libraries (vor allem Arcade) installiert sind
    Die libraries sind
-     1. arcade 2.6.17
-     2. pyglet 2.0.dev23
+     1. arcade 2.6.17 (pip install arcade==2.6.17)
+     2. pyglet 2.0.dev23 (pip install pyglet==2.0.dev23)
 6. Starte das Spiel in: main.py
 
 ## Alle Packages
-Eventuell fehlt eines dieser Packages
-Package           Version
+Eventuell fehlt eines dieser Packages, wenn eine Fehlem sollte einfach installieren
+![image](https://github.com/heermaas/ArcadeSnake/assets/124162752/e444fdaa-d5b3-4ed7-8cef-579b6d031352)
 
-arcade            2.6.17
-attrs             23.1.0
-cffi              1.15.1
-Pillow            9.3.0
-pip               23.1.2
-pycparser         2.21
-pyglet            2.0.dev23
-pymunk            6.4.0
-pytiled-parser    2.2.0
-setuptools        65.5.1
-typing_extensions 4.6.3
-wheel             0.38.4
 
 ## Entwickler
 - Adrian Birlin (birlinad@dhbw-loerrach.de)
