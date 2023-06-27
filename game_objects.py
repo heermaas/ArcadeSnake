@@ -1,7 +1,7 @@
 import arcade
 import random
 
-# Deklarierung & Implementierung der Konstanten
+# Deklarierung & Initialisierung der Konstanten
 SCREEN_WIDTH = 800
 SCREEN_HEIGHT = 600
 BLOCK_SIZE = 40
@@ -13,14 +13,15 @@ SCOREBOARD_HEIGHT = BLOCK_SIZE * 2
 
 class Snake:
     def __init__(self):
-        # Initialisierung der Schlange
+        # Zufällige Position für die Schlange wird generiert
         self.x = random.randint(2, (SCREEN_WIDTH - BLOCK_SIZE * 2) // BLOCK_SIZE) * BLOCK_SIZE + BLOCK_SIZE // 2
         self.y = random.randint(2, (
                 SCREEN_HEIGHT - BLOCK_SIZE * 2 - SCOREBOARD_HEIGHT) // BLOCK_SIZE) * BLOCK_SIZE + BLOCK_SIZE // 2
         self.direction = "right"
+        # Körper mit 3 Körperteilen wird erstellt
         self.body = []
         self.body.append((self.x, self.y))
-        self.body.append((self.x - BLOCK_SIZE, self.y))  # Add the second segment
+        self.body.append((self.x - BLOCK_SIZE, self.y))
         self.body.append((self.x - 2 * BLOCK_SIZE, self.y))
         self.score = 0
         self.is_snake_moving = False
@@ -91,12 +92,12 @@ class Snake:
         return False
 
     def draw(self):
-        # Zeichne den Kopf
         head_x, head_y = self.body[0]
         segment_x, segment_y = self.body[1]
         tail_x, tail_y = self.body[-1]
         second_segment_x, second_segment_y = self.body[-2]
 
+        # Zeichne den Kopf
         head_relation_x = segment_x - head_x
         head_relation_y = segment_y - head_y
         head_texture = None
