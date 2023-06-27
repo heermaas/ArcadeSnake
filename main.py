@@ -142,7 +142,7 @@ class StartView(arcade.View):
         )
         self.draw_cursor()
 
-    # Diese Methode zeichnet ein Dreieck, welches als Cursor dient. durch self.current_option wird die Position des
+    # Diese Methode zeichnet ein Dreieck, welches als Cursor dient. Durch self.current_option wird die Position des
     # Dreiecks festgelegt.
     def draw_cursor(self):
         cursor_x = SCREEN_WIDTH / 2 - 100
@@ -391,7 +391,6 @@ class ModeSelectionView(arcade.View):
             self.window.show_view(start_view)
 
 
-# Zeigt die Anleitung an.
 class InstructionsView(arcade.View):
     def __init__(self, controller, bgm):
         super().__init__()
@@ -911,7 +910,7 @@ class GameView(arcade.View):
                     # Überprüft, ob die Schlange den Pilz frisst, wenn ja, dann wird eine Reihe von Aktionen ausgeführt
                     if self.snake.eat_item(self.mushroom):
                         # Spielt Pilzsoundeffekt
-                        self.sound_effect_mushroom.play_music(volume=0.5, loop=False)
+                        self.sound_effect_mushroom.play_music(volume=1, loop=False)
                         # Setzt den Grenzwert für die Bewegung höher
                         factor = 1 - (2.5 * self.move_border)
                         border_timer = threading.Timer(10, self.higher_border, args=[factor])
