@@ -733,15 +733,13 @@ class GameView(arcade.View):
 
     def on_key_press(self, key, modifiers):
         if self.paused:
-            pause_view = self.window.current_view
-            if isinstance(pause_view, PauseView):  # Check if current view is PauseView
-                pass
+            # Handle pause logic
+            pass
         else:
             if not self.input_cooldown:
                 if key == arcade.key.ESCAPE or key == arcade.key.RETURN:
-                    self.paused = True
-                    pause_view = PauseView(self)
-                    self.window.show_view(pause_view)
+                    # Handle ESCAPE/RETURN logic
+                    pass
                 else:
                     if self.mirrored_control:
                         directions = {
@@ -765,9 +763,11 @@ class GameView(arcade.View):
                             arcade.key.DOWN: "down",
                             arcade.key.S: "down",
                         }
-                    self.snake.change_direction(directions[key])
-                    self.snake.is_snake_moving = True
-                self.input_cooldown = True
+                    if key in directions:
+                        self.snake.change_direction(directions[key])
+                        self.snake.is_snake_moving = True
+                    else:
+                        pass
 
     def party_mode_prep(self):
         self.mushroom = ItemToEat(self.snake, "mushroom", self.previous_mushroom_position)
