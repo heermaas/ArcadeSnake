@@ -5,14 +5,17 @@ import random
 
 class Snake:
     def __init__(self):
+        # Zufällige Position der Schlange wird generiert
         self.x = random.randint(2, (SCREEN_WIDTH - BLOCK_SIZE * 2) // BLOCK_SIZE) * BLOCK_SIZE + BLOCK_SIZE // 2
         self.y = random.randint(2, (
                 SCREEN_HEIGHT - BLOCK_SIZE * 2 - SCOREBOARD_HEIGHT) // BLOCK_SIZE) * BLOCK_SIZE + BLOCK_SIZE // 2
         self.direction = "right"
+        # Körper der Schlange wird initialisiert
         self.body = []
         self.body.append((self.x, self.y))
         self.body.append((self.x - BLOCK_SIZE, self.y))  # Add the second segment
         self.body.append((self.x - 2 * BLOCK_SIZE, self.y))
+
         self.score = 0
         self.is_snake_moving = False
         self.apple_count = 0
@@ -81,7 +84,6 @@ class Snake:
         return False
 
     def draw(self):
-        # Draw the head
         head_x, head_y = self.body[0]
         segment_x, segment_y = self.body[1]
         tail_x, tail_y = self.body[-1]
