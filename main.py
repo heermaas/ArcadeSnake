@@ -1,10 +1,10 @@
-from game_objects import *
-from background_music import *
-
 import re
-import time
 import threading
+
 import pyglet.input
+
+from background_music import *
+from game_objects import *
 
 SCREEN_WIDTH = 800
 SCREEN_HEIGHT = 600
@@ -1028,7 +1028,7 @@ class PauseView(arcade.View):
             SCREEN_WIDTH // 2, game_height // 2, SCREEN_WIDTH, game_height, arcade.color.GREEN
         )
 
-        # Hier wird das Grid im Spielfeld erstellt 
+        # Hier wird das Grid im Spielfeld erstellt
         for row in range(0, game_height, BLOCK_SIZE):
             for column in range(0, SCREEN_WIDTH, BLOCK_SIZE):
                 if (row // BLOCK_SIZE + column // BLOCK_SIZE) % 2 == 0:
@@ -1089,6 +1089,9 @@ class PauseView(arcade.View):
         arcade.draw_triangle_filled(
             cursor_x, cursor_y, cursor_x - 10, cursor_y + 10, cursor_x - 10, cursor_y - 10, cursor_color
         )
+
+    def update_option(self, option):
+        self.current_option = option
 
     def get_item_color(self, item_index):
         if self.current_option == item_index or self.hovered_item == item_index:
