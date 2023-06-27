@@ -5,7 +5,7 @@ import re
 import time
 import threading
 
-# Deklarierung & Implementierung der Konstanten
+# Deklaration & Initialisierung der Konstanten
 SCREEN_WIDTH = 800
 SCREEN_HEIGHT = 600
 BLOCK_SIZE = 40
@@ -18,6 +18,7 @@ CAPTION = "Navigiere, Wachse, Überlebe!"
 SUB_HEADING = "Ein Projekt von Abdelrhman Hassan, Adrian Birlin, Christian Ambs & Manuel Heer"
 
 
+# Übersicht über die verschiedenen Menüs/Screens
 class StartView(arcade.View):
     def __init__(self):
         super().__init__()
@@ -1294,6 +1295,7 @@ class GameOverView(arcade.View):
             self.window.close()  # Close the window to exit the game
 
 
+# Hier wird das Spiel gestartet
 def main():
     window = arcade.Window(SCREEN_WIDTH, SCREEN_HEIGHT, GAME_TITLE)
     start_view = StartView()
