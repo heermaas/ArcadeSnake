@@ -745,8 +745,9 @@ class GameView(arcade.View):
         else:
             if not self.input_cooldown:
                 if key == arcade.key.ESCAPE or key == arcade.key.RETURN:
-                    # Handle ESCAPE/RETURN logic
-                    pass
+                    self.paused = True
+                    pause_view = PauseView(self)
+                    self.window.show_view(pause_view)
                 else:
                     if self.mirrored_control:
                         directions = {
